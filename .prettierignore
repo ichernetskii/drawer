@@ -1,0 +1,11 @@
+# Ignore system directories
+.idea
+build
+coverage
+.yarn
+.pnp.*
+
+# Ignore generated files
+dist/
+*.min.js
+*.min.css
