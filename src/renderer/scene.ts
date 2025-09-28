@@ -34,7 +34,7 @@ export class SceneRenderer extends Renderer {
 		const { clientWidth: width, clientHeight: height } = this.ctx.canvas;
 
 		autorun(() => {
-			const { drawingEntity, getEntities } = this.rootStore.shapesStore;
+			const { drawingEntity, entities } = this.rootStore.shapesStore;
 
 			// clear canvas
 			this.ctx.clearRect(0, 0, width, height);
@@ -46,7 +46,6 @@ export class SceneRenderer extends Renderer {
 
 			this.entityRenderer.render(drawingEntity);
 
-			const entities = getEntities();
 			entities.forEach(entity => {
 				this.entityRenderer.render(entity);
 			});

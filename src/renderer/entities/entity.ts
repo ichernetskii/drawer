@@ -7,6 +7,9 @@ import { EllipseRenderer } from "./ellipse.ts";
 import { RectangleRenderer } from "./rectangle.ts";
 
 export class EntityRenderer extends Renderer {
+	readonly SELECTION_PADDING = 3;
+	readonly SELECTION_COLOR = "#6dcd51";
+
 	private readonly rectangleRenderer;
 	private readonly ellipseRenderer;
 
@@ -17,13 +20,23 @@ export class EntityRenderer extends Renderer {
 	}
 
 	render(entity: Entity | null) {
-		if (!entity) {
-			return;
+		if (!entity || !entity.position || !entity.size) return;
+
+		if (entity.isSelected) {
+			this.ctx.strokeStyle = this.SELECTION_COLOR;
+			this.ctx.strokeRect(
+				entity.position.x - this.SELECTION_PADDING,
+				entity.position.y - this.SELECTION_PADDING,
+				entity.size.width + 2 * this.SELECTION_PADDING,
+				entity.size.height + 2 * this.SELECTION_PADDING,
+			);
 		}
-		if (isEllipse(entity)) {
-			this.ellipseRenderer.render(entity);
-		} else if (isRectangle(entity)) {
+
+		this.ctx.strokeStyle = entity.color;
+		if (isRectangle(entity)) {
 			this.rectangleRenderer.render(entity);
+		} else if (isEllipse(entity)) {
+			this.ellipseRenderer.render(entity);
 		}
 	}
 }
