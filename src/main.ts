@@ -4,48 +4,46 @@ import { SceneRenderer } from "@/renderer/scene.ts";
 import { rootStore } from "@/store/root.ts";
 import { createEntity } from "@/store/shapes/entities/createEntity.ts";
 import { type EntityType } from "@/store/shapes/entities/entity.ts";
-import { retinaFix } from "@/utils/retinaFix.ts";
 
 const $canvas = document.querySelector("canvas")!;
 const ctx = $canvas.getContext("2d")!;
+const { shapesStore, sceneStore } = rootStore;
 const renderer = new SceneRenderer(ctx, rootStore);
 
-retinaFix(ctx);
 renderer.render();
 
 window.addEventListener("resize", () => {
-	retinaFix(ctx);
 	renderer.render();
 });
 
 $canvas.addEventListener("mousedown", e => {
-	const { getEntityUnderCursor, unselectEntities, setDrawingEntity } = rootStore.shapesStore;
+	const sceneCoordinates = sceneStore.getSceneCoordinates(e);
+	const entityUnderCursor = shapesStore.getEntityUnderCursor(sceneCoordinates);
 
-	const entityUnderCursor = getEntityUnderCursor({ x: e.x, y: e.y });
-
-	unselectEntities();
+	shapesStore.unselectEntities();
 	if (entityUnderCursor) {
 		entityUnderCursor.setIsSelected(true);
 	} else {
 		const type: EntityType = "rectangle";
 		const entity = createEntity(type);
-		entity.setPosition({ x: e.x, y: e.y });
-		setDrawingEntity(entity);
+		entity.setPosition(sceneCoordinates);
+		shapesStore.setDrawingEntity(entity);
 	}
 });
 
 $canvas.addEventListener("mousemove", e => {
-	const { drawingEntity } = rootStore.shapesStore;
+	const { drawingEntity } = shapesStore;
 	if (drawingEntity && drawingEntity.position && e.buttons === 1) {
+		const sceneCoordinates = sceneStore.getSceneCoordinates(e);
 		drawingEntity.setSize({
-			width: e.x - drawingEntity.position.x,
-			height: e.y - drawingEntity.position.y,
+			width: sceneCoordinates.x - drawingEntity.position.x,
+			height: sceneCoordinates.y - drawingEntity.position.y,
 		});
 	}
 });
 
 $canvas.addEventListener("mouseup", () => {
-	const { drawingEntity, addEntity, setDrawingEntity } = rootStore.shapesStore;
+	const { drawingEntity, addEntity, setDrawingEntity } = shapesStore;
 	if (drawingEntity && drawingEntity.size?.width && drawingEntity.size?.height) {
 		drawingEntity.normalize();
 		addEntity(drawingEntity);
@@ -54,7 +52,14 @@ $canvas.addEventListener("mouseup", () => {
 });
 
 document.addEventListener("keydown", e => {
-	const { unselectEntities, entities, setEntities } = rootStore.shapesStore;
+	const { unselectEntities, entities, setEntities } = shapesStore;
+	const { panBy, setZoom } = sceneStore;
+
+	const shiftMultiplier = 10;
+	const baseSceneShift = 5;
+	const sceneShift = e.shiftKey ? shiftMultiplier * baseSceneShift : baseSceneShift;
+	const zoomFactor = 1.2;
+
 	switch (e.key) {
 		case "Escape":
 			unselectEntities();
@@ -62,6 +67,27 @@ document.addEventListener("keydown", e => {
 		case "Backspace":
 		case "Delete":
 			setEntities(entities.filter(entity => !entity.isSelected));
+			break;
+		case "ArrowRight":
+			panBy({ x: sceneShift, y: 0 });
+			break;
+		case "ArrowLeft":
+			panBy({ x: -sceneShift, y: 0 });
+			break;
+		case "ArrowUp":
+			panBy({ x: 0, y: sceneShift });
+			break;
+		case "ArrowDown":
+			panBy({ x: 0, y: -sceneShift });
+			break;
+		case "+":
+			setZoom(sceneStore.zoom * zoomFactor);
+			break;
+		case "-":
+			setZoom(sceneStore.zoom / zoomFactor);
+			break;
+		case "=":
+			setZoom(1);
 			break;
 	}
 });

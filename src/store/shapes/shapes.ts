@@ -4,7 +4,7 @@ import type { Position } from "@/types/types";
 
 import type { Entity } from "./entities/entity.ts";
 
-export class Shapes {
+export class ShapesStore {
 	private _entities: Entity[] = [];
 	private _drawingEntity: Entity | null = null;
 

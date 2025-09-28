@@ -1,7 +1,10 @@
-import { Shapes } from "./shapes/shapes.ts";
+import { SceneStore } from "@/store/scene/scene.ts";
+
+import { ShapesStore } from "./shapes/shapes.ts";
 
 export class RootStore {
-	readonly shapesStore = new Shapes();
+	readonly shapesStore = new ShapesStore();
+	readonly sceneStore = new SceneStore();
 	constructor() {}
 }
 
