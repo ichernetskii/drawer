@@ -17,19 +17,19 @@ export class SceneStore {
 		);
 	}
 
-	get size(): Size {
+	get size() {
 		return this._size;
 	}
 
-	setSize(size: Size) {
+	set size(size) {
 		this._size = size;
 	}
 
-	get zoom(): number {
+	get zoom() {
 		return this._zoom;
 	}
 
-	setZoom(zoom: number) {
+	set zoom(zoom) {
 		this._zoom = Math.max(1 / 5, Math.min(zoom, 5));
 	}
 
@@ -37,12 +37,12 @@ export class SceneStore {
 		return this._origin;
 	}
 
-	setOrigin(origin: Position) {
+	set origin(origin) {
 		this._origin = origin;
 	}
 
 	panBy(delta: Position) {
-		this._origin = { x: this._origin.x + delta.x, y: this._origin.y + delta.y };
+		this.origin = { x: this.origin.x + delta.x, y: this.origin.y + delta.y };
 	}
 
 	getSceneCoordinates(mouseCoordinates: Position) {

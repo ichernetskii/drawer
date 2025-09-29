@@ -22,11 +22,11 @@ $canvas.addEventListener("mousedown", e => {
 
 	shapesStore.unselectEntities();
 	if (entityUnderCursor) {
-		entityUnderCursor.setIsSelected(true);
+		entityUnderCursor.isSelected = true;
 	} else {
 		const type: EntityType = "rectangle";
 		const entity = createEntity(type);
-		entity.setPosition(sceneCoordinates);
+		entity.position = sceneCoordinates;
 		shapesStore.setDrawingEntity(entity);
 	}
 });
@@ -35,10 +35,10 @@ $canvas.addEventListener("mousemove", e => {
 	const { drawingEntity } = shapesStore;
 	if (drawingEntity && drawingEntity.position && e.buttons === 1) {
 		const sceneCoordinates = sceneStore.getSceneCoordinates(e);
-		drawingEntity.setSize({
+		drawingEntity.size = {
 			width: sceneCoordinates.x - drawingEntity.position.x,
 			height: sceneCoordinates.y - drawingEntity.position.y,
-		});
+		};
 	}
 });
 
@@ -53,7 +53,7 @@ $canvas.addEventListener("mouseup", () => {
 
 document.addEventListener("keydown", e => {
 	const { unselectEntities, entities, setEntities } = shapesStore;
-	const { panBy, setZoom } = sceneStore;
+	const { panBy } = sceneStore;
 
 	const shiftMultiplier = 10;
 	const baseSceneShift = 5;
@@ -81,13 +81,13 @@ document.addEventListener("keydown", e => {
 			panBy({ x: 0, y: -sceneShift });
 			break;
 		case "+":
-			setZoom(sceneStore.zoom * zoomFactor);
+			sceneStore.zoom = sceneStore.zoom * zoomFactor;
 			break;
 		case "-":
-			setZoom(sceneStore.zoom / zoomFactor);
+			sceneStore.zoom = sceneStore.zoom / zoomFactor;
 			break;
 		case "=":
-			setZoom(1);
+			sceneStore.zoom = 1;
 			break;
 	}
 });
@@ -95,3 +95,46 @@ document.addEventListener("keydown", e => {
 $canvas.addEventListener("contextmenu", e => {
 	e.preventDefault();
 });
+
+// Wheel: pan/zoom with trackpad and mouse
+$canvas.addEventListener(
+	"wheel",
+	(e: WheelEvent) => {
+		// prevent page scroll/zoom
+		e.preventDefault();
+
+		const { panBy, zoom } = sceneStore;
+
+		// Zoom: Cmd (mac) or Ctrl (pc) + wheel; also covers pinch on many touchpads (ctrlKey=true)
+		if (e.metaKey || e.ctrlKey) {
+			// Heuristic: increase sensitivity for touchpad-like fine-grained deltas
+			const isPixel = e.deltaMode === 0; // WheelEvent.DOM_DELTA_PIXEL
+			const isFine = isPixel && Math.abs(e.deltaY) < 50;
+			const ZOOM_SENSITIVITY = isFine ? 0.01 : 0.001;
+			const factor = Math.exp(-e.deltaY * ZOOM_SENSITIVITY);
+
+			const sceneCoordinates = sceneStore.getSceneCoordinates({ x: e.x, y: e.y });
+			sceneStore.zoom = factor * zoom;
+
+			const cx = e.x - sceneStore.size.width / 2;
+			const cy = e.y - sceneStore.size.height / 2;
+			const newOriginX = sceneCoordinates.x - cx / sceneStore.zoom;
+			const newOriginY = sceneCoordinates.y + cy / sceneStore.zoom;
+
+			sceneStore.origin = { x: newOriginX, y: newOriginY };
+			return;
+		}
+
+		// Pan: Shift + wheel → horizontal from vertical delta
+		if (e.shiftKey) {
+			panBy({ x: e.deltaY / zoom, y: 0 });
+			return;
+		}
+
+		// Trackpad two-finger pan (both axes) or mouse wheel (vertical only)
+		const dx = e.deltaX;
+		const dy = -e.deltaY;
+		panBy({ x: dx / zoom, y: dy / zoom });
+	},
+	{ passive: false },
+);

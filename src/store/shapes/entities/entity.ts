@@ -25,16 +25,12 @@ export class Entity {
 			{
 				_position: observable,
 				position: computed,
-				setPosition: action,
 				_size: observable,
 				size: computed,
-				setSize: action,
 				_isSelected: observable,
 				isSelected: computed,
-				setIsSelected: action,
 				_color: observable,
 				color: computed,
-				setColor: action,
 				normalize: action,
 			},
 			{
@@ -47,7 +43,7 @@ export class Entity {
 		return this._position;
 	}
 
-	setPosition(position: Position) {
+	set position(position) {
 		this._position = position;
 	}
 
@@ -55,7 +51,7 @@ export class Entity {
 		return this._size;
 	}
 
-	setSize(value: Size | null) {
+	set size(value) {
 		this._size = value;
 	}
 
@@ -63,7 +59,7 @@ export class Entity {
 		return this._isSelected;
 	}
 
-	setIsSelected(value: boolean) {
+	set isSelected(value) {
 		this._isSelected = value;
 	}
 
@@ -71,7 +67,7 @@ export class Entity {
 		return this._color;
 	}
 
-	setColor(value: string) {
+	set color(value) {
 		this._color = value;
 	}
 

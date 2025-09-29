@@ -7,9 +7,9 @@ import { Rectangle } from "./rectangle.ts";
 export function createEntity(type: EntityType) {
 	switch (type) {
 		case "rectangle":
-			return new Rectangle(type);
+			return new Rectangle();
 		case "ellipse":
-			return new Ellipse(type);
+			return new Ellipse();
 		default:
 			exhaustiveCheck(type);
 	}

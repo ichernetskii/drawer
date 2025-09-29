@@ -1,4 +1,4 @@
-import { autorun } from "mobx";
+import { autorun, type IReactionDisposer } from "mobx";
 
 import { EntityRenderer } from "@/renderer/entities/entity.ts";
 import { Renderer } from "@/renderer/renderer.ts";
@@ -8,6 +8,7 @@ import { retinaFix } from "@/utils/retinaFix.ts";
 export class SceneRenderer extends Renderer {
 	private readonly rootStore;
 	private readonly entityRenderer;
+	private dispose?: IReactionDisposer;
 
 	constructor(ctx: CanvasRenderingContext2D, rootStore: RootStore) {
 		super(ctx);
@@ -32,12 +33,13 @@ export class SceneRenderer extends Renderer {
 		this.ctx.stroke();
 	}
 	render() {
+		this.dispose?.();
 		retinaFix(this.ctx);
 		const { sceneStore, shapesStore } = this.rootStore;
 		const { clientWidth: width, clientHeight: height } = this.ctx.canvas;
-		sceneStore.setSize({ width: width, height: height });
+		sceneStore.size = { width: width, height: height };
 
-		autorun(() => {
+		this.dispose = autorun(() => {
 			// clear canvas
 			this.ctx.clearRect(0, 0, width, height);
 
