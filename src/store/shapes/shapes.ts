@@ -56,7 +56,7 @@ export class ShapesStore {
 
 	unselectEntities() {
 		for (const entity of this.entities) {
-			entity.setIsSelected(false);
+			entity.isSelected = false;
 		}
 	}
 }

@@ -17,19 +17,19 @@ export class SceneStore {
 		);
 	}
 
-	get size(): Size {
+	get size() {
 		return this._size;
 	}
 
-	setSize(size: Size) {
+	set size(size) {
 		this._size = size;
 	}
 
-	get zoom(): number {
+	get zoom() {
 		return this._zoom;
 	}
 
-	setZoom(zoom: number) {
+	set zoom(zoom) {
 		this._zoom = Math.max(1 / 5, Math.min(zoom, 5));
 	}
 
@@ -37,20 +37,20 @@ export class SceneStore {
 		return this._origin;
 	}
 
-	setOrigin(origin: Position) {
+	set origin(origin) {
 		this._origin = origin;
 	}
 
 	panBy(delta: Position) {
-		this._origin = { x: this._origin.x + delta.x, y: this._origin.y + delta.y };
+		this.origin = { x: this.origin.x + delta.x, y: this.origin.y + delta.y };
 	}
 
 	getSceneCoordinates(mouseCoordinates: Position) {
 		// Inverse of renderer transform: translate(center) -> scale(zoom, -zoom) -> translate(-origin)
-		const cx = mouseCoordinates.x - this.size.width / 2;
-		const cy = mouseCoordinates.y - this.size.height / 2;
-		const wx = cx / this._zoom + this.origin.x;
-		const wy = -cy / this._zoom + this.origin.y;
-		return { x: wx, y: wy };
+		const centerX = mouseCoordinates.x - this.size.width / 2;
+		const centerY = mouseCoordinates.y - this.size.height / 2;
+		const sceneX = centerX / this._zoom + this.origin.x;
+		const sceneY = -centerY / this._zoom + this.origin.y;
+		return { x: sceneX, y: sceneY };
 	}
 }
