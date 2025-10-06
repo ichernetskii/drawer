@@ -34,8 +34,8 @@ export class SceneRenderer extends Renderer {
 	}
 	render() {
 		this.dispose?.();
-		retinaFix(this.ctx);
-		const { sceneStore, shapesStore } = this.rootStore;
+		const { sceneStore, shapesStore, clientStore } = this.rootStore;
+		retinaFix(this.ctx, clientStore.dpr);
 		const { clientWidth: width, clientHeight: height } = this.ctx.canvas;
 		sceneStore.size = { width: width, height: height };
 

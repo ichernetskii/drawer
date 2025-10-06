@@ -22,19 +22,19 @@ export class ShapesStore {
 		return this._entities;
 	}
 
-	setEntities(entities: Entity[]) {
+	set entities(entities) {
 		this._entities = entities;
 	}
 
 	addEntity(entity: Entity) {
-		this._entities.push(entity);
+		this.entities.push(entity);
 	}
 
 	get drawingEntity() {
 		return this._drawingEntity;
 	}
 
-	setDrawingEntity(drawingEntity: Entity | null) {
+	set drawingEntity(drawingEntity: Entity | null) {
 		this._drawingEntity = drawingEntity;
 	}
 
@@ -58,5 +58,17 @@ export class ShapesStore {
 		for (const entity of this.entities) {
 			entity.isSelected = false;
 		}
+	}
+
+	deleteSelected() {
+		this.entities = this.entities.filter(entity => !entity.isSelected);
+	}
+
+	hasSelected() {
+		return this.entities.some(entity => entity.isSelected);
+	}
+
+	getSelected() {
+		return this.entities.filter(entity => entity.isSelected);
 	}
 }

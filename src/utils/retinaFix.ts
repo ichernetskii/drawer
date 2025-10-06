@@ -1,6 +1,4 @@
-export function retinaFix(ctx: CanvasRenderingContext2D) {
-	const dpr = window.devicePixelRatio || 1;
-
+export function retinaFix(ctx: CanvasRenderingContext2D, dpr: number) {
 	const cssWidth = ctx.canvas.clientWidth;
 	const cssHeight = ctx.canvas.clientHeight;
 

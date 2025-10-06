@@ -55,6 +55,10 @@ export class Entity {
 		this._size = value;
 	}
 
+	get hasSize() {
+		return !!this.size && this.size.width !== 0 && this.size.height !== 0;
+	}
+
 	get isSelected() {
 		return this._isSelected;
 	}
