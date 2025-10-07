@@ -63,6 +63,8 @@ export class SceneRenderer extends Renderer {
 				this.entityRenderer.render(entity);
 			});
 
+			this.entityRenderer.render(this.rootStore.selectionStore.getEntitiesBox(sceneStore.zoom));
+
 			this.ctx.restore();
 		});
 	}

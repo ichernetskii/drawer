@@ -1,8 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
+import type { Entity } from "@/store/entities/entity.ts";
 import type { Position } from "@/types/types";
-
-import type { Entity } from "./entities/entity.ts";
 
 export class ShapesStore {
 	private _entities: Entity[] = [];
@@ -30,6 +29,10 @@ export class ShapesStore {
 		this.entities.push(entity);
 	}
 
+	deleteEntities(entities: Entity[]) {
+		this.entities = this.entities.filter(entity => !entities.includes(entity));
+	}
+
 	get drawingEntity() {
 		return this._drawingEntity;
 	}
@@ -52,23 +55,5 @@ export class ShapesStore {
 			}
 		}
 		return null;
-	}
-
-	unselectEntities() {
-		for (const entity of this.entities) {
-			entity.isSelected = false;
-		}
-	}
-
-	deleteSelected() {
-		this.entities = this.entities.filter(entity => !entity.isSelected);
-	}
-
-	hasSelected() {
-		return this.entities.some(entity => entity.isSelected);
-	}
-
-	getSelected() {
-		return this.entities.filter(entity => entity.isSelected);
 	}
 }

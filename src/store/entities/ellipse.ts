@@ -1,13 +1,11 @@
 import { Entity } from "./entity.ts";
 
 export class Ellipse extends Entity {
-	readonly type = "ellipse";
-
 	constructor() {
-		super("ellipse");
+		super();
 	}
 }
 
 export function isEllipse(entity: Entity): entity is Ellipse {
-	return entity.type === "ellipse";
+	return entity instanceof Ellipse;
 }

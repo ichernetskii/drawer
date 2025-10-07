@@ -7,30 +7,26 @@ const getId = (() => {
 	return () => counter++;
 })();
 
-export type EntityType = "rectangle" | "ellipse";
-
-export class Entity {
+export abstract class Entity {
 	readonly id: number;
-	readonly type: EntityType;
 	protected _position: Position | null = null;
 	protected _size: Size | null = null;
-	protected _isSelected: boolean = false;
 	protected _color: string = "#fff";
+	protected _borderWidth = 1;
 
-	constructor(type: EntityType) {
+	constructor() {
 		this.id = getId();
-		this.type = type;
-		makeObservable<this, "_position" | "_size" | "_isSelected" | "_color">(
+		makeObservable<this, "_position" | "_size" | "_color" | "_borderWidth">(
 			this,
 			{
 				_position: observable,
 				position: computed,
 				_size: observable,
 				size: computed,
-				_isSelected: observable,
-				isSelected: computed,
 				_color: observable,
 				color: computed,
+				_borderWidth: observable,
+				borderWidth: computed,
 				normalize: action,
 			},
 			{
@@ -59,20 +55,20 @@ export class Entity {
 		return !!this.size && this.size.width !== 0 && this.size.height !== 0;
 	}
 
-	get isSelected() {
-		return this._isSelected;
-	}
-
-	set isSelected(value) {
-		this._isSelected = value;
-	}
-
 	get color() {
 		return this._color;
 	}
 
 	set color(value) {
 		this._color = value;
+	}
+
+	get borderWidth() {
+		return this._borderWidth;
+	}
+
+	set borderWidth(value: number) {
+		this._borderWidth = value;
 	}
 
 	normalize() {
