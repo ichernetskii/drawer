@@ -1,5 +1,5 @@
 import { Renderer } from "@/renderer/renderer.ts";
-import type { Ellipse } from "@/store/entities/ellipse.ts";
+import type { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 
 export class EllipseRenderer extends Renderer {
 	render(entity: Ellipse) {

@@ -1,11 +1,14 @@
 import { makeAutoObservable } from "mobx";
 
+import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 import type { Position, Size } from "@/types/types";
 
 export class SceneStore {
 	private _size: Size = { width: 0, height: 0 };
 	private _zoom = 1;
 	private _origin: Position = { x: 0, y: 0 };
+	private _mouseDown: Position | null = null;
+	private _tool: string = SelectionPreview.type;
 
 	private readonly zoomMin = 1 / 5;
 	private readonly zoomMax = 5;
@@ -30,16 +33,16 @@ export class SceneStore {
 		return this._size;
 	}
 
-	set size(size) {
-		this._size = size;
+	set size(value) {
+		this._size = value;
 	}
 
 	get zoom() {
 		return this._zoom;
 	}
 
-	set zoom(zoom) {
-		this._zoom = zoom > this.zoomMax ? this.zoomMax : zoom < this.zoomMin ? this.zoomMin : zoom;
+	set zoom(value) {
+		this._zoom = value > this.zoomMax ? this.zoomMax : value < this.zoomMin ? this.zoomMin : value;
 	}
 
 	getWheelZoomFactor({ deltaMode, deltaY }: { deltaMode: number; deltaY: number }) {
@@ -54,8 +57,24 @@ export class SceneStore {
 		return this._origin;
 	}
 
-	set origin(origin) {
-		this._origin = origin;
+	set origin(value) {
+		this._origin = value;
+	}
+
+	get mouseDown() {
+		return this._mouseDown;
+	}
+
+	set mouseDown(value) {
+		this._mouseDown = value;
+	}
+
+	get tool() {
+		return this._tool;
+	}
+
+	set tool(value) {
+		this._tool = value;
 	}
 
 	getKeyTranslateStep({ shiftKey }: { shiftKey: boolean }) {

@@ -1,13 +1,16 @@
 import "@/styles/style.css";
 
-import { SceneRenderer } from "@/renderer/scene.ts";
-import { createEntity, type EntityType } from "@/store/entities/entityUtils.ts";
-import { rootStore } from "@/store/root.ts";
+import { SceneRenderer } from "@/renderer/scene/sceneRenderer.ts";
+import { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
+import { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
+import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
+import { createEntity } from "@/store/entity/utils.ts";
+import { rootStore } from "@/store/rootStore.ts";
 import { exhaustiveCheck } from "@/utils/exhaustiveCheck.ts";
 
 const $canvas = document.querySelector("canvas")!;
 const ctx = $canvas.getContext("2d")!;
-const { shapesStore, selectionStore, sceneStore, clientStore } = rootStore;
+const { drawableStore, selectionStore, sceneStore } = rootStore;
 const renderer = new SceneRenderer(ctx, rootStore);
 
 renderer.render();
@@ -18,95 +21,136 @@ window.addEventListener("resize", () => {
 
 $canvas.addEventListener("mousedown", e => {
 	const sceneCoordinates = sceneStore.getSceneCoordinates(e);
-	const entityUnderCursor = shapesStore.getEntityUnderCursor(sceneCoordinates);
-	clientStore.mouseDown = e;
+	const drawableUnderCursor = drawableStore.getDrawableAtPosition(sceneCoordinates);
+	sceneStore.mouseDown = sceneCoordinates;
 
-	if (entityUnderCursor) {
-		if (selectionStore.entities.includes(entityUnderCursor)) {
-			if (e.shiftKey) {
-				// shift + mousedown on already selected → clear selection
-				selectionStore.delete(entityUnderCursor);
-			}
-			return;
-		} else {
-			if (!e.shiftKey) {
-				selectionStore.entities = [];
-			}
-			selectionStore.add(entityUnderCursor);
+	// mouse down on already selected entity
+	if (drawableUnderCursor && selectionStore.drawables.includes(drawableUnderCursor)) {
+		// shift + mousedown on already selected entity → clear selection
+		if (e.shiftKey) {
+			selectionStore.delete(drawableUnderCursor);
 		}
-	} else {
-		selectionStore.entities = [];
-		const type: EntityType = "ellipse";
-		const entity = createEntity(type);
-		entity.position = sceneCoordinates;
-		shapesStore.drawingEntity = entity;
+		return;
 	}
+
+	if (!e.shiftKey) {
+		selectionStore.drawables = [];
+	}
+
+	// mouse down on not selected entity
+	if (drawableUnderCursor) {
+		selectionStore.add(drawableUnderCursor);
+		return;
+	}
+
+	// mouse down on empty space + selection tool
+	if (sceneStore.tool === SelectionPreview.type) {
+		selectionStore.selectionPreview = new SelectionPreview();
+		selectionStore.selectionPreview.position = sceneCoordinates;
+		return;
+	}
+
+	// mouse down on empty space
+	const entity = createEntity(sceneStore.tool);
+	if (!entity) return;
+	entity.position = sceneCoordinates;
+	drawableStore.drawing = entity;
 });
 
 $canvas.addEventListener("mousemove", e => {
-	const { drawingEntity } = shapesStore;
+	const { drawing } = drawableStore;
+	const { selectionPreview, drawables } = selectionStore;
 	const isMainMouseButtonPressed = e.buttons === 1;
 	const sceneCoordinates = sceneStore.getSceneCoordinates(e);
 
-	if (drawingEntity) {
-		if (drawingEntity && drawingEntity.position && isMainMouseButtonPressed) {
-			drawingEntity.size = {
-				width: sceneCoordinates.x - drawingEntity.position.x,
-				height: sceneCoordinates.y - drawingEntity.position.y,
-			};
-		}
-	} else {
-		// drag selected entities
-		if (isMainMouseButtonPressed && selectionStore.entities.length !== 0) {
-			selectionStore.entities.forEach(entity => {
-				if (entity.position) {
-					entity.position = {
-						x: entity.position.x + e.movementX / sceneStore.zoom,
-						y: entity.position.y - e.movementY / sceneStore.zoom,
-					};
-				}
-			});
-		}
+	if (!isMainMouseButtonPressed) return;
+
+	if (drawing && drawing.position) {
+		drawing.size = {
+			width: sceneCoordinates.x - drawing.position.x,
+			height: sceneCoordinates.y - drawing.position.y,
+		};
+		return;
+	}
+
+	// selection
+	if (selectionPreview && selectionPreview.position) {
+		selectionPreview.size = {
+			width: sceneCoordinates.x - selectionPreview.position.x,
+			height: sceneCoordinates.y - selectionPreview.position.y,
+		};
+		return;
+	}
+
+	// drag selected drawables
+	if (drawables.length !== 0) {
+		drawables.forEach(entity => {
+			if (entity.position) {
+				entity.position = {
+					x: entity.position.x + e.movementX / sceneStore.zoom,
+					y: entity.position.y - e.movementY / sceneStore.zoom,
+				};
+			}
+		});
+		return;
 	}
 });
 
 $canvas.addEventListener("mouseup", e => {
-	const { drawingEntity, addEntity } = shapesStore;
+	const { drawing, addDrawable } = drawableStore;
+	const { selectionPreview } = selectionStore;
+	const sceneCoordinates = sceneStore.getSceneCoordinates(e);
 
-	if (drawingEntity) {
-		if (drawingEntity.hasSize) {
-			drawingEntity.normalize();
-			addEntity(drawingEntity);
+	// we have finished selection
+	if (selectionPreview) {
+		selectionPreview.normalize();
+		const selectedDrawables = drawableStore.getDrawablesInRectangle(selectionPreview);
+		if (e.shiftKey) {
+			selectionStore.addMany(selectedDrawables);
+		} else {
+			selectionStore.drawables = selectedDrawables;
 		}
-		shapesStore.drawingEntity = null;
-	} else {
-		// click on one entity from an already selected group → select only that one
-		if (
-			clientStore.mouseDown &&
-			e.x === clientStore.mouseDown.x &&
-			e.y === clientStore.mouseDown.y &&
-			!e.shiftKey
-		) {
-			const sceneCoordinates = sceneStore.getSceneCoordinates(e);
-			const entityUnderCursor = shapesStore.getEntityUnderCursor(sceneCoordinates);
-			selectionStore.entities = [];
-			if (entityUnderCursor) {
-				selectionStore.add(entityUnderCursor);
-			}
-			clientStore.mouseDown = null;
+		sceneStore.mouseDown = null;
+		selectionStore.selectionPreview = null;
+		return;
+	}
+
+	// we have finished drawing of entity
+	if (drawing) {
+		if (drawing.hasSize) {
+			drawing.normalize();
+			addDrawable(drawing);
 		}
+		drawableStore.drawing = null;
+		sceneStore.mouseDown = null;
+		return;
+	}
+
+	// click on one entity from an already selected group → select only that one
+	if (
+		sceneStore.mouseDown &&
+		sceneCoordinates.x === sceneStore.mouseDown.x &&
+		sceneCoordinates.y === sceneStore.mouseDown.y &&
+		!e.shiftKey
+	) {
+		const drawableUnderCursor = drawableStore.getDrawableAtPosition(sceneCoordinates);
+		selectionStore.drawables = [];
+		if (drawableUnderCursor) {
+			selectionStore.add(drawableUnderCursor);
+		}
+		sceneStore.mouseDown = null;
 	}
 });
 
 document.addEventListener("keydown", e => {
 	switch (e.key) {
 		case "Escape":
-			selectionStore.entities = [];
+			selectionStore.drawables = [];
 			break;
 		case "Backspace":
 		case "Delete":
-			shapesStore.deleteEntities(selectionStore.entities);
-			selectionStore.entities = [];
+			drawableStore.deleteDrawables(selectionStore.drawables);
+			selectionStore.drawables = [];
 			break;
 		case "ArrowRight":
 		case "ArrowLeft":
@@ -131,8 +175,8 @@ document.addEventListener("keydown", e => {
 				default:
 					exhaustiveCheck(e.key);
 			}
-			if (selectionStore.entities.length !== 0) {
-				selectionStore.entities.forEach(entity => {
+			if (selectionStore.drawables.length !== 0) {
+				selectionStore.drawables.forEach(entity => {
 					if (entity.position) {
 						entity.position = {
 							x: entity.position.x + dx,
@@ -145,6 +189,15 @@ document.addEventListener("keydown", e => {
 			}
 			break;
 		}
+		case "r":
+			sceneStore.tool = Rectangle.type;
+			break;
+		case "e":
+			sceneStore.tool = Ellipse.type;
+			break;
+		case "s":
+			sceneStore.tool = SelectionPreview.type;
+			break;
 		case "+":
 			sceneStore.zoom = sceneStore.zoom * sceneStore.zoomFactor;
 			break;

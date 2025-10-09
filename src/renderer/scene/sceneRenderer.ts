@@ -1,8 +1,8 @@
 import { autorun, type IReactionDisposer } from "mobx";
 
-import { EntityRenderer } from "@/renderer/entities/entity.ts";
 import { Renderer } from "@/renderer/renderer.ts";
-import { type RootStore } from "@/store/root.ts";
+import { EntityRenderer } from "@/renderer/scene/entity/entityRenderer.ts";
+import { type RootStore } from "@/store/rootStore.ts";
 import { retinaFix } from "@/utils/retinaFix.ts";
 
 export class SceneRenderer extends Renderer {
@@ -34,7 +34,7 @@ export class SceneRenderer extends Renderer {
 	}
 	render() {
 		this.dispose?.();
-		const { sceneStore, shapesStore, clientStore } = this.rootStore;
+		const { sceneStore, drawableStore, clientStore } = this.rootStore;
 		retinaFix(this.ctx, clientStore.dpr);
 		const { clientWidth: width, clientHeight: height } = this.ctx.canvas;
 		sceneStore.size = { width: width, height: height };
@@ -57,13 +57,14 @@ export class SceneRenderer extends Renderer {
 			this.ctx.fillStyle = "#fff";
 			this.ctx.strokeStyle = "#fff";
 
-			this.entityRenderer.render(shapesStore.drawingEntity);
+			this.entityRenderer.render(drawableStore.drawing);
 
-			shapesStore.entities.forEach(entity => {
-				this.entityRenderer.render(entity);
+			drawableStore.drawables.forEach(drawable => {
+				this.entityRenderer.render(drawable);
 			});
 
-			this.entityRenderer.render(this.rootStore.selectionStore.getEntitiesBox(sceneStore.zoom));
+			this.entityRenderer.render(this.rootStore.selectionStore.getSelectionBox(sceneStore.zoom));
+			this.entityRenderer.render(this.rootStore.selectionStore.selectionPreview);
 
 			this.ctx.restore();
 		});

@@ -1,8 +1,8 @@
 import { Renderer } from "@/renderer/renderer.ts";
-import type { Rectangle } from "@/store/entities/rectangle.ts";
+import type { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 
-export class RectangleRenderer extends Renderer {
-	render(entity: Rectangle) {
+export class SelectionPreviewRenderer extends Renderer {
+	render(entity: SelectionPreview) {
 		if (!entity.position || !entity.size) return;
 
 		this.ctx.strokeRect(

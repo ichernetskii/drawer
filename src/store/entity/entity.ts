@@ -9,6 +9,7 @@ const getId = (() => {
 
 export abstract class Entity {
 	readonly id: number;
+	static readonly type: string = "entity";
 	protected _position: Position | null = null;
 	protected _size: Size | null = null;
 	protected _color: string = "#fff";
