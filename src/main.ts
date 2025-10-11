@@ -27,7 +27,6 @@ $canvas.addEventListener("mousedown", e => {
 	// mouse down on the edge of selection
 	if (selectionStore.isPositionOnEdgeOfSelection(sceneCoordinates)) {
 		selectionStore.mouseDown = sceneCoordinates;
-		console.log("mouse down on the edge of selection", sceneCoordinates);
 		return;
 	}
 
@@ -136,6 +135,11 @@ $canvas.addEventListener("mouseup", e => {
 		}
 		drawableStore.drawing = null;
 		sceneStore.mouseDown = null;
+		return;
+	}
+
+	// selection
+	if (selectionStore.isPositionOnEdgeOfSelection(sceneCoordinates)) {
 		return;
 	}
 

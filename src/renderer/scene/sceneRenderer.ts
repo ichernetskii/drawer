@@ -16,11 +16,11 @@ export class SceneRenderer extends Renderer {
 		this.entityRenderer = new EntityRenderer(this.ctx);
 	}
 
-	private drawAxes() {
+	private drawAxes(zoom: number) {
 		const { clientWidth, clientHeight } = this.ctx.canvas;
 
 		this.ctx.strokeStyle = "#333";
-		this.ctx.lineWidth = 1;
+		this.ctx.lineWidth = 1 / zoom;
 
 		const top = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: 0 });
 		const bottom = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: clientHeight });
@@ -31,10 +31,10 @@ export class SceneRenderer extends Renderer {
 		this.ctx.beginPath();
 		// X axis
 		this.ctx.moveTo(left.x, 0);
-		this.ctx.lineTo(right.x - left.x, 0);
+		this.ctx.lineTo(right.x, 0);
 		// Y axis
-		this.ctx.moveTo(0, bottom.y);
-		this.ctx.lineTo(0, top.y - bottom.y);
+		this.ctx.moveTo(0, top.y);
+		this.ctx.lineTo(0, bottom.y);
 		this.ctx.stroke();
 	}
 	render() {
@@ -48,19 +48,16 @@ export class SceneRenderer extends Renderer {
 			// clear canvas
 			this.ctx.clearRect(0, 0, clientWidth, clientHeight);
 
-			// draw in world coordinates with origin pivot fixed on zoom
+			// draw in scene coordinates with origin pivot fixed on zoom
 			this.ctx.save();
 			// 1) move to screen center
-			this.ctx.translate(clientWidth / 2, clientHeight / 2);
+			this.ctx.translate(sceneStore.size.width / 2, sceneStore.size.height / 2);
 			// 2) apply zoom and flip Y-up
 			this.ctx.scale(sceneStore.zoom, -sceneStore.zoom);
-			// 3) move world so that origin is at screen center
+			// 3) move scene so that origin is at screen center
 			this.ctx.translate(-sceneStore.origin.x, -sceneStore.origin.y);
 
-			this.ctx.fillStyle = "#fff";
-			this.ctx.strokeStyle = "#fff";
-
-			this.drawAxes();
+			this.drawAxes(sceneStore.zoom);
 
 			this.entityRenderer.render(drawableStore.drawing);
 

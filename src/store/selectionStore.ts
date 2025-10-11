@@ -7,19 +7,19 @@ import type { Position } from "@/types/types";
 
 export class SelectionStore {
 	/*
-	+===================================================================+
-	|<<<<<<<<<<<< SelectionBox.borderWidth (inside the frame) >>>>>>>>>>|   // 1
-	| +---------------------------------------------------------------+ |
-	| |         ~~~~~ SelectionBox.padding (gap to content) ~~~~~     | |   // 2
-	| |   +-------------------------------------------------------+   | |
-	| |   |                    Drawable (outer)                   |   | |   // 3: Drawable.position (top-left of this box)
-	| |   |  <<<<<< Drawable.borderWidth (inside the shape) >>>>  |   | |   // 1 (Drawable)
-	| |   |   +-----------------------------------------------+   |   | |
-	| |   |   |                  CONTENT                      |   |   | |   // content area inside Drawable.borderWidth
-	| |   |   +-----------------------------------------------+   |   | |
-	| |   +-------------------------------------------------------+   | |   // 3: Drawable.size (outer size of Drawable)
-	| +---------------------------------------------------------------+ |   // 4: SelectionBox.size (outer size of selection box)
-	+===================================================================+   // 3: SelectionBox.position (top-left of outer frame)
+	S░░░░░░░░░░░░░░░░░ SelectionBox.borderWidth ░░░░░░░░░░░░░░░░░░░
+	░                    SelectionBox.padding                     ░
+	░  E█████████████████ Entity.borderWidth ███████████████████  ░
+	░  █                                                       █  ░
+	░  █                        CONTENT                        █  ░
+	░  █                                                       █  ░
+	░  █████████████████████████████████████████████████████████  ░
+	░                                                             ░
+	░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+	
+	E - Entity.position
+	S - SelectionBox.position
+	BORDER INCLUSIVE: Entity.position and Entity.size define the position and size of the entity WITH BORDER on the scene
 	*/
 	private readonly selectionPrecision = 5; // in scene pixels
 
@@ -83,30 +83,28 @@ export class SelectionStore {
 	}
 
 	isPositionOnEdgeOfSelection(sceneCoordinates: Position) {
-		// TODO: add selectionBox.padding support!!!
-
 		const selectionBox = this.getSelectionBox();
 		if (!selectionBox || !selectionBox.position) return false;
 		// check if the position is on rectangle border of the selection box with the precision
 		const { position, size, borderWidth } = selectionBox;
 		if (!size) return false;
 
-		const halfStroke = borderWidth / 2;
 		const precisionScene = this.selectionPrecision / this.zoom;
-		const hit = halfStroke + precisionScene;
 
-		const left = position.x;
-		const right = position.x + size.width;
-		const bottom = position.y;
-		const top = position.y + size.height;
+		const left = position.x + borderWidth / 2;
+		const right = position.x + size.width - borderWidth / 2;
+		const bottom = position.y + borderWidth / 2;
+		const top = position.y + size.height - borderWidth / 2;
 
-		const x = sceneCoordinates.x;
-		const y = sceneCoordinates.y;
+		const { x, y } = sceneCoordinates;
 
-		const onLeft = Math.abs(x - left) <= hit && y >= bottom - hit && y <= top + hit;
-		const onRight = Math.abs(x - right) <= hit && y >= bottom - hit && y <= top + hit;
-		const onBottom = Math.abs(y - bottom) <= hit && x >= left - hit && x <= right + hit;
-		const onTop = Math.abs(y - top) <= hit && x >= left - hit && x <= right + hit;
+		const onLeft =
+			Math.abs(x - left) <= precisionScene && y >= bottom - precisionScene && y <= top + precisionScene;
+		const onRight =
+			Math.abs(x - right) <= precisionScene && y >= bottom - precisionScene && y <= top + precisionScene;
+		const onBottom =
+			Math.abs(y - bottom) <= precisionScene && x >= left - precisionScene && x <= right + precisionScene;
+		const onTop = Math.abs(y - top) <= precisionScene && x >= left - precisionScene && x <= right + precisionScene;
 
 		return onLeft || onRight || onBottom || onTop;
 	}
@@ -119,6 +117,7 @@ export class SelectionStore {
 		selection.size = { ...first.size };
 		selection.position = { ...first.position };
 		selection.borderWidth /= this.zoom;
+		selection.padding /= this.zoom;
 
 		// selection box is calculated as the smallest rectangle that contains all the selected drawables
 		this.drawables.forEach(drawable => {
