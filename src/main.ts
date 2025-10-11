@@ -25,7 +25,7 @@ $canvas.addEventListener("mousedown", e => {
 	sceneStore.mouseDown = sceneCoordinates;
 
 	// mouse down on the edge of selection
-	if (selectionStore.isPositionOnEdgeOfSelection(sceneCoordinates)) {
+	if (selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates)) {
 		selectionStore.mouseDown = sceneCoordinates;
 		return;
 	}
@@ -83,7 +83,7 @@ $canvas.addEventListener("mousemove", e => {
 		return;
 	}
 
-	// selection
+	// selection preview
 	if (selectionPreview && selectionPreview.position && sceneStore.mouseDown) {
 		selectionPreview.position = { ...sceneStore.mouseDown };
 		selectionPreview.size = {
@@ -91,6 +91,12 @@ $canvas.addEventListener("mousemove", e => {
 			height: sceneCoordinates.y - selectionPreview.position.y,
 		};
 		selectionPreview.normalize();
+		return;
+	}
+
+	// selection box
+	if (selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates)) {
+		// ...
 		return;
 	}
 
@@ -113,7 +119,18 @@ $canvas.addEventListener("mouseup", e => {
 	const { selectionPreview } = selectionStore;
 	const sceneCoordinates = sceneStore.getSceneCoordinates(e);
 
-	// we have finished selection
+	// regular drawing finished
+	if (drawing) {
+		if (drawing.hasSize) {
+			drawing.normalize();
+			addDrawable(drawing);
+		}
+		drawableStore.drawing = null;
+		sceneStore.mouseDown = null;
+		return;
+	}
+
+	// selection preview finished
 	if (selectionPreview) {
 		selectionPreview.normalize();
 		const selectedDrawables = drawableStore.getDrawablesInRectangle(selectionPreview);
@@ -127,19 +144,8 @@ $canvas.addEventListener("mouseup", e => {
 		return;
 	}
 
-	// we have finished drawing of entity
-	if (drawing) {
-		if (drawing.hasSize) {
-			drawing.normalize();
-			addDrawable(drawing);
-		}
-		drawableStore.drawing = null;
-		sceneStore.mouseDown = null;
-		return;
-	}
-
-	// selection
-	if (selectionStore.isPositionOnEdgeOfSelection(sceneCoordinates)) {
+	// selection box finished
+	if (selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates)) {
 		return;
 	}
 

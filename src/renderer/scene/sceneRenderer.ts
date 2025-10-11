@@ -65,7 +65,7 @@ export class SceneRenderer extends Renderer {
 				this.entityRenderer.render(drawable);
 			});
 
-			this.entityRenderer.render(this.rootStore.selectionStore.getSelectionBox());
+			this.entityRenderer.render(this.rootStore.selectionStore.selectionBox);
 			this.entityRenderer.render(this.rootStore.selectionStore.selectionPreview);
 
 			this.ctx.restore();

@@ -66,6 +66,34 @@ export class SelectionStore {
 		this._selectionPreview = value;
 	}
 
+	get selectionBox(): SelectionBox | null {
+		const first = this.drawables[0];
+		if (!first || !first.position || !first.size) return null;
+
+		const box = new SelectionBox();
+
+		box.size = { ...first.size };
+		box.position = { ...first.position };
+		box.borderWidth /= this.zoom;
+		box.padding /= this.zoom;
+
+		// selection box is calculated as the smallest rectangle that contains all the selected drawables
+		this.drawables.forEach(drawable => {
+			if (!drawable.position || !drawable.size || !box || !box.position || !box.size) return null;
+
+			const top = Math.max(box.position.y + box.size.height, drawable.position.y + drawable.size.height);
+			const bottom = Math.min(box.position.y, drawable.position.y);
+			const left = Math.min(box.position.x, drawable.position.x);
+			const right = Math.max(box.position.x + box.size.width, drawable.position.x + drawable.size.width);
+			box.position.x = left - box.borderWidth - box.padding;
+			box.position.y = bottom - box.borderWidth - box.padding;
+			box.size.width = right - left + 2 * box.borderWidth + 2 * box.padding;
+			box.size.height = top - bottom + 2 * box.borderWidth + 2 * box.padding;
+		});
+
+		return box;
+	}
+
 	get mouseDown() {
 		return this._mouseDown;
 	}
@@ -82,12 +110,11 @@ export class SelectionStore {
 		this._zoom = value;
 	}
 
-	isPositionOnEdgeOfSelection(sceneCoordinates: Position) {
-		const selectionBox = this.getSelectionBox();
-		if (!selectionBox || !selectionBox.position) return false;
+	getPositionOnEdgeOfSelection(sceneCoordinates: Position): "top" | "bottom" | "left" | "right" | null {
+		if (!this.selectionBox || !this.selectionBox.position) return null;
 		// check if the position is on rectangle border of the selection box with the precision
-		const { position, size, borderWidth } = selectionBox;
-		if (!size) return false;
+		const { position, size, borderWidth } = this.selectionBox;
+		if (!size) return null;
 
 		const precisionScene = this.selectionPrecision / this.zoom;
 
@@ -106,38 +133,10 @@ export class SelectionStore {
 			Math.abs(y - bottom) <= precisionScene && x >= left - precisionScene && x <= right + precisionScene;
 		const onTop = Math.abs(y - top) <= precisionScene && x >= left - precisionScene && x <= right + precisionScene;
 
-		return onLeft || onRight || onBottom || onTop;
-	}
-
-	getSelectionBox(): SelectionBox | null {
-		const first = this.drawables[0];
-		if (!first || !first.position || !first.size) return null;
-
-		const selection = new SelectionBox();
-		selection.size = { ...first.size };
-		selection.position = { ...first.position };
-		selection.borderWidth /= this.zoom;
-		selection.padding /= this.zoom;
-
-		// selection box is calculated as the smallest rectangle that contains all the selected drawables
-		this.drawables.forEach(drawable => {
-			if (!drawable.position || !drawable.size || !selection.position || !selection.size) return null;
-			const top = Math.max(
-				selection.position.y + selection.size.height,
-				drawable.position.y + drawable.size.height,
-			);
-			const bottom = Math.min(selection.position.y, drawable.position.y);
-			const left = Math.min(selection.position.x, drawable.position.x);
-			const right = Math.max(
-				selection.position.x + selection.size.width,
-				drawable.position.x + drawable.size.width,
-			);
-			selection.position.x = left - selection.borderWidth - selection.padding;
-			selection.position.y = bottom - selection.borderWidth - selection.padding;
-			selection.size.width = right - left + 2 * selection.borderWidth + 2 * selection.padding;
-			selection.size.height = top - bottom + 2 * selection.borderWidth + 2 * selection.padding;
-		});
-
-		return selection;
+		if (onLeft) return "left";
+		if (onRight) return "right";
+		if (onTop) return "top";
+		if (onBottom) return "bottom";
+		return null;
 	}
 }

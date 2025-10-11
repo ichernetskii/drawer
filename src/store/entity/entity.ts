@@ -2,13 +2,7 @@ import { action, computed, makeObservable, observable } from "mobx";
 
 import type { Position, Size } from "@/types/types";
 
-const getId = (() => {
-	let counter = 0;
-	return () => counter++;
-})();
-
 export abstract class Entity {
-	readonly id: number;
 	static readonly type: string = "entity";
 	protected _position: Position | null = null;
 	protected _size: Size | null = null;
@@ -16,7 +10,6 @@ export abstract class Entity {
 	protected _borderWidth = 10;
 
 	constructor() {
-		this.id = getId();
 		makeObservable<this, "_position" | "_size" | "_color" | "_borderWidth">(
 			this,
 			{
