@@ -2,7 +2,7 @@ import { autorun, type IReactionDisposer } from "mobx";
 
 import { Renderer } from "@/renderer/renderer.ts";
 import { EntityRenderer } from "@/renderer/scene/entity/entityRenderer.ts";
-import { type RootStore } from "@/store/rootStore.ts";
+import { type RootStore, rootStore } from "@/store/rootStore.ts";
 import { retinaFix } from "@/utils/retinaFix.ts";
 
 export class SceneRenderer extends Renderer {
@@ -17,45 +17,50 @@ export class SceneRenderer extends Renderer {
 	}
 
 	private drawAxes() {
-		const { clientWidth: width, clientHeight: height } = this.ctx.canvas;
+		const { clientWidth, clientHeight } = this.ctx.canvas;
 
 		this.ctx.strokeStyle = "#333";
 		this.ctx.lineWidth = 1;
 
+		const top = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: 0 });
+		const bottom = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: clientHeight });
+		const left = rootStore.sceneStore.getSceneCoordinates({ x: 0, y: clientHeight / 2 });
+		const right = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth, y: clientHeight / 2 });
+
 		// centered axes (origin at 0,0 after translate)
 		this.ctx.beginPath();
 		// X axis
-		this.ctx.moveTo(-width / 2, 0);
-		this.ctx.lineTo(width / 2, 0);
+		this.ctx.moveTo(left.x, 0);
+		this.ctx.lineTo(right.x - left.x, 0);
 		// Y axis
-		this.ctx.moveTo(0, -height / 2);
-		this.ctx.lineTo(0, height / 2);
+		this.ctx.moveTo(0, bottom.y);
+		this.ctx.lineTo(0, top.y - bottom.y);
 		this.ctx.stroke();
 	}
 	render() {
 		this.dispose?.();
 		const { sceneStore, drawableStore, clientStore } = this.rootStore;
 		retinaFix(this.ctx, clientStore.dpr);
-		const { clientWidth: width, clientHeight: height } = this.ctx.canvas;
-		sceneStore.size = { width: width, height: height };
+		const { clientWidth, clientHeight } = this.ctx.canvas;
+		sceneStore.size = { width: clientWidth, height: clientHeight };
 
 		this.dispose = autorun(() => {
 			// clear canvas
-			this.ctx.clearRect(0, 0, width, height);
+			this.ctx.clearRect(0, 0, clientWidth, clientHeight);
 
 			// draw in world coordinates with origin pivot fixed on zoom
 			this.ctx.save();
 			// 1) move to screen center
-			this.ctx.translate(width / 2, height / 2);
+			this.ctx.translate(clientWidth / 2, clientHeight / 2);
 			// 2) apply zoom and flip Y-up
 			this.ctx.scale(sceneStore.zoom, -sceneStore.zoom);
 			// 3) move world so that origin is at screen center
 			this.ctx.translate(-sceneStore.origin.x, -sceneStore.origin.y);
 
-			this.drawAxes();
-
 			this.ctx.fillStyle = "#fff";
 			this.ctx.strokeStyle = "#fff";
+
+			this.drawAxes();
 
 			this.entityRenderer.render(drawableStore.drawing);
 
@@ -63,7 +68,7 @@ export class SceneRenderer extends Renderer {
 				this.entityRenderer.render(drawable);
 			});
 
-			this.entityRenderer.render(this.rootStore.selectionStore.getSelectionBox(sceneStore.zoom));
+			this.entityRenderer.render(this.rootStore.selectionStore.getSelectionBox());
 			this.entityRenderer.render(this.rootStore.selectionStore.selectionPreview);
 
 			this.ctx.restore();

@@ -3,6 +3,7 @@ import { Selection } from "@/store/entity/selection/selection.ts";
 
 export class SelectionBox extends Selection {
 	static readonly type = "selectionBox";
+	readonly padding = 10;
 
 	constructor() {
 		super();

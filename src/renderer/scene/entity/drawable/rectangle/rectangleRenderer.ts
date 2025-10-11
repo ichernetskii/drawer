@@ -2,14 +2,14 @@ import { Renderer } from "@/renderer/renderer.ts";
 import type { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 
 export class RectangleRenderer extends Renderer {
-	render(entity: Rectangle) {
-		if (!entity.position || !entity.size) return;
+	render(rectangle: Rectangle) {
+		if (!rectangle.position || !rectangle.size) return;
 
 		this.ctx.strokeRect(
-			entity.position.x + entity.borderWidth / 2,
-			entity.position.y + entity.borderWidth / 2,
-			entity.size.width - entity.borderWidth,
-			entity.size.height - entity.borderWidth,
+			rectangle.position.x + rectangle.borderWidth / 2,
+			rectangle.position.y + rectangle.borderWidth / 2,
+			rectangle.size.width - rectangle.borderWidth,
+			rectangle.size.height - rectangle.borderWidth,
 		);
 	}
 }

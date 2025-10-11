@@ -4,12 +4,6 @@ import { SelectionPreview } from "@/store/entity/selection/selectionPreview/sele
 import type { Position, Size } from "@/types/types";
 
 export class SceneStore {
-	private _size: Size = { width: 0, height: 0 };
-	private _zoom = 1;
-	private _origin: Position = { x: 0, y: 0 };
-	private _mouseDown: Position | null = null;
-	private _tool: string = SelectionPreview.type;
-
 	private readonly zoomMin = 1 / 5;
 	private readonly zoomMax = 5;
 	private readonly keyTranslateStep = 5;
@@ -18,6 +12,12 @@ export class SceneStore {
 	private readonly wheelFineDeltaThreshold = 50;
 	private readonly wheelSensitivityFine = 0.01;
 	private readonly wheelSensitivityCoarse = 0.001;
+
+	private _size: Size = { width: 0, height: 0 };
+	private _zoom = 1;
+	private _origin: Position = { x: 0, y: 0 };
+	private _mouseDown: Position | null = null;
+	private _tool: string = SelectionPreview.type;
 
 	constructor() {
 		makeAutoObservable(

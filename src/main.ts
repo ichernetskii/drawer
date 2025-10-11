@@ -24,6 +24,13 @@ $canvas.addEventListener("mousedown", e => {
 	const drawableUnderCursor = drawableStore.getDrawableAtPosition(sceneCoordinates);
 	sceneStore.mouseDown = sceneCoordinates;
 
+	// mouse down on the edge of selection
+	if (selectionStore.isPositionOnEdgeOfSelection(sceneCoordinates)) {
+		selectionStore.mouseDown = sceneCoordinates;
+		console.log("mouse down on the edge of selection", sceneCoordinates);
+		return;
+	}
+
 	// mouse down on already selected entity
 	if (drawableUnderCursor && selectionStore.drawables.includes(drawableUnderCursor)) {
 		// shift + mousedown on already selected entity → clear selection
@@ -47,6 +54,7 @@ $canvas.addEventListener("mousedown", e => {
 	if (sceneStore.tool === SelectionPreview.type) {
 		selectionStore.selectionPreview = new SelectionPreview();
 		selectionStore.selectionPreview.position = sceneCoordinates;
+		selectionStore.selectionPreview.borderWidth /= sceneStore.zoom;
 		return;
 	}
 
@@ -65,20 +73,25 @@ $canvas.addEventListener("mousemove", e => {
 
 	if (!isMainMouseButtonPressed) return;
 
-	if (drawing && drawing.position) {
+	// regular drawing
+	if (drawing && drawing.position && sceneStore.mouseDown) {
+		drawing.position = { ...sceneStore.mouseDown };
 		drawing.size = {
 			width: sceneCoordinates.x - drawing.position.x,
 			height: sceneCoordinates.y - drawing.position.y,
 		};
+		drawing.normalize();
 		return;
 	}
 
 	// selection
-	if (selectionPreview && selectionPreview.position) {
+	if (selectionPreview && selectionPreview.position && sceneStore.mouseDown) {
+		selectionPreview.position = { ...sceneStore.mouseDown };
 		selectionPreview.size = {
 			width: sceneCoordinates.x - selectionPreview.position.x,
 			height: sceneCoordinates.y - selectionPreview.position.y,
 		};
+		selectionPreview.normalize();
 		return;
 	}
 
@@ -225,6 +238,7 @@ $canvas.addEventListener(
 			const sceneCoordinates = sceneStore.getSceneCoordinates(e);
 			const factor = sceneStore.getWheelZoomFactor(e);
 			sceneStore.zoomAtSceneCoordinates(sceneCoordinates, factor);
+			selectionStore.zoom = sceneStore.zoom;
 			return;
 		}
 

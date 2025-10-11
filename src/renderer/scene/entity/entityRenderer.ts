@@ -19,6 +19,7 @@ export class EntityRenderer extends Renderer {
 		if (!entity || !entity.position || !entity.size) return;
 
 		this.ctx.strokeStyle = entity.color;
+		this.ctx.lineWidth = entity.borderWidth;
 
 		if (isDrawable(entity)) {
 			this.drawableRenderer.render(entity);

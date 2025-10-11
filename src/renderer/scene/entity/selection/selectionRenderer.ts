@@ -18,8 +18,6 @@ export class SelectionRenderer extends Renderer {
 	render(selection: Selection | null) {
 		if (!selection || !selection.position || !selection.size) return;
 
-		this.ctx.strokeStyle = selection.color;
-
 		if (isSelectionBox(selection)) {
 			this.selectionBoxRenderer.render(selection);
 		} else if (isSelectionPreview(selection)) {

@@ -13,7 +13,7 @@ export abstract class Entity {
 	protected _position: Position | null = null;
 	protected _size: Size | null = null;
 	protected _color: string = "#fff";
-	protected _borderWidth = 1;
+	protected _borderWidth = 10;
 
 	constructor() {
 		this.id = getId();
