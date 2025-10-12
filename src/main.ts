@@ -13,11 +13,6 @@ const ctx = $canvas.getContext("2d")!;
 const { drawableStore, selectionStore, sceneStore } = rootStore;
 const renderer = new SceneRenderer(ctx, rootStore);
 
-// Cursor automatically changes based on mouse position:
-// - ns-resize / ew-resize / nwse-resize / nesw-resize for edges/corners
-// - move for selected drawables
-// - default for everything else
-
 renderer.render();
 
 window.addEventListener("resize", () => {
@@ -188,7 +183,7 @@ $canvas.addEventListener("mouseup", e => {
 });
 
 document.addEventListener("keydown", e => {
-	switch (e.key) {
+	switch (e.code) {
 		case "Escape":
 			selectionStore.drawables = [];
 			break;
@@ -204,7 +199,7 @@ document.addEventListener("keydown", e => {
 			let dx = 0;
 			let dy = 0;
 			const translateStep = sceneStore.getKeyTranslateStep(e);
-			switch (e.key) {
+			switch (e.code) {
 				case "ArrowRight":
 					dx = translateStep;
 					break;
@@ -218,7 +213,7 @@ document.addEventListener("keydown", e => {
 					dy = -translateStep;
 					break;
 				default:
-					exhaustiveCheck(e.key);
+					exhaustiveCheck(e.code);
 			}
 			if (selectionStore.drawables.length !== 0) {
 				selectionStore.drawables.forEach(entity => {
@@ -234,23 +229,28 @@ document.addEventListener("keydown", e => {
 			}
 			break;
 		}
-		case "r":
+		case "KeyR": // Physical R key (works in any layout: EN, RU, etc.)
 			sceneStore.tool = Rectangle.type;
 			break;
-		case "e":
+		case "KeyE": // Physical E key
 			sceneStore.tool = Ellipse.type;
 			break;
-		case "s":
+		case "KeyS": // Physical S key
 			sceneStore.tool = SelectionPreview.type;
 			break;
-		case "+":
+		case "Equal": // + key (on main keyboard)
+		case "NumpadAdd": // + on numpad
 			sceneStore.zoom = sceneStore.zoom * sceneStore.zoomFactor;
 			break;
-		case "-":
+		case "Minus": // - key (on main keyboard)
+		case "NumpadSubtract": // - on numpad
 			sceneStore.zoom = sceneStore.zoom / sceneStore.zoomFactor;
 			break;
-		case "=":
-			sceneStore.zoom = 1;
+		case "Digit0": // 0 key for reset zoom
+			if (e.metaKey || e.ctrlKey) {
+				// Cmd+0 or Ctrl+0 to reset zoom
+				sceneStore.zoom = 1;
+			}
 			break;
 	}
 });

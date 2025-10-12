@@ -7,7 +7,7 @@ import type { Position, Size } from "@/types/types";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
-const RESIZE_CURSORS: Record<ResizeHandle, string> = {
+const CURSOR: Record<ResizeHandle | "move" | "default", string> = {
 	top: "ns-resize",
 	bottom: "ns-resize",
 	left: "ew-resize",
@@ -16,6 +16,8 @@ const RESIZE_CURSORS: Record<ResizeHandle, string> = {
 	"top-right": "nesw-resize",
 	"bottom-left": "nesw-resize",
 	"bottom-right": "nwse-resize",
+	move: "move",
+	default: "default",
 };
 
 interface ContentBounds {
@@ -112,6 +114,7 @@ export class SelectionStore {
 	}
 
 	// ========== Zoom state ==========
+
 	get zoom() {
 		return this._zoom;
 	}
@@ -221,22 +224,22 @@ export class SelectionStore {
 	getCursor(sceneCoordinates: Position): string {
 		// During resize, show the resize cursor
 		if (this.isResizing && this._resizeHandle) {
-			return RESIZE_CURSORS[this._resizeHandle];
+			return CURSOR[this._resizeHandle];
 		}
 
 		// Check if mouse is over selection edge/corner
 		const handle = this.getPositionOnEdgeOfSelection(sceneCoordinates);
 		if (handle) {
-			return RESIZE_CURSORS[handle];
+			return CURSOR[handle];
 		}
 
 		// Check if mouse is inside selection box (for move)
 		if (this.isPositionInsideSelection(sceneCoordinates)) {
-			return "move";
+			return CURSOR.move;
 		}
 
 		// Default cursor
-		return "default";
+		return CURSOR.default;
 	}
 
 	// ========== Resize operations ==========
