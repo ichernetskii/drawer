@@ -25,8 +25,9 @@ $canvas.addEventListener("mousedown", e => {
 	sceneStore.mouseDown = sceneCoordinates;
 
 	// mouse down on the edge of selection
-	if (selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates)) {
-		selectionStore.mouseDown = sceneCoordinates;
+	const edge = selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates);
+	if (edge) {
+		selectionStore.startResize(edge, sceneCoordinates);
 		return;
 	}
 
@@ -94,9 +95,9 @@ $canvas.addEventListener("mousemove", e => {
 		return;
 	}
 
-	// selection box
-	if (selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates)) {
-		// ...
+	// selection box resize
+	if (selectionStore.isResizing) {
+		selectionStore.updateResize(sceneCoordinates);
 		return;
 	}
 
@@ -144,8 +145,9 @@ $canvas.addEventListener("mouseup", e => {
 		return;
 	}
 
-	// selection box finished
-	if (selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates)) {
+	// selection box resize finished
+	if (selectionStore.isResizing) {
+		selectionStore.endResize();
 		return;
 	}
 
