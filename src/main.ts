@@ -5,11 +5,12 @@ import { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 import { createEntity } from "@/store/entity/utils.ts";
-import { rootStore } from "@/store/rootStore.ts";
+import { RootStore } from "@/store/rootStore.ts";
 import { exhaustiveCheck } from "@/utils/exhaustiveCheck.ts";
 
 const $canvas = document.querySelector("canvas")!;
 const ctx = $canvas.getContext("2d")!;
+const rootStore = new RootStore();
 const { drawableStore, selectionStore, sceneStore } = rootStore;
 const renderer = new SceneRenderer(ctx, rootStore);
 
@@ -51,7 +52,8 @@ $canvas.addEventListener("mousedown", e => {
 	// mouse down on not selected entity
 	if (drawableUnderCursor) {
 		selectionStore.add(drawableUnderCursor);
-		// Keep hover active when selecting drawable
+		// Keep hover active and start move operation immediately
+		selectionStore.startMove();
 		return;
 	}
 
@@ -81,8 +83,7 @@ $canvas.addEventListener("mousemove", e => {
 
 	// Update hover highlight (when not drawing or selecting)
 	if (!drawing && !selectionPreview) {
-		const hoveredDrawable = drawableStore.getDrawableAtPosition(sceneCoordinates);
-		selectionStore.updateHover(hoveredDrawable);
+		selectionStore.selectionHover.drawable = drawableStore.getDrawableAtPosition(sceneCoordinates);
 	}
 
 	if (!isMainMouseButtonPressed) return;
@@ -198,6 +199,7 @@ document.addEventListener("keydown", e => {
 		case "Delete":
 			drawableStore.deleteDrawables(selectionStore.drawables);
 			selectionStore.drawables = [];
+			selectionStore.selectionHover.drawable = null;
 			break;
 		case "ArrowRight":
 		case "ArrowLeft":

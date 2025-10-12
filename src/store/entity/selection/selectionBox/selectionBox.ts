@@ -23,7 +23,7 @@ export class SelectionBox extends Selection {
 
 	constructor() {
 		super();
-		this.color = "rgb(64,255,0)";
+		this.color = "rgb(15,207,255)";
 	}
 
 	get padding() {

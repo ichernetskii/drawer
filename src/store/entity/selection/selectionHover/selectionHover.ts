@@ -1,4 +1,4 @@
-import { makeObservable, observable } from "mobx";
+import { computed, makeObservable, observable } from "mobx";
 
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { Selection } from "@/store/entity/selection/selection.ts";
@@ -18,11 +18,17 @@ export class SelectionHover extends Selection {
 		super();
 		makeObservable<this, "_drawable" | "_zoom">(this, {
 			_drawable: observable,
+			drawable: computed,
 			_zoom: observable,
+			zoom: computed,
 		});
 	}
 	get drawable() {
 		return this._drawable;
+	}
+
+	set drawable(value) {
+		this._drawable = value;
 	}
 
 	get zoom() {
@@ -31,28 +37,6 @@ export class SelectionHover extends Selection {
 
 	set zoom(value: number) {
 		this._zoom = value;
-	}
-
-	/**
-	 * Updates hover to match the drawable's geometry, accounting for border width.
-	 */
-	updateFromDrawable(drawable: Drawable | null) {
-		this._drawable = drawable;
-
-		if (!drawable) return;
-
-		if (!drawable.position || !drawable.size) {
-			this.position = null;
-			this.size = null;
-			return;
-		}
-
-		// Copy position and size from drawable
-		this.position = { ...drawable.position };
-		this.size = { ...drawable.size };
-
-		// Inherit drawable's border width for proper outline rendering
-		this.borderWidth = drawable.borderWidth;
 	}
 }
 

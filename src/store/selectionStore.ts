@@ -121,14 +121,6 @@ export class SelectionStore {
 		return this._selectionHover;
 	}
 
-	/**
-	 * Updates hover highlight to show over the given drawable.
-	 * Pass null to clear the hover.
-	 */
-	updateHover(drawable: Drawable | null) {
-		this._selectionHover.updateFromDrawable(drawable);
-	}
-
 	// ========== Zoom state ==========
 
 	get zoom() {

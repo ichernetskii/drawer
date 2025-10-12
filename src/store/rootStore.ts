@@ -10,5 +10,3 @@ export class RootStore {
 	readonly selectionStore = new SelectionStore();
 	constructor() {}
 }
-
-export const rootStore = new RootStore();

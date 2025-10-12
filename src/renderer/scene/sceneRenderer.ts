@@ -2,7 +2,7 @@ import { autorun, type IReactionDisposer } from "mobx";
 
 import { Renderer } from "@/renderer/renderer.ts";
 import { EntityRenderer } from "@/renderer/scene/entity/entityRenderer.ts";
-import { type RootStore, rootStore } from "@/store/rootStore.ts";
+import { type RootStore } from "@/store/rootStore.ts";
 import { retinaFix } from "@/utils/retinaFix.ts";
 
 export class SceneRenderer extends Renderer {
@@ -22,10 +22,10 @@ export class SceneRenderer extends Renderer {
 		this.ctx.strokeStyle = "#333";
 		this.ctx.lineWidth = 1 / zoom;
 
-		const top = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: 0 });
-		const bottom = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: clientHeight });
-		const left = rootStore.sceneStore.getSceneCoordinates({ x: 0, y: clientHeight / 2 });
-		const right = rootStore.sceneStore.getSceneCoordinates({ x: clientWidth, y: clientHeight / 2 });
+		const top = this.rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: 0 });
+		const bottom = this.rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: clientHeight });
+		const left = this.rootStore.sceneStore.getSceneCoordinates({ x: 0, y: clientHeight / 2 });
+		const right = this.rootStore.sceneStore.getSceneCoordinates({ x: clientWidth, y: clientHeight / 2 });
 
 		// centered axes (origin at 0,0 after translate)
 		this.ctx.beginPath();
