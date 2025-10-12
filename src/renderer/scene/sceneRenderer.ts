@@ -65,6 +65,9 @@ export class SceneRenderer extends Renderer {
 				this.entityRenderer.render(drawable);
 			});
 
+			// Render hover highlight before selection box to avoid z-fighting
+			this.entityRenderer.render(this.rootStore.selectionStore.selectionHover);
+
 			this.entityRenderer.render(this.rootStore.selectionStore.selectionBox);
 			this.entityRenderer.render(this.rootStore.selectionStore.selectionPreview);
 

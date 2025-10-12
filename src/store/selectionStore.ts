@@ -2,6 +2,7 @@ import { makeAutoObservable } from "mobx";
 
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { SelectionBox } from "@/store/entity/selection/selectionBox/selectionBox.ts";
+import { SelectionHover } from "@/store/entity/selection/selectionHover/selectionHover.ts";
 import type { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 import type { Position, Size } from "@/types/types";
 
@@ -65,6 +66,7 @@ export class SelectionStore {
 
 	private _drawables: Drawable[] = [];
 	private _selectionPreview: SelectionPreview | null = null;
+	private _selectionHover: SelectionHover = new SelectionHover();
 	private _zoom = 1;
 
 	// Resize state: active only during edge/corner drag
@@ -113,6 +115,20 @@ export class SelectionStore {
 		this._selectionPreview = value;
 	}
 
+	// ========== Selection hover (mouse over drawable) ==========
+
+	get selectionHover() {
+		return this._selectionHover;
+	}
+
+	/**
+	 * Updates hover highlight to show over the given drawable.
+	 * Pass null to clear the hover.
+	 */
+	updateHover(drawable: Drawable | null) {
+		this._selectionHover.updateFromDrawable(drawable);
+	}
+
 	// ========== Zoom state ==========
 
 	get zoom() {
@@ -121,6 +137,7 @@ export class SelectionStore {
 
 	set zoom(value) {
 		this._zoom = value;
+		this._selectionHover.zoom = value;
 	}
 
 	// ========== Selection box (around selected drawables) ==========

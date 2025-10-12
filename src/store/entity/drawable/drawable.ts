@@ -10,6 +10,10 @@ export abstract class Drawable extends Entity {
 	static readonly type: string = "drawable";
 	readonly id: number;
 
+	// Configuration for hover highlight
+	readonly hoverColor = "rgba(253,0,0,0.8)"; // Cornflower blue with transparency
+	readonly hoverBorderWidth = 5; // Border width in screen pixels (independent of zoom)
+
 	constructor() {
 		super();
 		this.id = getId();

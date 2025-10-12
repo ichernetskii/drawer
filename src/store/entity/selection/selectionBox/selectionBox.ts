@@ -21,6 +21,11 @@ export class SelectionBox extends Selection {
 		borderWidth: 1,
 	};
 
+	constructor() {
+		super();
+		this.color = "rgb(64,255,0)";
+	}
+
 	get padding() {
 		return this._padding;
 	}
@@ -35,11 +40,6 @@ export class SelectionBox extends Selection {
 
 	set zoom(value) {
 		this._zoom = value;
-	}
-
-	constructor() {
-		super();
-		this.color = "rgb(64,255,0)";
 	}
 }
 

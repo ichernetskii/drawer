@@ -39,7 +39,7 @@ $canvas.addEventListener("mousedown", e => {
 			selectionStore.delete(drawableUnderCursor);
 			return;
 		}
-		// Start move operation
+		// Start move operation (keep hover active)
 		selectionStore.startMove();
 		return;
 	}
@@ -51,6 +51,7 @@ $canvas.addEventListener("mousedown", e => {
 	// mouse down on not selected entity
 	if (drawableUnderCursor) {
 		selectionStore.add(drawableUnderCursor);
+		// Keep hover active when selecting drawable
 		return;
 	}
 
@@ -77,6 +78,12 @@ $canvas.addEventListener("mousemove", e => {
 
 	// Update cursor based on position and state
 	$canvas.style.cursor = selectionStore.getCursor(sceneCoordinates);
+
+	// Update hover highlight (when not drawing or selecting)
+	if (!drawing && !selectionPreview) {
+		const hoveredDrawable = drawableStore.getDrawableAtPosition(sceneCoordinates);
+		selectionStore.updateHover(hoveredDrawable);
+	}
 
 	if (!isMainMouseButtonPressed) return;
 

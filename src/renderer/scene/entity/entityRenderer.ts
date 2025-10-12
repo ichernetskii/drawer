@@ -16,13 +16,13 @@ export class EntityRenderer extends Renderer {
 	}
 
 	render(entity: Entity | null) {
-		if (!entity || !entity.position || !entity.size) return;
+		if (!entity) return;
 
 		this.ctx.strokeStyle = entity.color;
 		this.ctx.lineWidth = entity.borderWidth;
 
 		if (isDrawable(entity)) {
-			this.drawableRenderer.render(entity);
+			this.drawableRenderer.render(entity, { hover: false });
 		} else if (isSelection(entity)) {
 			this.selectionRenderer.render(entity);
 		}

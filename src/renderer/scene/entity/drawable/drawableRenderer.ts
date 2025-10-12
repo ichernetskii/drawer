@@ -5,6 +5,15 @@ import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { isEllipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { isRectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 
+export type RenderOptions =
+	| {
+			hover: false;
+	  }
+	| {
+			hover: true;
+			zoom: number;
+	  };
+
 export class DrawableRenderer extends Renderer {
 	private readonly rectangleRenderer;
 	private readonly ellipseRenderer;
@@ -15,15 +24,16 @@ export class DrawableRenderer extends Renderer {
 		this.ellipseRenderer = new EllipseRenderer(ctx);
 	}
 
-	render(drawable: Drawable | null) {
+	render(drawable: Drawable | null, options: RenderOptions) {
 		if (!drawable || !drawable.position || !drawable.size) return;
 
-		this.ctx.strokeStyle = drawable.color;
+		this.ctx.strokeStyle = options.hover ? drawable.hoverColor : drawable.color;
+		this.ctx.lineWidth = options.hover ? drawable.hoverBorderWidth / options.zoom : drawable.borderWidth;
 
 		if (isRectangle(drawable)) {
-			this.rectangleRenderer.render(drawable);
+			this.rectangleRenderer.render(drawable, options);
 		} else if (isEllipse(drawable)) {
-			this.ellipseRenderer.render(drawable);
+			this.ellipseRenderer.render(drawable, options);
 		}
 	}
 }
