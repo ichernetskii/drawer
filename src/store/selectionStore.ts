@@ -33,6 +33,21 @@ interface DrawableSnapshot {
  * - Resize operations (dragging edges/corners of selection box)
  */
 export class SelectionStore {
+	/*
+	S░░░░░░░░░░░░░░░░░ SelectionBox.borderWidth ░░░░░░░░░░░░░░░░░░░
+	░                    SelectionBox.padding                     ░
+	░  E█████████████████ Entity.borderWidth ███████████████████  ░
+	░  █                                                       █  ░
+	░  █                        CONTENT                        █  ░
+	░  █                                                       █  ░
+	░  █████████████████████████████████████████████████████████  ░
+	░                                                             ░
+	░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+	E - Entity.position
+	S - SelectionBox.position
+	BORDER INCLUSIVE: Entity.position and Entity.size define the position and size of the entity WITH BORDER on the scene
+	*/
 	private readonly selectionPrecision = 5; // hit-test precision in scene pixels
 
 	private _drawables: Drawable[] = [];
@@ -102,6 +117,7 @@ export class SelectionStore {
 		if (this.drawables.length === 0) return null;
 
 		const box = new SelectionBox();
+		box.zoom = this.zoom;
 		box.borderWidth /= this.zoom;
 		box.padding /= this.zoom;
 
