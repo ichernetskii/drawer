@@ -1,4 +1,5 @@
 import { Entity } from "@/store/entity/entity.ts";
+import type { Position } from "@/types/types";
 
 const getId = (() => {
 	let counter = 0;
@@ -13,6 +14,12 @@ export abstract class Drawable extends Entity {
 		super();
 		this.id = getId();
 	}
+
+	/**
+	 * Checks if a point is inside the drawable's geometric shape.
+	 * Each drawable must implement its own hit-testing logic.
+	 */
+	abstract isPointInside(point: Position): boolean;
 }
 
 export function isDrawable(entity: Entity): entity is Drawable {

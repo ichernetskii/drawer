@@ -41,20 +41,15 @@ export class DrawableStore {
 		this._drawing = value;
 	}
 
-	private isPointInsideRectangle(rectangle: { position: Position | null; size: Size | null }, point: Position) {
-		if (!rectangle.position || !rectangle.size) return false;
-		return (
-			rectangle.position.x <= point.x &&
-			point.x <= rectangle.position.x + rectangle.size.width &&
-			rectangle.position.y <= point.y &&
-			point.y <= rectangle.position.y + rectangle.size.height
-		);
-	}
-
+	/**
+	 * Returns the topmost drawable at the given position.
+	 * Uses each drawable's geometric shape for hit-testing, not bounding boxes.
+	 */
 	getDrawableAtPosition(position: Position) {
+		// Iterate from end to start (top to bottom in Z-order)
 		for (let i = this.drawables.length - 1; i >= 0; i--) {
 			const drawable = this.drawables[i];
-			if (this.isPointInsideRectangle(drawable, position)) {
+			if (drawable.isPointInside(position)) {
 				return drawable;
 			}
 		}
