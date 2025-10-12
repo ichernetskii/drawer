@@ -13,6 +13,11 @@ const ctx = $canvas.getContext("2d")!;
 const { drawableStore, selectionStore, sceneStore } = rootStore;
 const renderer = new SceneRenderer(ctx, rootStore);
 
+// Cursor automatically changes based on mouse position:
+// - ns-resize / ew-resize / nwse-resize / nesw-resize for edges/corners
+// - move for selected drawables
+// - default for everything else
+
 renderer.render();
 
 window.addEventListener("resize", () => {
@@ -24,19 +29,23 @@ $canvas.addEventListener("mousedown", e => {
 	const drawableUnderCursor = drawableStore.getDrawableAtPosition(sceneCoordinates);
 	sceneStore.mouseDown = sceneCoordinates;
 
-	// mouse down on the edge of selection
+	// mouse down on the edge of selection → start resize
 	const edge = selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates);
 	if (edge) {
 		selectionStore.startResize(edge, sceneCoordinates);
 		return;
 	}
 
-	// mouse down on already selected entity
-	if (drawableUnderCursor && selectionStore.drawables.includes(drawableUnderCursor)) {
-		// shift + mousedown on already selected entity → clear selection
-		if (e.shiftKey) {
+	// mouse down inside selection box (not on edge) → prepare for move
+	const isInsideSelection = selectionStore.isPositionInsideSelection(sceneCoordinates);
+	if (isInsideSelection) {
+		// shift + mousedown inside selection on specific drawable → remove from selection
+		if (e.shiftKey && drawableUnderCursor && selectionStore.drawables.includes(drawableUnderCursor)) {
 			selectionStore.delete(drawableUnderCursor);
+			return;
 		}
+		// Start move operation
+		selectionStore.startMove();
 		return;
 	}
 
@@ -71,6 +80,9 @@ $canvas.addEventListener("mousemove", e => {
 	const isMainMouseButtonPressed = e.buttons === 1;
 	const sceneCoordinates = sceneStore.getSceneCoordinates(e);
 
+	// Update cursor based on position and state
+	$canvas.style.cursor = selectionStore.getCursor(sceneCoordinates);
+
 	if (!isMainMouseButtonPressed) return;
 
 	// regular drawing
@@ -101,8 +113,8 @@ $canvas.addEventListener("mousemove", e => {
 		return;
 	}
 
-	// drag selected drawables
-	if (drawables.length !== 0) {
+	// move selected drawables
+	if (selectionStore.isMoving) {
 		drawables.forEach(entity => {
 			if (entity.position) {
 				entity.position = {
@@ -151,20 +163,28 @@ $canvas.addEventListener("mouseup", e => {
 		return;
 	}
 
-	// click on one entity from an already selected group → select only that one
-	if (
-		sceneStore.mouseDown &&
-		sceneCoordinates.x === sceneStore.mouseDown.x &&
-		sceneCoordinates.y === sceneStore.mouseDown.y &&
-		!e.shiftKey
-	) {
-		const drawableUnderCursor = drawableStore.getDrawableAtPosition(sceneCoordinates);
-		selectionStore.drawables = [];
-		if (drawableUnderCursor) {
-			selectionStore.add(drawableUnderCursor);
+	// move finished
+	if (selectionStore.isMoving) {
+		// Check if it was a click (no mouse movement) on a specific drawable
+		const wasClick =
+			sceneStore.mouseDown &&
+			sceneCoordinates.x === sceneStore.mouseDown.x &&
+			sceneCoordinates.y === sceneStore.mouseDown.y;
+
+		if (wasClick && !e.shiftKey && selectionStore.drawables.length > 1) {
+			// Click on one drawable from group → select only that one
+			const drawableUnderCursor = drawableStore.getDrawableAtPosition(sceneCoordinates);
+			if (drawableUnderCursor && selectionStore.drawables.includes(drawableUnderCursor)) {
+				selectionStore.drawables = [drawableUnderCursor];
+			}
 		}
+
+		selectionStore.endMove();
 		sceneStore.mouseDown = null;
+		return;
 	}
+
+	sceneStore.mouseDown = null;
 });
 
 document.addEventListener("keydown", e => {

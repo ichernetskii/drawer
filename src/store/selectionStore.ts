@@ -7,6 +7,17 @@ import type { Position, Size } from "@/types/types";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
+const RESIZE_CURSORS: Record<ResizeHandle, string> = {
+	top: "ns-resize",
+	bottom: "ns-resize",
+	left: "ew-resize",
+	right: "ew-resize",
+	"top-left": "nwse-resize",
+	"top-right": "nesw-resize",
+	"bottom-left": "nesw-resize",
+	"bottom-right": "nwse-resize",
+};
+
 interface ContentBounds {
 	left: number;
 	right: number;
@@ -60,6 +71,9 @@ export class SelectionStore {
 	private _resizeStartSnapshots: DrawableSnapshot[] = [];
 	private _resizeCursor: Position | null = null;
 	private _resizeGrabOffset: Position | null = null;
+
+	// Move state: active when dragging selection
+	private _isMoving = false;
 
 	constructor() {
 		makeAutoObservable(this, {}, { autoBind: true });
@@ -176,10 +190,63 @@ export class SelectionStore {
 		return null;
 	}
 
+	/**
+	 * Checks if a position is inside the selection box (excluding edges/corners for resize).
+	 */
+	isPositionInsideSelection(sceneCoordinates: Position): boolean {
+		if (this.drawables.length === 0) return false;
+
+		const box = this.selectionBox;
+		if (!box || !box.position || !box.size) return false;
+
+		// Check if inside the selection box
+		const { position, size } = box;
+		const isInside =
+			sceneCoordinates.x >= position.x &&
+			sceneCoordinates.x <= position.x + size.width &&
+			sceneCoordinates.y >= position.y &&
+			sceneCoordinates.y <= position.y + size.height;
+
+		if (!isInside) return false;
+
+		// Exclude edges/corners (those are for resize)
+		const edge = this.getPositionOnEdgeOfSelection(sceneCoordinates);
+		return edge === null;
+	}
+
+	/**
+	 * Returns the appropriate cursor type for the current mouse position.
+	 * Used to provide visual feedback for resize/move operations.
+	 */
+	getCursor(sceneCoordinates: Position): string {
+		// During resize, show the resize cursor
+		if (this.isResizing && this._resizeHandle) {
+			return RESIZE_CURSORS[this._resizeHandle];
+		}
+
+		// Check if mouse is over selection edge/corner
+		const handle = this.getPositionOnEdgeOfSelection(sceneCoordinates);
+		if (handle) {
+			return RESIZE_CURSORS[handle];
+		}
+
+		// Check if mouse is inside selection box (for move)
+		if (this.isPositionInsideSelection(sceneCoordinates)) {
+			return "move";
+		}
+
+		// Default cursor
+		return "default";
+	}
+
 	// ========== Resize operations ==========
 
 	get isResizing() {
 		return this._resizeHandle !== null;
+	}
+
+	get isMoving() {
+		return this._isMoving;
 	}
 
 	/**
@@ -248,6 +315,22 @@ export class SelectionStore {
 		this._resizeStartSnapshots = [];
 		this._resizeCursor = null;
 		this._resizeGrabOffset = null;
+	}
+
+	// ========== Move operations ==========
+
+	/**
+	 * Begins a move operation when user clicks inside selection box.
+	 */
+	startMove() {
+		this._isMoving = true;
+	}
+
+	/**
+	 * Ends the move operation.
+	 */
+	endMove() {
+		this._isMoving = false;
 	}
 
 	// ========== Private helpers ==========
