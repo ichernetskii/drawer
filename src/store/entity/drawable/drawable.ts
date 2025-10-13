@@ -1,5 +1,5 @@
+import type { Position } from "@/shared/types/types";
 import { Entity } from "@/store/entity/entity.ts";
-import type { Position } from "@/types/types";
 
 const getId = (() => {
 	let counter = 0;

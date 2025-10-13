@@ -2,8 +2,8 @@ import { autorun, type IReactionDisposer } from "mobx";
 
 import { Renderer } from "@/renderer/renderer.ts";
 import { EntityRenderer } from "@/renderer/scene/entity/entityRenderer.ts";
+import { retinaFix } from "@/shared/utils/retinaFix.ts";
 import { type RootStore } from "@/store/rootStore.ts";
-import { retinaFix } from "@/utils/retinaFix.ts";
 
 export class SceneRenderer extends Renderer {
 	private readonly rootStore;

@@ -1,0 +1,72 @@
+import type { Position } from "@/shared/types/types";
+import type { DrawableStore } from "@/store/drawableStore.ts";
+import { createEntity } from "@/store/entity/utils.ts";
+import type { SceneStore } from "@/store/sceneStore.ts";
+
+/**
+ * Handles drawing operations for creating new shapes.
+ * Manages the lifecycle of drawing: start, update, finish.
+ */
+export class DrawingOperation {
+	private drawableStore: DrawableStore;
+	private sceneStore: SceneStore;
+
+	constructor(drawableStore: DrawableStore, sceneStore: SceneStore) {
+		this.sceneStore = sceneStore;
+		this.drawableStore = drawableStore;
+	}
+
+	/**
+	 * Starts drawing a new entity at the given position.
+	 * Creates an entity based on the currently selected tool.
+	 */
+	start(sceneCoordinates: Position) {
+		const entity = createEntity(this.sceneStore.tool);
+		if (!entity) return;
+
+		entity.position = sceneCoordinates;
+		this.drawableStore.drawing = entity;
+		this.sceneStore.mouseDown = sceneCoordinates;
+	}
+
+	/**
+	 * Updates the drawing entity as the mouse moves.
+	 * Calculates size based on the initial mouse down position.
+	 */
+	update(sceneCoordinates: Position) {
+		const { drawing } = this.drawableStore;
+		const { mouseDown } = this.sceneStore;
+
+		if (!drawing || !drawing.position || !mouseDown) return;
+
+		drawing.position = { ...mouseDown };
+		drawing.size = {
+			width: sceneCoordinates.x - drawing.position.x,
+			height: sceneCoordinates.y - drawing.position.y,
+		};
+		drawing.normalize();
+	}
+
+	/**
+	 * Finishes the drawing operation.
+	 * Adds the drawable to the store if it has a valid size.
+	 */
+	finish() {
+		const { drawing } = this.drawableStore;
+
+		if (drawing && drawing.hasSize) {
+			drawing.normalize();
+			this.drawableStore.addDrawable(drawing);
+		}
+
+		this.drawableStore.drawing = null;
+		this.sceneStore.mouseDown = null;
+	}
+
+	/**
+	 * Checks if a drawing operation is currently in progress.
+	 */
+	isDrawing(): boolean {
+		return this.drawableStore.drawing !== null;
+	}
+}

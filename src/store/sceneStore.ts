@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
+import type { Position, Size } from "@/shared/types/types";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { Position, Size } from "@/types/types";
 
 export class SceneStore {
 	private readonly zoomMin = 1 / 5;
@@ -78,7 +78,7 @@ export class SceneStore {
 	}
 
 	getKeyTranslateStep({ shiftKey }: { shiftKey: boolean }) {
-		return (this.keyTranslateStep * (shiftKey ? this.keyTranslateShiftMultiplier : 1)) / this.zoom;
+		return this.keyTranslateStep * (shiftKey ? this.keyTranslateShiftMultiplier : 1);
 	}
 
 	translateOriginBy(delta: Position) {

@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from "mobx";
 
-import type { Position, Size } from "@/types/types";
+import type { Position, Size } from "@/shared/types/types";
 
 export abstract class Entity {
 	static readonly type: string = "entity";

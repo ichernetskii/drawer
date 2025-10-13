@@ -1,6 +1,6 @@
+import type { Position } from "@/shared/types/types";
 import { Drawable } from "@/store/entity/drawable/drawable.ts";
 import type { Entity } from "@/store/entity/entity.ts";
-import type { Position } from "@/types/types";
 
 export class Rectangle extends Drawable {
 	static readonly type = "rectangle";

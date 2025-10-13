@@ -1,10 +1,10 @@
 import { makeAutoObservable } from "mobx";
 
+import type { Position, Size } from "@/shared/types/types";
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { SelectionBox } from "@/store/entity/selection/selectionBox/selectionBox.ts";
 import { SelectionHover } from "@/store/entity/selection/selectionHover/selectionHover.ts";
 import type { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { Position, Size } from "@/types/types";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 

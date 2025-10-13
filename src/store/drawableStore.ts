@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
+import type { Position, Size } from "@/shared/types/types";
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
-import type { Position, Size } from "@/types/types";
 
 export class DrawableStore {
 	private _drawables: Drawable[] = [];
