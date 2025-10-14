@@ -52,16 +52,16 @@ export class KeyboardController {
 				this.handleArrowKeys(e);
 				break;
 
+			case "KeyV":
+				this.sceneStore.tool = SelectionPreview.type;
+				break;
+
 			case "KeyR":
 				this.sceneStore.tool = Rectangle.type;
 				break;
 
 			case "KeyE":
 				this.sceneStore.tool = Ellipse.type;
-				break;
-
-			case "KeyS":
-				this.sceneStore.tool = SelectionPreview.type;
 				break;
 
 			case "Equal":
