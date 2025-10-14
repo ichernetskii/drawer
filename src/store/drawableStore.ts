@@ -1,19 +1,33 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, reaction } from "mobx";
 
-import type { Position, Size } from "@/shared/types/types";
+import type { Position, Size, Storable } from "@/shared/types/types";
+import { debounce } from "@/shared/utils/debounce.ts";
+import { Storage } from "@/shared/utils/storage.ts";
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
+import { createEntity } from "@/store/entity/utils.ts";
 
-export class DrawableStore {
+type StoredDrawable = Pick<Drawable, "position" | "size" | "color" | "borderWidth"> & { type: string };
+interface StoredDrawableStore {
+	drawables: StoredDrawable[];
+}
+
+export class DrawableStore implements Storable {
 	private _drawables: Drawable[] = [];
 	private _drawing: Drawable | null = null;
+	private storage = new Storage<StoredDrawableStore>("drawableStore");
 
 	constructor() {
-		makeAutoObservable(
-			this,
-			{},
-			{
-				autoBind: true,
-			},
+		makeAutoObservable<this>(this, {}, { autoBind: true });
+
+		reaction(
+			() =>
+				this.drawables.map(drawable => [
+					drawable.position,
+					drawable.size,
+					drawable.color,
+					drawable.borderWidth,
+				]),
+			() => this.save(),
 		);
 	}
 
@@ -77,4 +91,37 @@ export class DrawableStore {
 
 		return result;
 	}
+
+	save = debounce(() => {
+		const serializedDrawables: StoredDrawable[] = this.drawables.map(drawable => ({
+			type: (drawable.constructor as typeof Drawable).type,
+			position: drawable.position,
+			size: drawable.size,
+			color: drawable.color,
+			borderWidth: drawable.borderWidth,
+		}));
+
+		this.storage.save({ drawables: serializedDrawables });
+	}, 1000);
+
+	load = () => {
+		const data = this.storage.load();
+		if (!data) return;
+
+		const restoredDrawables: Drawable[] = [];
+
+		for (const serialized of data.drawables) {
+			const drawable = createEntity(serialized.type);
+
+			if (drawable) {
+				drawable.position = serialized.position;
+				drawable.size = serialized.size;
+				drawable.color = serialized.color;
+				drawable.borderWidth = serialized.borderWidth;
+				restoredDrawables.push(drawable);
+			}
+		}
+
+		this.drawables = restoredDrawables;
+	};
 }

@@ -1,9 +1,17 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, reaction } from "mobx";
 
-import type { Position, Size } from "@/shared/types/types";
+import type { Position, Size, Storable } from "@/shared/types/types";
+import { debounce } from "@/shared/utils/debounce.ts";
+import { Storage } from "@/shared/utils/storage.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 
-export class SceneStore {
+interface StoredSceneStore {
+	zoom: number;
+	origin: Position;
+	tool: string;
+}
+
+export class SceneStore implements Storable {
 	private readonly zoomMin = 1 / 5;
 	private readonly zoomMax = 5;
 	private readonly keyTranslateStep = 5;
@@ -18,6 +26,7 @@ export class SceneStore {
 	private _origin: Position = { x: 0, y: 0 };
 	private _mouseDown: Position | null = null;
 	private _tool: string = SelectionPreview.type;
+	private storage = new Storage<StoredSceneStore>("sceneStore");
 
 	constructor() {
 		makeAutoObservable(
@@ -26,6 +35,11 @@ export class SceneStore {
 			{
 				autoBind: true,
 			},
+		);
+
+		reaction(
+			() => [this.zoom, this.origin, this.tool],
+			() => this.save(),
 		);
 	}
 
@@ -104,4 +118,21 @@ export class SceneStore {
 		const sceneY = -centerY / this.zoom + this.origin.y;
 		return { x: sceneX, y: sceneY };
 	}
+
+	save = debounce(() => {
+		this.storage.save({
+			zoom: this.zoom,
+			origin: this.origin,
+			tool: this.tool,
+		});
+	}, 1000);
+
+	load = () => {
+		const data = this.storage.load();
+		if (!data) return;
+
+		this.zoom = data.zoom;
+		this.origin = data.origin;
+		this.tool = data.tool;
+	};
 }

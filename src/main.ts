@@ -15,6 +15,9 @@ const ctx = $canvas.getContext("2d")!;
 const rootStore = new RootStore();
 const { drawableStore, selectionStore, sceneStore } = rootStore;
 
+drawableStore.load();
+sceneStore.load();
+
 const renderer = new SceneRenderer(ctx, rootStore);
 
 const drawingOperation = new DrawingOperation(drawableStore, sceneStore);
