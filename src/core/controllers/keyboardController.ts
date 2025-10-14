@@ -84,7 +84,7 @@ export class KeyboardController {
 
 	/**
 	 * Handles arrow key navigation:
-	 * - If items are selected, moves them
+	 * - If items are selected, moves them by gridStep
 	 * - Otherwise, pans the canvas
 	 */
 	private handleArrowKeys(e: KeyboardEvent) {
@@ -106,16 +106,17 @@ export class KeyboardController {
 				break;
 		}
 
-		const translateStep = this.sceneStore.getKeyTranslateStep(e);
+		// Move selected items by grid step
+		const translateStep = this.sceneStore.gridStep * (e.shiftKey ? this.sceneStore.gridStepShiftMultiplier : 1);
 		const deltaX = dx * translateStep;
 		const deltaY = dy * translateStep;
 
 		if (this.selectionStore.drawables.length !== 0) {
 			// Move selected items
-			this.selectionOperation.updateMove(deltaX, deltaY);
+			this.selectionOperation.moveBy(deltaX, deltaY);
 		} else {
 			// Pan canvas
-			this.navigationOperation.translateOriginBy(deltaX, deltaY);
+			this.navigationOperation.moveOriginBy(deltaX, deltaY);
 		}
 	}
 }

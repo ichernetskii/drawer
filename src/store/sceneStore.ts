@@ -14,12 +14,12 @@ interface StoredSceneStore {
 export class SceneStore implements Storable {
 	private readonly zoomMin = 1 / 5;
 	private readonly zoomMax = 5;
-	private readonly keyTranslateStep = 5;
-	private readonly keyTranslateShiftMultiplier = 10;
 	readonly zoomFactor = 1.2;
 	private readonly wheelFineDeltaThreshold = 50;
 	private readonly wheelSensitivityFine = 0.01;
 	private readonly wheelSensitivityCoarse = 0.001;
+	readonly gridStep = 10; // Grid step in scene coordinates
+	readonly gridStepShiftMultiplier = 10;
 
 	private _size: Size = { width: 0, height: 0 };
 	private _zoom = 1;
@@ -91,11 +91,7 @@ export class SceneStore implements Storable {
 		this._tool = value;
 	}
 
-	getKeyTranslateStep({ shiftKey }: { shiftKey: boolean }) {
-		return this.keyTranslateStep * (shiftKey ? this.keyTranslateShiftMultiplier : 1);
-	}
-
-	translateOriginBy(delta: Position) {
+	moveOriginBy(delta: Position) {
 		this.origin = { x: this.origin.x + delta.x, y: this.origin.y + delta.y };
 	}
 
@@ -110,12 +106,18 @@ export class SceneStore implements Storable {
 		this.origin = { x: newOriginX, y: newOriginY };
 	}
 
-	getSceneCoordinates(clientCoordinates: Position) {
+	getSceneCoordinates(clientCoordinates: Position, snapToGrid = false) {
 		// Inverse of renderer transform: translate(center) -> scale(zoom, -zoom) -> translate(-origin)
 		const centerX = clientCoordinates.x - this.size.width / 2;
 		const centerY = clientCoordinates.y - this.size.height / 2;
-		const sceneX = centerX / this.zoom + this.origin.x;
-		const sceneY = -centerY / this.zoom + this.origin.y;
+		let sceneX = centerX / this.zoom + this.origin.x;
+		let sceneY = -centerY / this.zoom + this.origin.y;
+
+		if (snapToGrid) {
+			sceneX = Math.round(sceneX / this.gridStep) * this.gridStep;
+			sceneY = Math.round(sceneY / this.gridStep) * this.gridStep;
+		}
+
 		return { x: sceneX, y: sceneY };
 	}
 

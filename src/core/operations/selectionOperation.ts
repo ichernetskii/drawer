@@ -23,9 +23,9 @@ export class SelectionOperation {
 	/**
 	 * Selects a single drawable and prepares for move.
 	 */
-	selectAndStartMove(drawable: Drawable) {
+	selectAndStartMove(drawable: Drawable, startPosition: Position) {
 		this.selectionStore.add(drawable);
-		this.selectionStore.startMove();
+		this.selectionStore.startMove(startPosition);
 	}
 
 	/**
@@ -111,27 +111,24 @@ export class SelectionOperation {
 	// ========== Move operations ==========
 
 	/**
-	 * Starts moving the current selection.
+	 * Checks if a move operation is in progress.
 	 */
-	startMove() {
-		this.selectionStore.startMove();
+	isMoving(): boolean {
+		return this.selectionStore.isMoving;
 	}
 
 	/**
-	 * Updates position of all selected drawables.
+	 * Starts moving the current selection.
 	 */
-	updateMove(movementX: number, movementY: number) {
-		const { drawables } = this.selectionStore;
-		const { zoom } = this.sceneStore;
+	startMove(startPosition: Position) {
+		this.selectionStore.startMove(startPosition);
+	}
 
-		drawables.forEach(entity => {
-			if (entity.position) {
-				entity.position = {
-					x: entity.position.x + movementX / zoom,
-					y: entity.position.y + movementY / zoom,
-				};
-			}
-		});
+	/**
+	 * Updates position of all selected drawables to a new position (with grid snapping).
+	 */
+	updateMove(currentPosition: Position) {
+		this.selectionStore.updateMove(currentPosition);
 	}
 
 	/**
@@ -158,10 +155,19 @@ export class SelectionOperation {
 	}
 
 	/**
-	 * Checks if a move operation is in progress.
+	 * Moves selected drawables by a delta (for keyboard navigation).
 	 */
-	isMoving(): boolean {
-		return this.selectionStore.isMoving;
+	moveBy(deltaX: number, deltaY: number) {
+		const { drawables } = this.selectionStore;
+
+		drawables.forEach(entity => {
+			if (entity.position) {
+				entity.position = {
+					x: entity.position.x + deltaX,
+					y: entity.position.y + deltaY,
+				};
+			}
+		});
 	}
 
 	// ========== Resize operations ==========

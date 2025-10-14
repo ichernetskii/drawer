@@ -35,11 +35,11 @@ export class WheelController {
 
 		// Shift + mouse wheel → horizontal scroll
 		if (e.shiftKey) {
-			this.navigationOperation.translateOriginBy(e.deltaY / this.sceneStore.zoom, 0);
+			this.navigationOperation.moveOriginBy(e.deltaY / this.sceneStore.zoom, 0);
 			return;
 		}
 
-		// Trackpad two-finger translateOriginBy (both axes) or mouse wheel (vertical only)
-		this.navigationOperation.translateOriginBy(e.deltaX / this.sceneStore.zoom, -e.deltaY / this.sceneStore.zoom);
+		// Trackpad two-finger moveOriginBy (both axes) or mouse wheel (vertical only)
+		this.navigationOperation.moveOriginBy(e.deltaX / this.sceneStore.zoom, -e.deltaY / this.sceneStore.zoom);
 	};
 }

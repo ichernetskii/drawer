@@ -44,7 +44,7 @@ export class MouseController {
 	}
 
 	private handleMouseDown = (e: MouseEvent) => {
-		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e);
+		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e, true);
 		const drawableUnderCursor = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
 		this.sceneStore.mouseDown = sceneCoordinates;
 
@@ -64,7 +64,7 @@ export class MouseController {
 				return;
 			}
 			// Start move operation (keep hover active)
-			this.selectionOperation.startMove();
+			this.selectionOperation.startMove(sceneCoordinates);
 			return;
 		}
 
@@ -75,7 +75,7 @@ export class MouseController {
 
 		// Mouse down on not selected entity
 		if (drawableUnderCursor) {
-			this.selectionOperation.selectAndStartMove(drawableUnderCursor);
+			this.selectionOperation.selectAndStartMove(drawableUnderCursor, sceneCoordinates);
 			return;
 		}
 
@@ -92,6 +92,7 @@ export class MouseController {
 	private handleMouseMove = (e: MouseEvent) => {
 		const isMainMouseButtonPressed = e.buttons === 1;
 		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e);
+		const sceneCoordinatesSnapped = this.sceneStore.getSceneCoordinates(e, true);
 
 		// Update cursor based on position and state
 		this.canvas.style.cursor = this.selectionOperation.getCursor(sceneCoordinates);
@@ -103,27 +104,27 @@ export class MouseController {
 
 		if (!isMainMouseButtonPressed) return;
 
-		// Regular drawing
+		// Regular drawing (with grid snapping)
 		if (this.drawingOperation.isDrawing()) {
-			this.drawingOperation.update(sceneCoordinates);
+			this.drawingOperation.update(sceneCoordinatesSnapped);
 			return;
 		}
 
-		// Selection preview
+		// Selection preview (with grid snapping)
 		if (this.selectionOperation.isSelectionPreviewActive()) {
-			this.selectionOperation.updateSelectionPreview(sceneCoordinates);
+			this.selectionOperation.updateSelectionPreview(sceneCoordinatesSnapped);
 			return;
 		}
 
-		// Selection box resize
+		// Selection box resize (with grid snapping)
 		if (this.selectionOperation.isResizing()) {
-			this.selectionOperation.updateResize(sceneCoordinates);
+			this.selectionOperation.updateResize(sceneCoordinatesSnapped);
 			return;
 		}
 
-		// Move selected drawables
+		// Move selected drawables (with grid snapping)
 		if (this.selectionOperation.isMoving()) {
-			this.selectionOperation.updateMove(e.movementX, -e.movementY);
+			this.selectionOperation.updateMove(sceneCoordinatesSnapped);
 			return;
 		}
 	};

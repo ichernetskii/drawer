@@ -49,9 +49,9 @@ export class NavigationOperation {
 	}
 
 	/**
-	 * Translate the canvas by the given delta.
+	 * Move the canvas by the given delta.
 	 */
-	translateOriginBy(deltaX: number, deltaY: number) {
-		this.sceneStore.translateOriginBy({ x: deltaX, y: deltaY });
+	moveOriginBy(deltaX: number, deltaY: number) {
+		this.sceneStore.moveOriginBy({ x: deltaX, y: deltaY });
 	}
 }

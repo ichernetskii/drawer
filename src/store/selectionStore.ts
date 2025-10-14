@@ -78,6 +78,8 @@ export class SelectionStore {
 
 	// Move state: active when dragging selection
 	private _isMoving = false;
+	private _moveStartPosition: Position | null = null;
+	private _moveStartSnapshots: DrawableSnapshot[] = [];
 
 	constructor() {
 		makeAutoObservable(this, {}, { autoBind: true });
@@ -334,8 +336,33 @@ export class SelectionStore {
 	/**
 	 * Begins a move operation when user clicks inside selection box.
 	 */
-	startMove() {
+	startMove(startPosition: Position) {
 		this._isMoving = true;
+		this._moveStartPosition = startPosition;
+		this._moveStartSnapshots = this._drawables.map(drawable => ({
+			drawable,
+			position: drawable.position ? { ...drawable.position } : null,
+			size: drawable.size ? { ...drawable.size } : null,
+		}));
+	}
+
+	/**
+	 * Updates the move operation with a new position (with grid snapping).
+	 */
+	updateMove(currentPosition: Position) {
+		if (!this._moveStartPosition) return;
+
+		const deltaX = currentPosition.x - this._moveStartPosition.x;
+		const deltaY = currentPosition.y - this._moveStartPosition.y;
+
+		this._moveStartSnapshots.forEach(({ drawable, position }) => {
+			if (position) {
+				drawable.position = {
+					x: position.x + deltaX,
+					y: position.y + deltaY,
+				};
+			}
+		});
 	}
 
 	/**
@@ -343,6 +370,8 @@ export class SelectionStore {
 	 */
 	endMove() {
 		this._isMoving = false;
+		this._moveStartPosition = null;
+		this._moveStartSnapshots = [];
 	}
 
 	// ========== Private helpers ==========
