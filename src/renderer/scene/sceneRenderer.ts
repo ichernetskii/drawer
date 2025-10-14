@@ -16,27 +16,6 @@ export class SceneRenderer extends Renderer {
 		this.entityRenderer = new EntityRenderer(this.ctx);
 	}
 
-	private drawAxes(zoom: number) {
-		const { clientWidth, clientHeight } = this.ctx.canvas;
-
-		this.ctx.strokeStyle = "#333";
-		this.ctx.lineWidth = 1 / zoom;
-
-		const top = this.rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: 0 });
-		const bottom = this.rootStore.sceneStore.getSceneCoordinates({ x: clientWidth / 2, y: clientHeight });
-		const left = this.rootStore.sceneStore.getSceneCoordinates({ x: 0, y: clientHeight / 2 });
-		const right = this.rootStore.sceneStore.getSceneCoordinates({ x: clientWidth, y: clientHeight / 2 });
-
-		// centered axes (origin at 0,0 after translate)
-		this.ctx.beginPath();
-		// X axis
-		this.ctx.moveTo(left.x, 0);
-		this.ctx.lineTo(right.x, 0);
-		// Y axis
-		this.ctx.moveTo(0, top.y);
-		this.ctx.lineTo(0, bottom.y);
-		this.ctx.stroke();
-	}
 	render() {
 		this.dispose?.();
 		const { sceneStore, drawableStore, clientStore } = this.rootStore;
@@ -57,10 +36,7 @@ export class SceneRenderer extends Renderer {
 			// 3) move scene so that origin is at screen center
 			this.ctx.translate(-sceneStore.origin.x, -sceneStore.origin.y);
 
-			// Draw grid
-			this.entityRenderer.render(sceneStore.grid);
-
-			this.drawAxes(sceneStore.zoom);
+			if (sceneStore.isGridVisible) this.entityRenderer.render(sceneStore.grid);
 
 			this.entityRenderer.render(drawableStore.drawing);
 

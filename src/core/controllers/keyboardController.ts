@@ -64,6 +64,10 @@ export class KeyboardController {
 				this.sceneStore.tool = Ellipse.type;
 				break;
 
+			case "KeyG":
+				this.navigationOperation.toggleGrid();
+				break;
+
 			case "Equal":
 			case "NumpadAdd":
 				this.navigationOperation.zoomIn();

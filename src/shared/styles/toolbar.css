@@ -1,43 +1,42 @@
 .toolbar {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    display: flex;
-    gap: 8px;
-    background: rgba(40, 40, 40, 0.9);
-    backdrop-filter: blur(8px);
-    padding: 8px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
+	position: absolute;
+	top: 16px;
+	left: 16px;
+	display: flex;
+	gap: 8px;
+	background: rgba(40, 40, 40, 0.9);
+	backdrop-filter: blur(8px);
+	padding: 8px;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	z-index: 1000;
 }
 
 .toolbar__button {
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: transparent;
-    color: #aaa;
-    cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+	width: 36px;
+	height: 36px;
+	border: none;
+	background: transparent;
+	color: #aaa;
+	cursor: pointer;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
 }
 
 .toolbar__button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+	background: rgba(255, 255, 255, 0.1);
+	color: #fff;
 }
 
 .toolbar__button--active {
-    background: rgba(59, 130, 246, 0.3);
-    color: #60a5fa;
+	background: rgba(59, 130, 246, 0.3);
+	color: #60a5fa;
 }
 
 .toolbar__button--active:hover {
-    background: rgba(59, 130, 246, 0.4);
-    color: #60a5fa;
+	background: rgba(59, 130, 246, 0.4);
+	color: #60a5fa;
 }
-

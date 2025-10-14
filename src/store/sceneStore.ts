@@ -27,6 +27,7 @@ export class SceneStore implements Storable {
 	private _origin: Position = { x: 0, y: 0 };
 	private _mouseDown: Position | null = null;
 	private _tool: string = SelectionPreview.type;
+	private _isGridVisible = true;
 	private storage = new Storage<StoredSceneStore>("sceneStore");
 
 	constructor() {
@@ -99,6 +100,14 @@ export class SceneStore implements Storable {
 		grid.topLeft = this.getSceneCoordinates({ x: 0, y: 0 });
 		grid.bottomRight = this.getSceneCoordinates({ x: this.size.width, y: this.size.height });
 		return grid;
+	}
+
+	toggleGrid() {
+		this._isGridVisible = !this._isGridVisible;
+	}
+
+	get isGridVisible() {
+		return this._isGridVisible;
 	}
 
 	moveOriginBy(delta: Position) {

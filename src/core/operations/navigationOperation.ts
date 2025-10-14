@@ -54,4 +54,8 @@ export class NavigationOperation {
 	moveOriginBy(deltaX: number, deltaY: number) {
 		this.sceneStore.moveOriginBy({ x: deltaX, y: deltaY });
 	}
+
+	toggleGrid() {
+		this.sceneStore.toggleGrid();
+	}
 }

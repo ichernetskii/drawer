@@ -17,4 +17,3 @@ export class Grid extends Entity {
 export function isGrid(entity: Entity): entity is Grid {
 	return entity instanceof Grid;
 }
-
