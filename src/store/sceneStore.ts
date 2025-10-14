@@ -3,6 +3,7 @@ import { makeAutoObservable, reaction } from "mobx";
 import type { Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
 import { Storage } from "@/shared/utils/storage.ts";
+import { Grid } from "@/store/entity/grid/grid.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 
 interface StoredSceneStore {
@@ -89,6 +90,15 @@ export class SceneStore implements Storable {
 
 	set tool(value) {
 		this._tool = value;
+	}
+
+	get grid() {
+		const grid = new Grid();
+		grid.gridStep = this.gridStep;
+		grid.zoom = this.zoom;
+		grid.topLeft = this.getSceneCoordinates({ x: 0, y: 0 });
+		grid.bottomRight = this.getSceneCoordinates({ x: this.size.width, y: this.size.height });
+		return grid;
 	}
 
 	moveOriginBy(delta: Position) {

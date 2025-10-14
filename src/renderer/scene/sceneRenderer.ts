@@ -57,6 +57,9 @@ export class SceneRenderer extends Renderer {
 			// 3) move scene so that origin is at screen center
 			this.ctx.translate(-sceneStore.origin.x, -sceneStore.origin.y);
 
+			// Draw grid
+			this.entityRenderer.render(sceneStore.grid);
+
 			this.drawAxes(sceneStore.zoom);
 
 			this.entityRenderer.render(drawableStore.drawing);
