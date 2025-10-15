@@ -44,12 +44,13 @@ export class MouseController {
 	}
 
 	private handleMouseDown = (e: MouseEvent) => {
+		const sceneCoordinatesUnsnapped = this.sceneStore.getSceneCoordinates(e);
 		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e, true);
 		const drawableUnderCursor = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
 		this.sceneStore.mouseDown = sceneCoordinates;
 
 		// Mouse down on the edge of selection → start resize
-		const edge = this.selectionOperation.getEdgeAtPosition(sceneCoordinates);
+		const edge = this.selectionOperation.getEdgeAtPosition(sceneCoordinatesUnsnapped);
 		if (edge) {
 			this.selectionOperation.startResize(edge, sceneCoordinates);
 			return;
@@ -106,7 +107,7 @@ export class MouseController {
 
 		// Regular drawing (with grid snapping)
 		if (this.drawingOperation.isDrawing()) {
-			this.drawingOperation.update(sceneCoordinatesSnapped);
+			this.drawingOperation.update(sceneCoordinatesSnapped, e.shiftKey);
 			return;
 		}
 
@@ -118,7 +119,7 @@ export class MouseController {
 
 		// Selection box resize (with grid snapping)
 		if (this.selectionOperation.isResizing()) {
-			this.selectionOperation.updateResize(sceneCoordinatesSnapped);
+			this.selectionOperation.updateResize(sceneCoordinatesSnapped, e.shiftKey);
 			return;
 		}
 

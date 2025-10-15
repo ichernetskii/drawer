@@ -32,18 +32,26 @@ export class DrawingOperation {
 	/**
 	 * Updates the drawing entity as the mouse moves.
 	 * Calculates size based on the initial mouse down position.
+	 * If shiftKey is pressed, maintains 1:1 aspect ratio.
 	 */
-	update(sceneCoordinates: Position) {
+	update(sceneCoordinates: Position, shiftKey: boolean = false) {
 		const { drawing } = this.drawableStore;
 		const { mouseDown } = this.sceneStore;
 
 		if (!drawing || !drawing.position || !mouseDown) return;
 
 		drawing.position = { ...mouseDown };
-		drawing.size = {
-			width: sceneCoordinates.x - drawing.position.x,
-			height: sceneCoordinates.y - drawing.position.y,
-		};
+		let width = sceneCoordinates.x - drawing.position.x;
+		let height = sceneCoordinates.y - drawing.position.y;
+
+		// Maintain 1:1 aspect ratio when Shift is pressed
+		if (shiftKey) {
+			const maxSide = Math.max(Math.abs(width), Math.abs(height));
+			width = Math.sign(width) * maxSide;
+			height = Math.sign(height) * maxSide;
+		}
+
+		drawing.size = { width, height };
 		drawing.normalize();
 	}
 

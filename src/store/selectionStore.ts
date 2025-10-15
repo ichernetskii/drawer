@@ -75,6 +75,7 @@ export class SelectionStore {
 	private _resizeStartSnapshots: DrawableSnapshot[] = [];
 	private _resizeCursor: Position | null = null;
 	private _resizeGrabOffset: Position | null = null;
+	private _resizeShiftKey: boolean = false;
 
 	// Move state: active when dragging selection
 	private _isMoving = false;
@@ -301,16 +302,19 @@ export class SelectionStore {
 
 	/**
 	 * Updates drawable positions/sizes during resize as cursor moves.
+	 * If shiftKey is pressed, maintains the original aspect ratio.
 	 */
-	updateResize(cursor: Position) {
+	updateResize(cursor: Position, shiftKey: boolean = false) {
 		if (!this._resizeHandle || !this._resizeStartBox) return;
 
 		this._resizeCursor = cursor;
+		this._resizeShiftKey = shiftKey;
 		const adjustedCursor = this.getAdjustedCursor(cursor);
 		const { anchorX, anchorY, scaleX, scaleY } = this.computeScales(
 			this._resizeHandle,
 			this._resizeStartBox,
 			adjustedCursor,
+			shiftKey,
 		);
 
 		// Apply scaling to all drawables from their original snapshots
@@ -329,6 +333,7 @@ export class SelectionStore {
 		this._resizeStartSnapshots = [];
 		this._resizeCursor = null;
 		this._resizeGrabOffset = null;
+		this._resizeShiftKey = false;
 	}
 
 	// ========== Move operations ==========
@@ -378,6 +383,7 @@ export class SelectionStore {
 
 	/**
 	 * Computes content bounds during resize from start box + current cursor.
+	 * Takes into account shift key for proportional resize.
 	 */
 	private getContentBoundsDuringResize(): ContentBounds {
 		if (!this._resizeStartBox || !this._resizeHandle || !this._resizeCursor) {
@@ -387,20 +393,26 @@ export class SelectionStore {
 		const { left, right, bottom, top } = this._resizeStartBox;
 		const adj = this.getAdjustedCursor(this._resizeCursor);
 
-		// Replace the dragged edge/corner coordinate with cursor position
-		const bounds: ContentBounds = {
-			left: this._resizeHandle.includes("left") ? adj.x : left,
-			right: this._resizeHandle.includes("right") ? adj.x : right,
-			bottom: this._resizeHandle.includes("bottom") ? adj.y : bottom,
-			top: this._resizeHandle.includes("top") ? adj.y : top,
-		};
+		// Compute the scales with shift key consideration
+		const { anchorX, anchorY, scaleX, scaleY } = this.computeScales(
+			this._resizeHandle,
+			this._resizeStartBox,
+			adj,
+			this._resizeShiftKey,
+		);
+
+		// Calculate new bounds based on anchor and scales
+		const newLeft = anchorX + (left - anchorX) * scaleX;
+		const newRight = anchorX + (right - anchorX) * scaleX;
+		const newBottom = anchorY + (bottom - anchorY) * scaleY;
+		const newTop = anchorY + (top - anchorY) * scaleY;
 
 		// Normalize (handle negative sizes from dragging past opposite edge)
 		return {
-			left: Math.min(bounds.left, bounds.right),
-			right: Math.max(bounds.left, bounds.right),
-			bottom: Math.min(bounds.bottom, bounds.top),
-			top: Math.max(bounds.bottom, bounds.top),
+			left: Math.min(newLeft, newRight),
+			right: Math.max(newLeft, newRight),
+			bottom: Math.min(newBottom, newTop),
+			top: Math.max(newBottom, newTop),
 		};
 	}
 
@@ -470,8 +482,14 @@ export class SelectionStore {
 
 	/**
 	 * Computes scale factors and anchor point based on resize handle.
+	 * If shiftKey is true, maintains the original aspect ratio.
 	 */
-	private computeScales(handle: ResizeHandle, startBox: ResizeStartBox, adjustedCursor: Position) {
+	private computeScales(
+		handle: ResizeHandle,
+		startBox: ResizeStartBox,
+		adjustedCursor: Position,
+		shiftKey: boolean = false,
+	) {
 		const { left, right, bottom, top, width, height } = startBox;
 		let scaleX = 1;
 		let scaleY = 1;
@@ -494,6 +512,23 @@ export class SelectionStore {
 		} else if (handle.includes("top")) {
 			anchorY = bottom; // anchor on bottom edge
 			scaleY = height > 0 ? (adjustedCursor.y - bottom) / height : 1;
+		}
+
+		// Maintain aspect ratio when Shift is pressed
+		if (shiftKey) {
+			// Use the scale that has larger deviation from 1 (more changed)
+			// This ensures we follow the direction with more movement
+			const deviationX = Math.abs(scaleX - 1);
+			const deviationY = Math.abs(scaleY - 1);
+			const useScaleX = deviationX > deviationY;
+			
+			if (useScaleX) {
+				// Apply scaleX to both axes, preserving signs
+				scaleY = Math.abs(scaleX) * Math.sign(scaleY);
+			} else {
+				// Apply scaleY to both axes, preserving signs
+				scaleX = Math.abs(scaleY) * Math.sign(scaleX);
+			}
 		}
 
 		return { anchorX, anchorY, scaleX, scaleY };

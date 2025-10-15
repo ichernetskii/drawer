@@ -182,9 +182,10 @@ export class SelectionOperation {
 
 	/**
 	 * Updates the resize operation as the mouse moves.
+	 * If shiftKey is pressed, maintains the original aspect ratio.
 	 */
-	updateResize(sceneCoordinates: Position) {
-		this.selectionStore.updateResize(sceneCoordinates);
+	updateResize(sceneCoordinates: Position, shiftKey: boolean = false) {
+		this.selectionStore.updateResize(sceneCoordinates, shiftKey);
 	}
 
 	/**
