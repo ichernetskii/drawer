@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 import type { Position, Size } from "@/shared/types/types";
+import { snapToGrid } from "@/shared/utils/snap.ts";
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { SelectionBox } from "@/store/entity/selection/selectionBox/selectionBox.ts";
 import { SelectionHover } from "@/store/entity/selection/selectionHover/selectionHover.ts";
@@ -63,6 +64,7 @@ export class SelectionStore {
 	BORDER INCLUSIVE: Entity.position and Entity.size define the position and size of the entity WITH BORDER on the scene
 	*/
 	private readonly selectionPrecision = 5; // hit-test precision in scene pixels
+	private gridStep = 10; // Cached grid step for snapping
 
 	private _drawables: Drawable[] = [];
 	private _selectionPreview: SelectionPreview | null = null;
@@ -304,11 +306,15 @@ export class SelectionStore {
 	 * Updates drawable positions/sizes during resize as cursor moves.
 	 * If shiftKey is pressed, maintains the original aspect ratio.
 	 */
-	updateResize(cursor: Position, shiftKey: boolean = false) {
+	updateResize(cursor: Position, shiftKey: boolean = false, gridStep?: number) {
 		if (!this._resizeHandle || !this._resizeStartBox) return;
 
 		this._resizeCursor = cursor;
 		this._resizeShiftKey = shiftKey;
+		if (gridStep !== undefined) {
+			this.gridStep = gridStep;
+		}
+
 		const adjustedCursor = this.getAdjustedCursor(cursor);
 		const { anchorX, anchorY, scaleX, scaleY } = this.computeScales(
 			this._resizeHandle,
@@ -521,7 +527,7 @@ export class SelectionStore {
 			const deviationX = Math.abs(scaleX - 1);
 			const deviationY = Math.abs(scaleY - 1);
 			const useScaleX = deviationX > deviationY;
-			
+
 			if (useScaleX) {
 				// Apply scaleX to both axes, preserving signs
 				scaleY = Math.abs(scaleX) * Math.sign(scaleY);
@@ -536,6 +542,7 @@ export class SelectionStore {
 
 	/**
 	 * Scales a drawable's snapshot around an anchor point and updates the drawable.
+	 * Snaps position and size to grid after scaling.
 	 */
 	private applyScaleToSnapshot(
 		snap: DrawableSnapshot,
@@ -565,7 +572,13 @@ export class SelectionStore {
 		const newBottom = Math.min(y1Scaled, y2Scaled);
 		const newTop = Math.max(y1Scaled, y2Scaled);
 
-		snap.drawable.position = { x: newLeft, y: newBottom };
-		snap.drawable.size = { width: newRight - newLeft, height: newTop - newBottom };
+		// Snap to grid
+		const snappedLeft = snapToGrid(newLeft, this.gridStep);
+		const snappedBottom = snapToGrid(newBottom, this.gridStep);
+		const snappedWidth = snapToGrid(newRight - newLeft, this.gridStep);
+		const snappedHeight = snapToGrid(newTop - newBottom, this.gridStep);
+
+		snap.drawable.position = { x: snappedLeft, y: snappedBottom };
+		snap.drawable.size = { width: snappedWidth, height: snappedHeight };
 	}
 }

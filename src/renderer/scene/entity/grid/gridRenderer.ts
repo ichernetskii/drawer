@@ -1,3 +1,4 @@
+import { snapToGridCeil, snapToGridFloor } from "@/shared/utils/snap.ts";
 import type { Grid } from "@/store/entity/grid/grid.ts";
 
 export class GridRenderer {
@@ -46,10 +47,10 @@ export class GridRenderer {
 		const gridStep = grid.gridStep * multiplier;
 
 		// Calculate grid bounds (rounded to grid step)
-		const startX = Math.floor(grid.topLeft.x / gridStep) * gridStep;
-		const endX = Math.ceil(grid.bottomRight.x / gridStep) * gridStep;
-		const startY = Math.floor(grid.bottomRight.y / gridStep) * gridStep;
-		const endY = Math.ceil(grid.topLeft.y / gridStep) * gridStep;
+		const startX = snapToGridFloor(grid.topLeft.x, gridStep);
+		const endX = snapToGridCeil(grid.bottomRight.x, gridStep);
+		const startY = snapToGridFloor(grid.bottomRight.y, gridStep);
+		const endY = snapToGridCeil(grid.topLeft.y, gridStep);
 
 		this.ctx.strokeStyle = grid.color;
 		this.ctx.lineWidth = 1 / grid.zoom;

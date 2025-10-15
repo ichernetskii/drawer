@@ -185,7 +185,7 @@ export class SelectionOperation {
 	 * If shiftKey is pressed, maintains the original aspect ratio.
 	 */
 	updateResize(sceneCoordinates: Position, shiftKey: boolean = false) {
-		this.selectionStore.updateResize(sceneCoordinates, shiftKey);
+		this.selectionStore.updateResize(sceneCoordinates, shiftKey, this.sceneStore.gridStep);
 	}
 
 	/**

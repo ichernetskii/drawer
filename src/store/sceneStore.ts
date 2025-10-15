@@ -2,6 +2,7 @@ import { makeAutoObservable, reaction } from "mobx";
 
 import type { Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
+import { snapToGrid } from "@/shared/utils/snap.ts";
 import { Storage } from "@/shared/utils/storage.ts";
 import { Grid } from "@/store/entity/grid/grid.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
@@ -125,16 +126,16 @@ export class SceneStore implements Storable {
 		this.origin = { x: newOriginX, y: newOriginY };
 	}
 
-	getSceneCoordinates(clientCoordinates: Position, snapToGrid = false) {
+	getSceneCoordinates(clientCoordinates: Position, snap = false) {
 		// Inverse of renderer transform: translate(center) -> scale(zoom, -zoom) -> translate(-origin)
 		const centerX = clientCoordinates.x - this.size.width / 2;
 		const centerY = clientCoordinates.y - this.size.height / 2;
 		let sceneX = centerX / this.zoom + this.origin.x;
 		let sceneY = -centerY / this.zoom + this.origin.y;
 
-		if (snapToGrid) {
-			sceneX = Math.round(sceneX / this.gridStep) * this.gridStep;
-			sceneY = Math.round(sceneY / this.gridStep) * this.gridStep;
+		if (snap) {
+			sceneX = snapToGrid(sceneX, this.gridStep);
+			sceneY = snapToGrid(sceneY, this.gridStep);
 		}
 
 		return { x: sceneX, y: sceneY };
