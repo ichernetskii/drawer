@@ -1,1 +1,0 @@
-- entity.style (store), entity.render() { ... entity.applyStyles()}
