@@ -1,34 +1,26 @@
 import type { DrawingOperation } from "@/core/operations/drawingOperation.ts";
 import type { SelectionOperation } from "@/core/operations/selectionOperation.ts";
 import type { Disposable } from "@/shared/types/types";
-import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
+import type { RootStore } from "@/store/rootStore.ts";
 
 export class MouseController implements Disposable {
 	private canvas: HTMLCanvasElement;
 	private drawingOperation: DrawingOperation;
 	private selectionOperation: SelectionOperation;
-	private drawableStore: DrawableStore;
-	private selectionStore: SelectionStore;
-	private sceneStore: SceneStore;
+	private rootStore: RootStore;
 	private abortController = new AbortController();
 
 	constructor(
 		canvas: HTMLCanvasElement,
 		drawingOperation: DrawingOperation,
 		selectionOperation: SelectionOperation,
-		drawableStore: DrawableStore,
-		selectionStore: SelectionStore,
-		sceneStore: SceneStore,
+		rootStore: RootStore,
 	) {
 		this.canvas = canvas;
 		this.drawingOperation = drawingOperation;
 		this.selectionOperation = selectionOperation;
-		this.drawableStore = drawableStore;
-		this.selectionStore = selectionStore;
-		this.sceneStore = sceneStore;
+		this.rootStore = rootStore;
 	}
 
 	init() {
@@ -45,10 +37,10 @@ export class MouseController implements Disposable {
 	}
 
 	private handleMouseDown = (e: MouseEvent) => {
-		const sceneCoordinatesUnsnapped = this.sceneStore.getSceneCoordinates(e);
-		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e, true);
-		const drawableUnderCursor = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
-		this.sceneStore.mouseDown = sceneCoordinates;
+		const sceneCoordinatesUnsnapped = this.rootStore.sceneStore.getSceneCoordinates(e);
+		const sceneCoordinates = this.rootStore.sceneStore.getSceneCoordinates(e, true);
+		const drawableUnderCursor = this.rootStore.drawableStore.getDrawableAtPosition(sceneCoordinates);
+		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
 
 		// Mouse down on the edge of selection → start resize
 		const edge = this.selectionOperation.getEdgeAtPosition(sceneCoordinatesUnsnapped);
@@ -61,7 +53,11 @@ export class MouseController implements Disposable {
 		const isInsideSelection = this.selectionOperation.isPositionInsideSelection(sceneCoordinates);
 		if (isInsideSelection) {
 			// Shift + mousedown inside selection on specific drawable → remove from selection
-			if (e.shiftKey && drawableUnderCursor && this.selectionStore.drawables.includes(drawableUnderCursor)) {
+			if (
+				e.shiftKey &&
+				drawableUnderCursor &&
+				this.rootStore.selectionStore.drawables.includes(drawableUnderCursor)
+			) {
 				this.selectionOperation.removeFromSelection(drawableUnderCursor);
 				return;
 			}
@@ -83,7 +79,7 @@ export class MouseController implements Disposable {
 		}
 
 		// Mouse down on empty space + selection tool
-		if (this.sceneStore.tool === SelectionPreview.type) {
+		if (this.rootStore.sceneStore.tool === SelectionPreview.type) {
 			this.selectionOperation.startSelectionPreview(sceneCoordinates);
 			return;
 		}
@@ -94,8 +90,8 @@ export class MouseController implements Disposable {
 
 	private handleMouseMove = (e: MouseEvent) => {
 		const isMainMouseButtonPressed = e.buttons === 1;
-		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e);
-		const sceneCoordinatesSnapped = this.sceneStore.getSceneCoordinates(e, true);
+		const sceneCoordinates = this.rootStore.sceneStore.getSceneCoordinates(e);
+		const sceneCoordinatesSnapped = this.rootStore.sceneStore.getSceneCoordinates(e, true);
 
 		// Update cursor based on position and state
 		this.canvas.style.cursor = this.selectionOperation.getCursor(sceneCoordinates);
@@ -133,7 +129,7 @@ export class MouseController implements Disposable {
 	};
 
 	private handleMouseUp = (e: MouseEvent) => {
-		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e, true);
+		const sceneCoordinates = this.rootStore.sceneStore.getSceneCoordinates(e, true);
 
 		// Regular drawing finished
 		if (this.drawingOperation.isDrawing()) {
@@ -160,7 +156,7 @@ export class MouseController implements Disposable {
 		}
 
 		// No active operation
-		this.sceneStore.mouseDown = null;
+		this.rootStore.sceneStore.mouseDown = null;
 	};
 
 	private handleContextMenu = (e: MouseEvent) => {

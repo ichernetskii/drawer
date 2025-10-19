@@ -1,29 +1,15 @@
 import type { Position } from "@/shared/types/types";
-import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { HistoryStore } from "@/store/historyStore/historyStore.ts";
-import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
+import type { RootStore } from "@/store/rootStore.ts";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 export class SelectionOperation {
-	private readonly selectionStore: SelectionStore;
-	private readonly drawableStore: DrawableStore;
-	private readonly sceneStore: SceneStore;
-	private readonly historyStore: HistoryStore;
+	private readonly rootStore: RootStore;
 
-	constructor(
-		selectionStore: SelectionStore,
-		drawableStore: DrawableStore,
-		sceneStore: SceneStore,
-		historyStore: HistoryStore,
-	) {
-		this.sceneStore = sceneStore;
-		this.drawableStore = drawableStore;
-		this.selectionStore = selectionStore;
-		this.historyStore = historyStore;
+	constructor(rootStore: RootStore) {
+		this.rootStore = rootStore;
 	}
 
 	// ========== Selection management ==========
@@ -32,31 +18,31 @@ export class SelectionOperation {
 	 * Selects a single drawable and prepares for move.
 	 */
 	addToSelection(drawable: Drawable) {
-		this.selectionStore.add(drawable);
+		this.rootStore.selectionStore.add(drawable);
 	}
 
 	/**
 	 * Removes a drawable from selection.
 	 */
 	removeFromSelection(drawable: Drawable) {
-		this.selectionStore.delete(drawable);
+		this.rootStore.selectionStore.delete(drawable);
 	}
 
 	/**
 	 * Clears all selection.
 	 */
 	clearSelection() {
-		this.selectionStore.drawables = [];
+		this.rootStore.selectionStore.drawables = [];
 	}
 
 	/**
 	 * Deletes selected drawables from the canvas.
 	 */
 	deleteSelected() {
-		this.historyStore.push(this.drawableStore.drawables);
-		this.drawableStore.deleteDrawables(this.selectionStore.drawables);
-		this.selectionStore.drawables = [];
-		this.selectionStore.selectionHover.drawable = null;
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
+		this.rootStore.drawableStore.deleteDrawables(this.rootStore.selectionStore.drawables);
+		this.rootStore.selectionStore.drawables = [];
+		this.rootStore.selectionStore.selectionHover.drawable = null;
 	}
 
 	// ========== Selection preview (drag to select) ==========
@@ -67,17 +53,17 @@ export class SelectionOperation {
 	startSelectionPreview(sceneCoordinates: Position) {
 		const preview = new SelectionPreview();
 		preview.position = sceneCoordinates;
-		preview.borderWidth /= this.sceneStore.zoom;
-		this.selectionStore.selectionPreview = preview;
-		this.sceneStore.mouseDown = sceneCoordinates;
+		preview.borderWidth /= this.rootStore.sceneStore.zoom;
+		this.rootStore.selectionStore.selectionPreview = preview;
+		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
 	}
 
 	/**
 	 * Updates the selection preview as the mouse moves.
 	 */
 	updateSelectionPreview(sceneCoordinates: Position) {
-		const { selectionPreview } = this.selectionStore;
-		const { mouseDown } = this.sceneStore;
+		const { selectionPreview } = this.rootStore.selectionStore;
+		const { mouseDown } = this.rootStore.sceneStore;
 
 		if (!selectionPreview || !selectionPreview.position || !mouseDown) return;
 
@@ -93,27 +79,27 @@ export class SelectionOperation {
 	 * Finishes the selection preview and selects all drawables within it.
 	 */
 	finishSelectionPreview(shiftKey: boolean) {
-		const { selectionPreview } = this.selectionStore;
+		const { selectionPreview } = this.rootStore.selectionStore;
 		if (!selectionPreview) return;
 
 		selectionPreview.normalize();
-		const selectedDrawables = this.drawableStore.getDrawablesInRectangle(selectionPreview);
+		const selectedDrawables = this.rootStore.drawableStore.getDrawablesInRectangle(selectionPreview);
 
 		if (shiftKey) {
-			this.selectionStore.addMany(selectedDrawables);
+			this.rootStore.selectionStore.addMany(selectedDrawables);
 		} else {
-			this.selectionStore.drawables = selectedDrawables;
+			this.rootStore.selectionStore.drawables = selectedDrawables;
 		}
 
-		this.sceneStore.mouseDown = null;
-		this.selectionStore.selectionPreview = null;
+		this.rootStore.sceneStore.mouseDown = null;
+		this.rootStore.selectionStore.selectionPreview = null;
 	}
 
 	/**
 	 * Checks if selection preview is active.
 	 */
 	isSelectionPreviewActive(): boolean {
-		return this.selectionStore.selectionPreview !== null;
+		return this.rootStore.selectionStore.selectionPreview !== null;
 	}
 
 	// ========== Move operations ==========
@@ -122,22 +108,22 @@ export class SelectionOperation {
 	 * Checks if a move operation is in progress.
 	 */
 	isMoving(): boolean {
-		return this.selectionStore.isMoving;
+		return this.rootStore.selectionStore.isMoving;
 	}
 
 	/**
 	 * Starts moving the current selection.
 	 */
 	startMove(startPosition: Position) {
-		this.historyStore.push(this.drawableStore.drawables);
-		this.selectionStore.startMove(startPosition);
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
+		this.rootStore.selectionStore.startMove(startPosition);
 	}
 
 	/**
 	 * Updates position of all selected drawables to a new position (with grid snapping).
 	 */
 	updateMove(currentPosition: Position) {
-		this.selectionStore.updateMove(currentPosition);
+		this.rootStore.selectionStore.updateMove(currentPosition);
 	}
 
 	/**
@@ -145,8 +131,8 @@ export class SelectionOperation {
 	 * If it was a click (no movement), handles single selection from group.
 	 */
 	finishMove(sceneCoordinates: Position, shiftKey: boolean) {
-		const { mouseDown } = this.sceneStore;
-		const { drawables } = this.selectionStore;
+		const { mouseDown } = this.rootStore.sceneStore;
+		const { drawables } = this.rootStore.selectionStore;
 
 		// Check if it was a click (no mouse movement)
 		const wasClicked =
@@ -155,26 +141,26 @@ export class SelectionOperation {
 		if (wasClicked) {
 			if (drawables.length > 1) {
 				// Click on one drawable from group → select only that one
-				const drawableUnderCursor = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
+				const drawableUnderCursor = this.rootStore.drawableStore.getDrawableAtPosition(sceneCoordinates);
 				if (drawableUnderCursor && drawables.includes(drawableUnderCursor)) {
-					this.selectionStore.drawables = [drawableUnderCursor];
+					this.rootStore.selectionStore.drawables = [drawableUnderCursor];
 				}
 			}
 
 			// remove snapshot pushed at startMove
-			this.historyStore.pop();
+			this.rootStore.historyStore.pop();
 		}
 
-		this.selectionStore.endMove();
-		this.sceneStore.mouseDown = null;
+		this.rootStore.selectionStore.endMove();
+		this.rootStore.sceneStore.mouseDown = null;
 	}
 
 	/**
 	 * Moves selected drawables by a delta (for keyboard navigation).
 	 */
 	moveBy(deltaX: number, deltaY: number) {
-		const { drawables } = this.selectionStore;
-		this.historyStore.push(this.drawableStore.drawables);
+		const { drawables } = this.rootStore.selectionStore;
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 
 		drawables.forEach(entity => {
 			if (entity.position) {
@@ -192,9 +178,9 @@ export class SelectionOperation {
 	 * Starts resizing the selection from the given edge/corner.
 	 */
 	startResize(edge: ResizeHandle, sceneCoordinates: Position) {
-		this.historyStore.push(this.drawableStore.drawables);
-		this.selectionStore.startResize(edge, sceneCoordinates);
-		this.sceneStore.mouseDown = sceneCoordinates;
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
+		this.rootStore.selectionStore.startResize(edge, sceneCoordinates);
+		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
 	}
 
 	/**
@@ -202,21 +188,21 @@ export class SelectionOperation {
 	 * If shiftKey is pressed, maintains the original aspect ratio.
 	 */
 	updateResize(sceneCoordinates: Position, shiftKey: boolean = false) {
-		this.selectionStore.updateResize(sceneCoordinates, shiftKey, this.sceneStore.gridStep);
+		this.rootStore.selectionStore.updateResize(sceneCoordinates, shiftKey, this.rootStore.sceneStore.gridStep);
 	}
 
 	/**
 	 * Finishes the resize operation.
 	 */
 	finishResize() {
-		this.selectionStore.endResize();
+		this.rootStore.selectionStore.endResize();
 	}
 
 	/**
 	 * Checks if a resize operation is in progress.
 	 */
 	isResizing(): boolean {
-		return this.selectionStore.isResizing;
+		return this.rootStore.selectionStore.isResizing;
 	}
 
 	// ========== Helper methods ==========
@@ -225,27 +211,28 @@ export class SelectionOperation {
 	 * Checks if the position is on an edge of the selection box.
 	 */
 	getEdgeAtPosition(sceneCoordinates: Position): ResizeHandle | null {
-		return this.selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates);
+		return this.rootStore.selectionStore.getPositionOnEdgeOfSelection(sceneCoordinates);
 	}
 
 	/**
 	 * Checks if the position is inside the selection box.
 	 */
 	isPositionInsideSelection(sceneCoordinates: Position): boolean {
-		return this.selectionStore.isPositionInsideSelection(sceneCoordinates);
+		return this.rootStore.selectionStore.isPositionInsideSelection(sceneCoordinates);
 	}
 
 	/**
 	 * Updates hover highlight based on mouse position.
 	 */
 	updateHover(sceneCoordinates: Position) {
-		this.selectionStore.selectionHover.drawable = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
+		this.rootStore.selectionStore.selectionHover.drawable =
+			this.rootStore.drawableStore.getDrawableAtPosition(sceneCoordinates);
 	}
 
 	/**
 	 * Gets the appropriate cursor for the current position and state.
 	 */
 	getCursor(sceneCoordinates: Position): string {
-		return this.selectionStore.getCursor(sceneCoordinates);
+		return this.rootStore.selectionStore.getCursor(sceneCoordinates);
 	}
 }

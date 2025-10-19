@@ -1,22 +1,16 @@
 import type { Position } from "@/shared/types/types";
-import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import { createEntity } from "@/store/entity/utils.ts";
-import type { HistoryStore } from "@/store/historyStore/historyStore.ts";
-import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
+import type { RootStore } from "@/store/rootStore.ts";
 
 /**
  * Handles drawing operations for creating new shapes.
  * Manages the lifecycle of drawing: start, update, finish.
  */
 export class DrawingOperation {
-	private readonly drawableStore: DrawableStore;
-	private readonly sceneStore: SceneStore;
-	private readonly historyStore: HistoryStore;
+	private readonly rootStore: RootStore;
 
-	constructor(drawableStore: DrawableStore, sceneStore: SceneStore, historyStore: HistoryStore) {
-		this.sceneStore = sceneStore;
-		this.drawableStore = drawableStore;
-		this.historyStore = historyStore;
+	constructor(rootStore: RootStore) {
+		this.rootStore = rootStore;
 	}
 
 	/**
@@ -24,12 +18,12 @@ export class DrawingOperation {
 	 * Creates an entity based on the currently selected tool.
 	 */
 	start(sceneCoordinates: Position) {
-		const entity = createEntity(this.sceneStore.tool);
+		const entity = createEntity(this.rootStore.sceneStore.tool);
 		if (!entity) return;
 
 		entity.position = sceneCoordinates;
-		this.drawableStore.drawing = entity;
-		this.sceneStore.mouseDown = sceneCoordinates;
+		this.rootStore.drawableStore.drawing = entity;
+		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
 	}
 
 	/**
@@ -38,8 +32,8 @@ export class DrawingOperation {
 	 * If shiftKey is pressed, maintains 1:1 aspect ratio.
 	 */
 	update(sceneCoordinates: Position, shiftKey: boolean = false) {
-		const { drawing } = this.drawableStore;
-		const { mouseDown } = this.sceneStore;
+		const { drawing } = this.rootStore.drawableStore;
+		const { mouseDown } = this.rootStore.sceneStore;
 
 		if (!drawing || !drawing.position || !mouseDown) return;
 
@@ -63,22 +57,22 @@ export class DrawingOperation {
 	 * Adds the drawable to the store if it has a valid size.
 	 */
 	finish() {
-		const { drawing } = this.drawableStore;
+		const { drawing } = this.rootStore.drawableStore;
 
 		if (drawing && drawing.hasSize) {
 			drawing.normalize();
-			this.historyStore.push(this.drawableStore.drawables);
-			this.drawableStore.addDrawable(drawing);
+			this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
+			this.rootStore.drawableStore.addDrawable(drawing);
 		}
 
-		this.drawableStore.drawing = null;
-		this.sceneStore.mouseDown = null;
+		this.rootStore.drawableStore.drawing = null;
+		this.rootStore.sceneStore.mouseDown = null;
 	}
 
 	/**
 	 * Checks if a drawing operation is currently in progress.
 	 */
 	isDrawing(): boolean {
-		return this.drawableStore.drawing !== null;
+		return this.rootStore.drawableStore.drawing !== null;
 	}
 }

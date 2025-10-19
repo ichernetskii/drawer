@@ -4,34 +4,22 @@ import type { Disposable } from "@/shared/types/types";
 import { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { HistoryStore } from "@/store/historyStore/historyStore.ts";
-import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
-import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
+import type { RootStore } from "@/store/rootStore.ts";
 
 export class KeyboardController implements Disposable {
 	private navigationOperation: NavigationOperation;
 	private selectionOperation: SelectionOperation;
-	private sceneStore: SceneStore;
-	private selectionStore: SelectionStore;
-	private drawableStore: DrawableStore;
-	private historyStore: HistoryStore;
+	private rootStore: RootStore;
 	private abortController = new AbortController();
 
 	constructor(
 		navigationOperation: NavigationOperation,
 		selectionOperation: SelectionOperation,
-		sceneStore: SceneStore,
-		selectionStore: SelectionStore,
-		drawableStore: DrawableStore,
-		historyStore: HistoryStore,
+		rootStore: RootStore,
 	) {
-		this.selectionStore = selectionStore;
-		this.sceneStore = sceneStore;
+		this.rootStore = rootStore;
 		this.selectionOperation = selectionOperation;
 		this.navigationOperation = navigationOperation;
-		this.drawableStore = drawableStore;
-		this.historyStore = historyStore;
 	}
 
 	init() {
@@ -47,11 +35,11 @@ export class KeyboardController implements Disposable {
 		switch (e.code) {
 			case "KeyZ": {
 				if (e.metaKey || e.ctrlKey) {
-					const snapshot = this.historyStore.pop();
+					const snapshot = this.rootStore.historyStore.pop();
 					if (snapshot) {
-						this.drawableStore.drawables = snapshot;
-						this.selectionStore.drawables = [];
-						this.selectionStore.selectionHover.drawable = null;
+						this.rootStore.drawableStore.drawables = snapshot;
+						this.rootStore.selectionStore.drawables = [];
+						this.rootStore.selectionStore.selectionHover.drawable = null;
 					}
 				}
 				break;
@@ -73,15 +61,15 @@ export class KeyboardController implements Disposable {
 				break;
 
 			case "KeyV":
-				this.sceneStore.tool = SelectionPreview.type;
+				this.rootStore.sceneStore.tool = SelectionPreview.type;
 				break;
 
 			case "KeyR":
-				this.sceneStore.tool = Rectangle.type;
+				this.rootStore.sceneStore.tool = Rectangle.type;
 				break;
 
 			case "KeyE":
-				this.sceneStore.tool = Ellipse.type;
+				this.rootStore.sceneStore.tool = Ellipse.type;
 				break;
 
 			case "KeyG":
@@ -131,11 +119,12 @@ export class KeyboardController implements Disposable {
 		}
 
 		// Move selected items by grid step
-		const translateStep = this.sceneStore.gridStep * (e.shiftKey ? this.sceneStore.gridStepShiftMultiplier : 1);
+		const translateStep =
+			this.rootStore.sceneStore.gridStep * (e.shiftKey ? this.rootStore.sceneStore.gridStepShiftMultiplier : 1);
 		const deltaX = dx * translateStep;
 		const deltaY = dy * translateStep;
 
-		if (this.selectionStore.drawables.length !== 0) {
+		if (this.rootStore.selectionStore.drawables.length !== 0) {
 			// Move selected items
 			this.selectionOperation.moveBy(deltaX, deltaY);
 		} else {

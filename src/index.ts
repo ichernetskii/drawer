@@ -15,35 +15,21 @@ const $toolbar = document.getElementById("toolbar")!;
 const ctx = $canvas.getContext("2d")!;
 
 const rootStore = new RootStore();
-const { drawableStore, selectionStore, sceneStore } = rootStore;
+const { drawableStore, sceneStore } = rootStore;
 
 drawableStore.load();
 sceneStore.load();
 
 const renderer = new SceneRenderer(ctx, rootStore);
 
-const drawingOperation = new DrawingOperation(drawableStore, sceneStore, rootStore.historyStore);
-const selectionOperation = new SelectionOperation(selectionStore, drawableStore, sceneStore, rootStore.historyStore);
-const navigationOperation = new NavigationOperation(sceneStore, selectionStore);
+const drawingOperation = new DrawingOperation(rootStore);
+const selectionOperation = new SelectionOperation(rootStore);
+const navigationOperation = new NavigationOperation(rootStore);
 
-const mouseController = new MouseController(
-	$canvas,
-	drawingOperation,
-	selectionOperation,
-	drawableStore,
-	selectionStore,
-	sceneStore,
-);
-const keyboardController = new KeyboardController(
-	navigationOperation,
-	selectionOperation,
-	sceneStore,
-	selectionStore,
-	drawableStore,
-	rootStore.historyStore,
-);
-const wheelController = new WheelController($canvas, navigationOperation, sceneStore);
-const toolbarController = new ToolbarController($toolbar, sceneStore);
+const mouseController = new MouseController($canvas, drawingOperation, selectionOperation, rootStore);
+const keyboardController = new KeyboardController(navigationOperation, selectionOperation, rootStore);
+const wheelController = new WheelController($canvas, navigationOperation, rootStore);
+const toolbarController = new ToolbarController($toolbar, rootStore);
 
 mouseController.init();
 keyboardController.init();

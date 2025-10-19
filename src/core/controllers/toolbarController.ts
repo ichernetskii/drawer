@@ -6,7 +6,7 @@ import type { Disposable } from "@/shared/types/types";
 import { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
+import type { RootStore } from "@/store/rootStore.ts";
 
 const CSS_CLASSES = {
 	BUTTON: "toolbar__button",
@@ -34,19 +34,19 @@ const TOOL_CONFIG = [
 export class ToolbarController implements Disposable {
 	private readonly abortController = new AbortController();
 	private readonly toolbarElement: HTMLElement;
-	private readonly sceneStore: SceneStore;
+	private readonly rootStore: RootStore;
 	private readonly toolMap = new WeakMap<HTMLButtonElement, string>();
 
-	constructor(toolbarElement: HTMLElement, sceneStore: SceneStore) {
+	constructor(toolbarElement: HTMLElement, rootStore: RootStore) {
 		this.toolbarElement = toolbarElement;
-		this.sceneStore = sceneStore;
+		this.rootStore = rootStore;
 	}
 
 	init() {
 		this.createButtons();
 		this.setupEventListeners();
 		this.setupReactions();
-		this.updateActiveButton(this.sceneStore.tool);
+		this.updateActiveButton(this.rootStore.sceneStore.tool);
 	}
 
 	dispose() {
@@ -76,7 +76,7 @@ export class ToolbarController implements Disposable {
 
 				const tool = this.toolMap.get(button);
 				if (tool) {
-					this.sceneStore.tool = tool;
+					this.rootStore.sceneStore.tool = tool;
 				}
 			},
 			{ signal: this.abortController.signal },
@@ -85,7 +85,7 @@ export class ToolbarController implements Disposable {
 
 	private setupReactions() {
 		reaction(
-			() => this.sceneStore.tool,
+			() => this.rootStore.sceneStore.tool,
 			tool => this.updateActiveButton(tool),
 			{ signal: this.abortController.signal },
 		);

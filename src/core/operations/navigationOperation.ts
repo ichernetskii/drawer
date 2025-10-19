@@ -1,14 +1,11 @@
 import type { Position } from "@/shared/types/types";
-import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
+import type { RootStore } from "@/store/rootStore.ts";
 
 export class NavigationOperation {
-	private readonly sceneStore: SceneStore;
-	private readonly selectionStore: SelectionStore;
+	private readonly rootStore: RootStore;
 
-	constructor(sceneStore: SceneStore, selectionStore: SelectionStore) {
-		this.selectionStore = selectionStore;
-		this.sceneStore = sceneStore;
+	constructor(rootStore: RootStore) {
+		this.rootStore = rootStore;
 	}
 
 	/**
@@ -16,46 +13,46 @@ export class NavigationOperation {
 	 * Keeps the point under the cursor stationary during zoom.
 	 */
 	zoomAt(sceneCoordinates: Position, factor: number) {
-		this.sceneStore.zoomAtSceneCoordinates(sceneCoordinates, factor);
-		this.selectionStore.zoom = this.sceneStore.zoom;
+		this.rootStore.sceneStore.zoomAtSceneCoordinates(sceneCoordinates, factor);
+		this.rootStore.selectionStore.zoom = this.rootStore.sceneStore.zoom;
 	}
 
 	/**
 	 * Zooms in by the default zoom factor.
 	 */
 	zoomIn() {
-		this.sceneStore.zoom = this.sceneStore.zoom * this.sceneStore.zoomFactor;
+		this.rootStore.sceneStore.zoom = this.rootStore.sceneStore.zoom * this.rootStore.sceneStore.zoomFactor;
 	}
 
 	/**
 	 * Zooms out by the default zoom factor.
 	 */
 	zoomOut() {
-		this.sceneStore.zoom = this.sceneStore.zoom / this.sceneStore.zoomFactor;
+		this.rootStore.sceneStore.zoom = this.rootStore.sceneStore.zoom / this.rootStore.sceneStore.zoomFactor;
 	}
 
 	/**
 	 * Resets zoom to 1:1 (100%).
 	 */
 	resetZoom() {
-		this.sceneStore.zoom = 1;
+		this.rootStore.sceneStore.zoom = 1;
 	}
 
 	/**
 	 * Calculates zoom factor from wheel event.
 	 */
 	getWheelZoomFactor(event: WheelEvent): number {
-		return this.sceneStore.getWheelZoomFactor(event);
+		return this.rootStore.sceneStore.getWheelZoomFactor(event);
 	}
 
 	/**
 	 * Move the canvas by the given delta.
 	 */
 	moveOriginBy(deltaX: number, deltaY: number) {
-		this.sceneStore.moveOriginBy({ x: deltaX, y: deltaY });
+		this.rootStore.sceneStore.moveOriginBy({ x: deltaX, y: deltaY });
 	}
 
 	toggleGrid() {
-		this.sceneStore.toggleGrid();
+		this.rootStore.sceneStore.toggleGrid();
 	}
 }
