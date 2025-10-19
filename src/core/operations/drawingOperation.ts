@@ -1,6 +1,7 @@
 import type { Position } from "@/shared/types/types";
 import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import { createEntity } from "@/store/entity/utils.ts";
+import type { HistoryStore } from "@/store/historyStore/historyStore.ts";
 import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 
 /**
@@ -10,10 +11,12 @@ import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 export class DrawingOperation {
 	private readonly drawableStore: DrawableStore;
 	private readonly sceneStore: SceneStore;
+	private readonly historyStore: HistoryStore;
 
-	constructor(drawableStore: DrawableStore, sceneStore: SceneStore) {
+	constructor(drawableStore: DrawableStore, sceneStore: SceneStore, historyStore: HistoryStore) {
 		this.sceneStore = sceneStore;
 		this.drawableStore = drawableStore;
+		this.historyStore = historyStore;
 	}
 
 	/**
@@ -64,6 +67,7 @@ export class DrawingOperation {
 
 		if (drawing && drawing.hasSize) {
 			drawing.normalize();
+			this.historyStore.push(this.drawableStore.drawables);
 			this.drawableStore.addDrawable(drawing);
 		}
 

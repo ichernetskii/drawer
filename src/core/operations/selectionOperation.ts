@@ -2,6 +2,7 @@ import type { Position } from "@/shared/types/types";
 import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
+import type { HistoryStore } from "@/store/historyStore/historyStore.ts";
 import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
 
@@ -11,11 +12,18 @@ export class SelectionOperation {
 	private readonly selectionStore: SelectionStore;
 	private readonly drawableStore: DrawableStore;
 	private readonly sceneStore: SceneStore;
+	private readonly historyStore: HistoryStore;
 
-	constructor(selectionStore: SelectionStore, drawableStore: DrawableStore, sceneStore: SceneStore) {
+	constructor(
+		selectionStore: SelectionStore,
+		drawableStore: DrawableStore,
+		sceneStore: SceneStore,
+		historyStore: HistoryStore,
+	) {
 		this.sceneStore = sceneStore;
 		this.drawableStore = drawableStore;
 		this.selectionStore = selectionStore;
+		this.historyStore = historyStore;
 	}
 
 	// ========== Selection management ==========
@@ -23,9 +31,8 @@ export class SelectionOperation {
 	/**
 	 * Selects a single drawable and prepares for move.
 	 */
-	selectAndStartMove(drawable: Drawable, startPosition: Position) {
+	addToSelection(drawable: Drawable) {
 		this.selectionStore.add(drawable);
-		this.selectionStore.startMove(startPosition);
 	}
 
 	/**
@@ -46,6 +53,7 @@ export class SelectionOperation {
 	 * Deletes selected drawables from the canvas.
 	 */
 	deleteSelected() {
+		this.historyStore.push(this.drawableStore.drawables);
 		this.drawableStore.deleteDrawables(this.selectionStore.drawables);
 		this.selectionStore.drawables = [];
 		this.selectionStore.selectionHover.drawable = null;
@@ -121,6 +129,7 @@ export class SelectionOperation {
 	 * Starts moving the current selection.
 	 */
 	startMove(startPosition: Position) {
+		this.historyStore.push(this.drawableStore.drawables);
 		this.selectionStore.startMove(startPosition);
 	}
 
@@ -140,14 +149,20 @@ export class SelectionOperation {
 		const { drawables } = this.selectionStore;
 
 		// Check if it was a click (no mouse movement)
-		const wasClick = mouseDown && sceneCoordinates.x === mouseDown.x && sceneCoordinates.y === mouseDown.y;
+		const wasClicked =
+			mouseDown && sceneCoordinates.x === mouseDown.x && sceneCoordinates.y === mouseDown.y && !shiftKey;
 
-		if (wasClick && !shiftKey && drawables.length > 1) {
-			// Click on one drawable from group → select only that one
-			const drawableUnderCursor = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
-			if (drawableUnderCursor && drawables.includes(drawableUnderCursor)) {
-				this.selectionStore.drawables = [drawableUnderCursor];
+		if (wasClicked) {
+			if (drawables.length > 1) {
+				// Click on one drawable from group → select only that one
+				const drawableUnderCursor = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
+				if (drawableUnderCursor && drawables.includes(drawableUnderCursor)) {
+					this.selectionStore.drawables = [drawableUnderCursor];
+				}
 			}
+
+			// remove snapshot pushed at startMove
+			this.historyStore.pop();
 		}
 
 		this.selectionStore.endMove();
@@ -159,6 +174,7 @@ export class SelectionOperation {
 	 */
 	moveBy(deltaX: number, deltaY: number) {
 		const { drawables } = this.selectionStore;
+		this.historyStore.push(this.drawableStore.drawables);
 
 		drawables.forEach(entity => {
 			if (entity.position) {
@@ -176,6 +192,7 @@ export class SelectionOperation {
 	 * Starts resizing the selection from the given edge/corner.
 	 */
 	startResize(edge: ResizeHandle, sceneCoordinates: Position) {
+		this.historyStore.push(this.drawableStore.drawables);
 		this.selectionStore.startResize(edge, sceneCoordinates);
 		this.sceneStore.mouseDown = sceneCoordinates;
 	}

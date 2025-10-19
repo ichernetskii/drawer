@@ -77,7 +77,8 @@ export class MouseController implements Disposable {
 
 		// Mouse down on not selected entity
 		if (drawableUnderCursor) {
-			this.selectionOperation.selectAndStartMove(drawableUnderCursor, sceneCoordinates);
+			this.selectionOperation.addToSelection(drawableUnderCursor);
+			this.selectionOperation.startMove(sceneCoordinates);
 			return;
 		}
 
@@ -132,7 +133,7 @@ export class MouseController implements Disposable {
 	};
 
 	private handleMouseUp = (e: MouseEvent) => {
-		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e);
+		const sceneCoordinates = this.sceneStore.getSceneCoordinates(e, true);
 
 		// Regular drawing finished
 		if (this.drawingOperation.isDrawing()) {

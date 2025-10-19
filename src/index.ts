@@ -22,8 +22,8 @@ sceneStore.load();
 
 const renderer = new SceneRenderer(ctx, rootStore);
 
-const drawingOperation = new DrawingOperation(drawableStore, sceneStore);
-const selectionOperation = new SelectionOperation(selectionStore, drawableStore, sceneStore);
+const drawingOperation = new DrawingOperation(drawableStore, sceneStore, rootStore.historyStore);
+const selectionOperation = new SelectionOperation(selectionStore, drawableStore, sceneStore, rootStore.historyStore);
 const navigationOperation = new NavigationOperation(sceneStore, selectionStore);
 
 const mouseController = new MouseController(
@@ -34,7 +34,14 @@ const mouseController = new MouseController(
 	selectionStore,
 	sceneStore,
 );
-const keyboardController = new KeyboardController(navigationOperation, selectionOperation, sceneStore, selectionStore);
+const keyboardController = new KeyboardController(
+	navigationOperation,
+	selectionOperation,
+	sceneStore,
+	selectionStore,
+	drawableStore,
+	rootStore.historyStore,
+);
 const wheelController = new WheelController($canvas, navigationOperation, sceneStore);
 const toolbarController = new ToolbarController($toolbar, sceneStore);
 

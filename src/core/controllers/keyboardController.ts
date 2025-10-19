@@ -4,14 +4,18 @@ import type { Disposable } from "@/shared/types/types";
 import { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
+import type { HistoryStore } from "@/store/historyStore/historyStore.ts";
 import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
+import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 
 export class KeyboardController implements Disposable {
 	private navigationOperation: NavigationOperation;
 	private selectionOperation: SelectionOperation;
 	private sceneStore: SceneStore;
 	private selectionStore: SelectionStore;
+	private drawableStore: DrawableStore;
+	private historyStore: HistoryStore;
 	private abortController = new AbortController();
 
 	constructor(
@@ -19,11 +23,15 @@ export class KeyboardController implements Disposable {
 		selectionOperation: SelectionOperation,
 		sceneStore: SceneStore,
 		selectionStore: SelectionStore,
+		drawableStore: DrawableStore,
+		historyStore: HistoryStore,
 	) {
 		this.selectionStore = selectionStore;
 		this.sceneStore = sceneStore;
 		this.selectionOperation = selectionOperation;
 		this.navigationOperation = navigationOperation;
+		this.drawableStore = drawableStore;
+		this.historyStore = historyStore;
 	}
 
 	init() {
@@ -37,6 +45,17 @@ export class KeyboardController implements Disposable {
 
 	private handleKeyDown = (e: KeyboardEvent) => {
 		switch (e.code) {
+			case "KeyZ": {
+				if (e.metaKey || e.ctrlKey) {
+					const snapshot = this.historyStore.pop();
+					if (snapshot) {
+						this.drawableStore.drawables = snapshot;
+						this.selectionStore.drawables = [];
+						this.selectionStore.selectionHover.drawable = null;
+					}
+				}
+				break;
+			}
 			case "Escape":
 				this.selectionOperation.clearSelection();
 				break;

@@ -1,0 +1,33 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    // add yarn run validate:ts
+    {
+      "label": "validate:ts",
+      "type": "shell",
+      "command": "yarn run validate:ts"
+    },
+    {
+      "label": "eslint",
+      "type": "shell",
+      "command": "yarn run eslint"
+    },
+    {
+      "label": "eslint:fix",
+      "type": "shell",
+      "command": "yarn run eslint:fix"
+    },
+    {
+      "label": "prettier",
+      "type": "shell",
+      "command": "yarn run prettier"
+    },
+    {
+      "label": "prettier:fix",
+      "type": "shell",
+      "command": "yarn run prettier:fix"
+    }
+  ]
+}
