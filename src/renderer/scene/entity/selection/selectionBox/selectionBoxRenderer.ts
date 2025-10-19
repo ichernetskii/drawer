@@ -38,10 +38,6 @@ export class SelectionBoxRenderer extends Renderer {
 			{ x: right, y: bottom }, // bottom-right
 		];
 
-		// Save current styles
-		const prevStrokeStyle = this.ctx.strokeStyle;
-		const prevLineWidth = this.ctx.lineWidth;
-
 		// Apply handle styles
 		this.ctx.strokeStyle = handleConfig.borderColor;
 		this.ctx.lineWidth = handleBorderWidth;
@@ -68,9 +64,5 @@ export class SelectionBoxRenderer extends Renderer {
 				handleSize - handleBorderWidth,
 			);
 		}
-
-		// Restore previous styles
-		this.ctx.strokeStyle = prevStrokeStyle;
-		this.ctx.lineWidth = prevLineWidth;
 	}
 }

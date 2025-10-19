@@ -10,7 +10,7 @@ export class Grid extends Entity {
 
 	constructor() {
 		super();
-		this._color = "rgba(255, 255, 255, 0.1)";
+		this.color = "rgba(255, 255, 255, 0.1)";
 	}
 }
 

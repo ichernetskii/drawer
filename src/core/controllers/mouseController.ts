@@ -1,11 +1,12 @@
 import type { DrawingOperation } from "@/core/operations/drawingOperation.ts";
 import type { SelectionOperation } from "@/core/operations/selectionOperation.ts";
-import type { DrawableStore } from "@/store/drawableStore.ts";
+import type { Disposable } from "@/shared/types/types";
+import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { SceneStore } from "@/store/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore.ts";
+import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
+import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
 
-export class MouseController {
+export class MouseController implements Disposable {
 	private canvas: HTMLCanvasElement;
 	private drawingOperation: DrawingOperation;
 	private selectionOperation: SelectionOperation;
@@ -39,7 +40,7 @@ export class MouseController {
 		this.canvas.addEventListener("contextmenu", this.handleContextMenu, { signal });
 	}
 
-	destroy() {
+	dispose() {
 		this.abortController.abort();
 	}
 

@@ -1,16 +1,16 @@
 import type { Position } from "@/shared/types/types";
-import type { DrawableStore } from "@/store/drawableStore.ts";
+import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { SceneStore } from "@/store/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore.ts";
+import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
+import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 export class SelectionOperation {
-	private selectionStore: SelectionStore;
-	private drawableStore: DrawableStore;
-	private sceneStore: SceneStore;
+	private readonly selectionStore: SelectionStore;
+	private readonly drawableStore: DrawableStore;
+	private readonly sceneStore: SceneStore;
 
 	constructor(selectionStore: SelectionStore, drawableStore: DrawableStore, sceneStore: SceneStore) {
 		this.sceneStore = sceneStore;
@@ -223,13 +223,6 @@ export class SelectionOperation {
 	 */
 	updateHover(sceneCoordinates: Position) {
 		this.selectionStore.selectionHover.drawable = this.drawableStore.getDrawableAtPosition(sceneCoordinates);
-	}
-
-	/**
-	 * Clears hover highlight.
-	 */
-	clearHover() {
-		this.selectionStore.selectionHover.drawable = null;
 	}
 
 	/**

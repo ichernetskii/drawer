@@ -1,13 +1,8 @@
+import { Renderer } from "@/renderer/renderer.ts";
 import { snapToGridCeil, snapToGridFloor } from "@/shared/utils/snap.ts";
 import type { Grid } from "@/store/entity/grid/grid.ts";
 
-export class GridRenderer {
-	private readonly ctx: CanvasRenderingContext2D;
-
-	constructor(ctx: CanvasRenderingContext2D) {
-		this.ctx = ctx;
-	}
-
+export class GridRenderer extends Renderer {
 	/**
 	 * Calculates appropriate grid step multiplier based on zoom level.
 	 * Returns multiplier (1, 2, 5, 10, 20, 50, 100, etc.)

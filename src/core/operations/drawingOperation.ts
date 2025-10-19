@@ -1,15 +1,15 @@
 import type { Position } from "@/shared/types/types";
-import type { DrawableStore } from "@/store/drawableStore.ts";
+import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import { createEntity } from "@/store/entity/utils.ts";
-import type { SceneStore } from "@/store/sceneStore.ts";
+import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 
 /**
  * Handles drawing operations for creating new shapes.
  * Manages the lifecycle of drawing: start, update, finish.
  */
 export class DrawingOperation {
-	private drawableStore: DrawableStore;
-	private sceneStore: SceneStore;
+	private readonly drawableStore: DrawableStore;
+	private readonly sceneStore: SceneStore;
 
 	constructor(drawableStore: DrawableStore, sceneStore: SceneStore) {
 		this.sceneStore = sceneStore;

@@ -1,7 +1,8 @@
 import type { NavigationOperation } from "@/core/operations/navigationOperation.ts";
-import type { SceneStore } from "@/store/sceneStore.ts";
+import type { Disposable } from "@/shared/types/types";
+import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 
-export class WheelController {
+export class WheelController implements Disposable {
 	private canvas: HTMLCanvasElement;
 	private sceneStore: SceneStore;
 	private navigationOperation: NavigationOperation;
@@ -18,7 +19,7 @@ export class WheelController {
 		this.canvas.addEventListener("wheel", this.handleWheel, { signal, passive: false });
 	}
 
-	destroy() {
+	dispose() {
 		this.abortController.abort();
 	}
 

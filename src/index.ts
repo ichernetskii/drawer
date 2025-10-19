@@ -52,9 +52,10 @@ renderer.render();
 // HMR cleanup for development
 if (import.meta.hot) {
 	import.meta.hot.dispose(() => {
-		mouseController.destroy();
-		keyboardController.destroy();
-		wheelController.destroy();
-		toolbarController.destroy();
+		mouseController.dispose();
+		keyboardController.dispose();
+		wheelController.dispose();
+		toolbarController.dispose();
+		rootStore.dispose();
 	});
 }

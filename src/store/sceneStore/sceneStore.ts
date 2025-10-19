@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from "mobx";
+import { action, computed, observable } from "mobx";
 
 import type { Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
@@ -23,42 +23,28 @@ export class SceneStore implements Storable {
 	readonly gridStep = 10; // Grid step in scene coordinates
 	readonly gridStepShiftMultiplier = 10;
 
-	private _size: Size = { width: 0, height: 0 };
-	private _zoom = 1;
-	private _origin: Position = { x: 0, y: 0 };
-	private _mouseDown: Position | null = null;
-	private _tool: string = SelectionPreview.type;
-	private _isGridVisible = true;
 	private storage = new Storage<StoredSceneStore>("sceneStore");
 
-	constructor() {
-		makeAutoObservable(
-			this,
-			{},
-			{
-				autoBind: true,
-			},
-		);
+	@observable private accessor _size: Size = { width: 0, height: 0 };
+	@observable private accessor _zoom = 1;
+	@observable private accessor _origin: Position = { x: 0, y: 0 };
+	@observable private accessor _mouseDown: Position | null = null;
+	@observable private accessor _tool: string = SelectionPreview.type;
+	@observable private accessor _isGridVisible = true;
 
-		reaction(
-			() => [this.zoom, this.origin, this.tool],
-			() => this.save(),
-		);
-	}
-
-	get size() {
+	@computed get size() {
 		return this._size;
 	}
 
-	set size(value) {
+	@action set size(value) {
 		this._size = value;
 	}
 
-	get zoom() {
+	@computed get zoom() {
 		return this._zoom;
 	}
 
-	set zoom(value) {
+	@action set zoom(value) {
 		this._zoom = value > this.zoomMax ? this.zoomMax : value < this.zoomMin ? this.zoomMin : value;
 	}
 
@@ -70,31 +56,31 @@ export class SceneStore implements Storable {
 		return Math.exp(-deltaY * zoomSensitivity);
 	}
 
-	get origin() {
+	@computed get origin() {
 		return this._origin;
 	}
 
-	set origin(value) {
+	@action set origin(value) {
 		this._origin = value;
 	}
 
-	get mouseDown() {
+	@computed get mouseDown() {
 		return this._mouseDown;
 	}
 
-	set mouseDown(value) {
+	@action set mouseDown(value) {
 		this._mouseDown = value;
 	}
 
-	get tool() {
+	@computed get tool() {
 		return this._tool;
 	}
 
-	set tool(value) {
+	@action set tool(value) {
 		this._tool = value;
 	}
 
-	get grid() {
+	@computed get grid() {
 		const grid = new Grid();
 		grid.gridStep = this.gridStep;
 		grid.zoom = this.zoom;
@@ -103,19 +89,19 @@ export class SceneStore implements Storable {
 		return grid;
 	}
 
-	toggleGrid() {
+	@action toggleGrid() {
 		this._isGridVisible = !this._isGridVisible;
 	}
 
-	get isGridVisible() {
+	@computed get isGridVisible() {
 		return this._isGridVisible;
 	}
 
-	moveOriginBy(delta: Position) {
+	@action moveOriginBy(delta: Position) {
 		this.origin = { x: this.origin.x + delta.x, y: this.origin.y + delta.y };
 	}
 
-	zoomAtSceneCoordinates(sceneCoordinated: Position, factor: number) {
+	@action zoomAtSceneCoordinates(sceneCoordinated: Position, factor: number) {
 		const prevZoom = this.zoom;
 		this.zoom = prevZoom * factor;
 		const effectiveFactor = this.zoom / prevZoom;

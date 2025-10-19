@@ -5,14 +5,11 @@ import type { Entity } from "@/store/entity/entity.ts";
 export class Ellipse extends Drawable {
 	static readonly type = "ellipse";
 
-	/**
-	 * Checks if a point is inside the ellipse.
-	 * Uses the standard ellipse equation: ((x - cx) / rx)² + ((y - cy) / ry)² <= 1
-	 */
 	isPointInside(point: Position): boolean {
 		if (!this.position || !this.size) return false;
 
-		// Calculate center and radiuses
+		// Uses the standard ellipse equation: ((x - cx) / rx)² + ((y - cy) / ry)² <= 1
+		// Calculate center and radius
 		const cx = this.position.x + this.size.width / 2;
 		const cy = this.position.y + this.size.height / 2;
 		const rx = this.size.width / 2;

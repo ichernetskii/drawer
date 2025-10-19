@@ -1,10 +1,10 @@
 import type { Position } from "@/shared/types/types";
-import type { SceneStore } from "@/store/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore.ts";
+import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
+import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
 
 export class NavigationOperation {
-	private sceneStore: SceneStore;
-	private selectionStore: SelectionStore;
+	private readonly sceneStore: SceneStore;
+	private readonly selectionStore: SelectionStore;
 
 	constructor(sceneStore: SceneStore, selectionStore: SelectionStore) {
 		this.selectionStore = selectionStore;

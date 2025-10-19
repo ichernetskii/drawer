@@ -1,12 +1,13 @@
 import type { NavigationOperation } from "@/core/operations/navigationOperation.ts";
 import type { SelectionOperation } from "@/core/operations/selectionOperation.ts";
+import type { Disposable } from "@/shared/types/types";
 import { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { SceneStore } from "@/store/sceneStore.ts";
-import type { SelectionStore } from "@/store/selectionStore.ts";
+import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
+import type { SelectionStore } from "@/store/selectionStore/selectionStore.ts";
 
-export class KeyboardController {
+export class KeyboardController implements Disposable {
 	private navigationOperation: NavigationOperation;
 	private selectionOperation: SelectionOperation;
 	private sceneStore: SceneStore;
@@ -30,7 +31,7 @@ export class KeyboardController {
 		document.addEventListener("keydown", this.handleKeyDown, { signal });
 	}
 
-	destroy() {
+	dispose() {
 		this.abortController.abort();
 	}
 

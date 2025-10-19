@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from "mobx";
+import { action, computed, observable } from "mobx";
 
 import type { Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
@@ -12,34 +12,20 @@ interface StoredDrawableStore {
 }
 
 export class DrawableStore implements Storable {
-	private _drawables: Drawable[] = [];
-	private _drawing: Drawable | null = null;
 	private storage = new Storage<StoredDrawableStore>("drawableStore");
 
-	constructor() {
-		makeAutoObservable<this>(this, {}, { autoBind: true });
+	@observable private accessor _drawables: Drawable[] = [];
+	@observable private accessor _drawing: Drawable | null = null;
 
-		reaction(
-			() =>
-				this.drawables.map(drawable => [
-					drawable.position,
-					drawable.size,
-					drawable.color,
-					drawable.borderWidth,
-				]),
-			() => this.save(),
-		);
-	}
-
-	get drawables() {
+	@computed get drawables() {
 		return this._drawables;
 	}
 
-	set drawables(value) {
+	@action set drawables(value) {
 		this._drawables = value;
 	}
 
-	addDrawable(drawable: Drawable) {
+	@action addDrawable(drawable: Drawable) {
 		this.drawables.push(drawable);
 	}
 
@@ -47,11 +33,11 @@ export class DrawableStore implements Storable {
 		this.drawables = this.drawables.filter(drawable => !drawables.includes(drawable));
 	}
 
-	get drawing() {
+	@computed get drawing() {
 		return this._drawing;
 	}
 
-	set drawing(value) {
+	@action set drawing(value) {
 		this._drawing = value;
 	}
 

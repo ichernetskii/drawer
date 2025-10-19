@@ -2,10 +2,11 @@ import "@/shared/styles/toolbar.css";
 
 import { reaction } from "mobx";
 
+import type { Disposable } from "@/shared/types/types";
 import { Ellipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { Rectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-import type { SceneStore } from "@/store/sceneStore.ts";
+import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 
 const CSS_CLASSES = {
 	BUTTON: "toolbar__button",
@@ -30,7 +31,7 @@ const TOOL_CONFIG = [
 	},
 ] as const;
 
-export class ToolbarController {
+export class ToolbarController implements Disposable {
 	private readonly abortController = new AbortController();
 	private readonly toolbarElement: HTMLElement;
 	private readonly sceneStore: SceneStore;
@@ -48,7 +49,7 @@ export class ToolbarController {
 		this.updateActiveButton(this.sceneStore.tool);
 	}
 
-	destroy() {
+	dispose() {
 		this.abortController.abort();
 	}
 

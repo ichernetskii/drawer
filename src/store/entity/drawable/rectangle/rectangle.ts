@@ -5,9 +5,6 @@ import type { Entity } from "@/store/entity/entity.ts";
 export class Rectangle extends Drawable {
 	static readonly type = "rectangle";
 
-	/**
-	 * Checks if a point is inside the rectangle.
-	 */
 	isPointInside(point: Position): boolean {
 		if (!this.position || !this.size) return false;
 

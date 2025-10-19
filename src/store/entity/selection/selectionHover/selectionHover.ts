@@ -1,4 +1,4 @@
-import { computed, makeObservable, observable } from "mobx";
+import { action, computed, observable } from "mobx";
 
 import type { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { Selection } from "@/store/entity/selection/selection.ts";
@@ -11,31 +11,22 @@ export class SelectionHover extends Selection {
 	static readonly type = "selectionHover";
 
 	// The drawable being hovered
-	private _drawable: Drawable | null = null;
-	private _zoom = 1;
+	@observable private accessor _drawable: Drawable | null = null;
+	@observable private accessor _zoom = 1;
 
-	constructor() {
-		super();
-		makeObservable<this, "_drawable" | "_zoom">(this, {
-			_drawable: observable,
-			drawable: computed,
-			_zoom: observable,
-			zoom: computed,
-		});
-	}
-	get drawable() {
+	@computed get drawable() {
 		return this._drawable;
 	}
 
-	set drawable(value) {
+	@action set drawable(value) {
 		this._drawable = value;
 	}
 
-	get zoom() {
+	@computed get zoom() {
 		return this._zoom;
 	}
 
-	set zoom(value: number) {
+	@action set zoom(value: number) {
 		this._zoom = value;
 	}
 }
