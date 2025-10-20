@@ -35,7 +35,10 @@ export class KeyboardController implements Disposable {
 		switch (e.code) {
 			case "KeyZ": {
 				if (e.metaKey || e.ctrlKey) {
-					const snapshot = this.rootStore.historyStore.pop();
+					// Cmd/Ctrl+Shift+Z = Redo
+					// Cmd/Ctrl+Z = Undo
+					const snapshot = e.shiftKey ? this.rootStore.historyStore.redo() : this.rootStore.historyStore.undo();
+
 					if (snapshot) {
 						this.rootStore.drawableStore.drawables = snapshot;
 						this.rootStore.selectionStore.drawables = [];

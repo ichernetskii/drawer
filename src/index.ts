@@ -15,10 +15,10 @@ const $toolbar = document.getElementById("toolbar")!;
 const ctx = $canvas.getContext("2d")!;
 
 const rootStore = new RootStore();
-const { drawableStore, sceneStore } = rootStore;
 
-drawableStore.load();
-sceneStore.load();
+rootStore.drawableStore.load();
+rootStore.sceneStore.load();
+rootStore.historyStore.push(rootStore.drawableStore.drawables);
 
 const renderer = new SceneRenderer(ctx, rootStore);
 

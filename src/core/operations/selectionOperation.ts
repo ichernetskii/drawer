@@ -39,10 +39,10 @@ export class SelectionOperation {
 	 * Deletes selected drawables from the canvas.
 	 */
 	deleteSelected() {
-		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 		this.rootStore.drawableStore.deleteDrawables(this.rootStore.selectionStore.drawables);
 		this.rootStore.selectionStore.drawables = [];
 		this.rootStore.selectionStore.selectionHover.drawable = null;
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 	}
 
 	// ========== Selection preview (drag to select) ==========
@@ -115,7 +115,6 @@ export class SelectionOperation {
 	 * Starts moving the current selection.
 	 */
 	startMove(startPosition: Position) {
-		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 		this.rootStore.selectionStore.startMove(startPosition);
 	}
 
@@ -146,9 +145,8 @@ export class SelectionOperation {
 					this.rootStore.selectionStore.drawables = [drawableUnderCursor];
 				}
 			}
-
-			// remove snapshot pushed at startMove
-			this.rootStore.historyStore.pop();
+		} else {
+			this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 		}
 
 		this.rootStore.selectionStore.endMove();
@@ -160,7 +158,6 @@ export class SelectionOperation {
 	 */
 	moveBy(deltaX: number, deltaY: number) {
 		const { drawables } = this.rootStore.selectionStore;
-		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 
 		drawables.forEach(entity => {
 			if (entity.position) {
@@ -170,6 +167,8 @@ export class SelectionOperation {
 				};
 			}
 		});
+
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 	}
 
 	// ========== Resize operations ==========
@@ -178,7 +177,6 @@ export class SelectionOperation {
 	 * Starts resizing the selection from the given edge/corner.
 	 */
 	startResize(edge: ResizeHandle, sceneCoordinates: Position) {
-		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 		this.rootStore.selectionStore.startResize(edge, sceneCoordinates);
 		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
 	}
@@ -196,6 +194,7 @@ export class SelectionOperation {
 	 */
 	finishResize() {
 		this.rootStore.selectionStore.endResize();
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 	}
 
 	/**

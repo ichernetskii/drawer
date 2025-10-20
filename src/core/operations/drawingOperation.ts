@@ -61,8 +61,8 @@ export class DrawingOperation {
 
 		if (drawing && drawing.hasSize) {
 			drawing.normalize();
-			this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 			this.rootStore.drawableStore.addDrawable(drawing);
+			this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 		}
 
 		this.rootStore.drawableStore.drawing = null;
