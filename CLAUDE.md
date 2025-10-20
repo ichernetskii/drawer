@@ -31,11 +31,13 @@ yarn prettier:fix   # fix formatting
 ### Core Patterns
 
 **MVC-like Architecture**: The codebase follows a Model-View-Controller pattern:
+
 - **Model (Store)**: MobX observable stores in `src/store/` manage application state
 - **View (Renderer)**: Canvas rendering logic in `src/renderer/` (observers)
 - **Controller**: Event handlers in `src/core/controllers/` and operations in `src/core/operations/`
 
 **Entity System**: Hierarchical entity structure with polymorphic rendering:
+
 ```
 Entity (abstract base)
 ├── Drawable (user-created shapes)
@@ -53,6 +55,7 @@ Each entity subclass implements its own `isPointInside()` hit-testing logic and 
 ### State Management
 
 **MobX Stores** (all in `src/store/`):
+
 - `RootStore`: Central store containing all sub-stores
 - `DrawableStore`: Manages user-created shapes and drawing state
 - `SelectionStore`: Manages selection state (box, preview, hover)
@@ -64,10 +67,12 @@ Each entity subclass implements its own `isPointInside()` hit-testing logic and 
 ### Coordinate Systems
 
 **Two coordinate systems**:
+
 1. **Client coordinates**: Browser pixel coordinates (origin top-left)
 2. **Scene coordinates**: World space coordinates (origin at center, Y-up)
 
 Transform stack in `SceneRenderer.render()`:
+
 ```
 1. translate(screenCenter)    // move origin to center
 2. scale(zoom, -zoom)          // apply zoom and flip Y-axis
@@ -79,12 +84,14 @@ Use `SceneStore.getSceneCoordinates(clientCoords, snap?)` to convert client → 
 ### Controllers and Operations
 
 **Controllers** (`src/core/controllers/`): Handle raw DOM events
+
 - `MouseController`: Mouse events (down, move, up, contextmenu)
 - `KeyboardController`: Keyboard shortcuts (Delete, arrow keys, Cmd+A)
 - `WheelController`: Zoom with mouse wheel (touchpad-aware sensitivity)
 - `ToolbarController`: UI interaction for tool/grid toggle
 
 **Operations** (`src/core/operations/`): Encapsulate multi-step user workflows
+
 - `DrawingOperation`: Creating new shapes (start → update → finish)
 - `SelectionOperation`: Selection, move, resize operations
 - `NavigationOperation`: Zoom, pan
@@ -111,6 +118,7 @@ All renderers extend the abstract `Renderer` base class. `SceneRenderer` uses Mo
 ### Entity Registration
 
 **Adding new drawable types**: When adding a new shape type:
+
 1. Create entity class extending `Drawable` in `src/store/entity/drawable/` with static `type` property
 2. Implement `isPointInside(point: Position): boolean` for hit-testing
 3. Add case to `createEntity()` factory in `src/store/entity/utils.ts`
@@ -122,21 +130,25 @@ The factory pattern ensures proper deserialization from localStorage.
 ## Key Implementation Details
 
 ### Grid Snapping
+
 - Grid step is `10` scene units (configurable in `SceneStore.gridStep`)
 - Snapping multiplier of `10x` when Shift is held (for coarse adjustments)
 - Use `snapToGrid(value, step)` from `src/shared/utils/snap.ts`
 - All drawing/move/resize operations support snapping via the `snap` parameter in `getSceneCoordinates()`
 
 ### Aspect Ratio Lock
+
 - Hold Shift during drawing or resizing to maintain 1:1 aspect ratio
 - Implemented in `DrawingOperation.update()` and `SelectionOperation.updateResize()`
 
 ### Z-Order and Hit Testing
+
 - Drawables array order determines Z-order (later = on top)
 - `DrawableStore.getDrawableAtPosition()` iterates backwards to find topmost drawable
 - Each drawable uses geometric shape testing (not bounding box) for precise selection
 
 ### Retina Display Support
+
 - `retinaFix()` utility adjusts canvas resolution for high-DPI displays
 - Canvas buffer size scaled by DPR while CSS size remains unchanged
 - Prevents blurry rendering on retina displays

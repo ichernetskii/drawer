@@ -5,11 +5,11 @@
 	display: flex;
 	gap: 8px;
 	background: rgba(40, 40, 40, 0.9);
+	/* eslint-disable-next-line css/use-baseline */
 	backdrop-filter: blur(8px);
 	padding: 8px;
 	border-radius: 8px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	z-index: 1000;
 }
 
 .toolbar__button {
