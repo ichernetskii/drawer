@@ -49,6 +49,13 @@ export class KeyboardController implements Disposable {
 				}
 				break;
 			}
+			case "KeyA": {
+				if (e.metaKey || e.ctrlKey) {
+					// Cmd/Ctrl+A = Select All
+					this.selectionOperation.selectAll();
+				}
+				break;
+			}
 			case "Escape":
 				this.selectionOperation.clearSelection();
 				break;

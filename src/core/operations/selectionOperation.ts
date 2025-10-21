@@ -36,6 +36,13 @@ export class SelectionOperation {
 	}
 
 	/**
+	 * Selects all drawables on the canvas.
+	 */
+	selectAll() {
+		this.rootStore.selectionStore.drawables = [...this.rootStore.drawableStore.drawables];
+	}
+
+	/**
 	 * Deletes selected drawables from the canvas.
 	 */
 	deleteSelected() {
