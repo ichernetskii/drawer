@@ -16,7 +16,7 @@ export class Rectangle extends Drawable {
 		);
 	}
 
-	dublicate(): Rectangle {
+	duplicate(): Rectangle {
 		const copy = new Rectangle();
 		if (this.position) {
 			copy.position = { ...this.position };

@@ -25,7 +25,7 @@ export class Ellipse extends Drawable {
 		return normalizedX * normalizedX + normalizedY * normalizedY <= 1;
 	}
 
-	dublicate(): Ellipse {
+	duplicate(): Ellipse {
 		const copy = new Ellipse();
 		if (this.position) {
 			copy.position = { ...this.position };

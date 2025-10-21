@@ -49,7 +49,7 @@ export class SelectionOperation {
 		if (this.rootStore.selectionStore.drawables.length === 0) return;
 
 		// Create deep copies of selected drawables using their copy() method
-		const copiedDrawables = this.rootStore.selectionStore.drawables.map(drawable => drawable.dublicate());
+		const copiedDrawables = this.rootStore.selectionStore.drawables.map(drawable => drawable.duplicate());
 
 		this.rootStore.selectionStore.clipboard = copiedDrawables;
 	}
@@ -76,7 +76,7 @@ export class SelectionOperation {
 		// Create new copies with offset
 		const pasteOffset = 20; // Offset for pasted drawables in scene units
 		const pastedDrawables = this.rootStore.selectionStore.clipboard.map(drawable => {
-			const copy = drawable.dublicate();
+			const copy = drawable.duplicate();
 
 			// Apply offset to position
 			if (copy.position) {

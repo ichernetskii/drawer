@@ -29,7 +29,7 @@ export abstract class Drawable extends Entity {
 	 * Creates a deep copy of this drawable.
 	 * Each drawable must implement its own copying logic.
 	 */
-	abstract dublicate(): Drawable;
+	abstract duplicate(): Drawable;
 }
 
 export function isDrawable(entity: Entity): entity is Drawable {
