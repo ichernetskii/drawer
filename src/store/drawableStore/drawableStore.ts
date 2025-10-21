@@ -80,7 +80,7 @@ export class DrawableStore implements Storable {
 
 	save = debounce(() => {
 		const serializedDrawables: StoredDrawable[] = this.drawables.map(drawable => ({
-			type: (drawable.constructor as typeof Drawable).type,
+			type: drawable.type,
 			position: drawable.position,
 			size: drawable.size,
 			color: drawable.color,

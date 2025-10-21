@@ -12,7 +12,7 @@ export class HistoryStore {
 
 	push(drawables: Drawable[]) {
 		const snapshot: Snapshot = drawables.map(drawable => ({
-			type: (drawable.constructor as typeof Drawable).type,
+			type: drawable.type,
 			position: drawable.position,
 			size: drawable.size,
 			color: drawable.color,

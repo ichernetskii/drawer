@@ -9,6 +9,10 @@ export abstract class Entity {
 	@observable private accessor _color: string = "#fff";
 	@observable private accessor _borderWidth = 10;
 
+	get type(): string {
+		return (this.constructor as typeof Entity).type;
+	}
+
 	@computed get position() {
 		return this._position;
 	}
