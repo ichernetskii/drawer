@@ -24,6 +24,19 @@ export class Ellipse extends Drawable {
 
 		return normalizedX * normalizedX + normalizedY * normalizedY <= 1;
 	}
+
+	dublicate(): Ellipse {
+		const copy = new Ellipse();
+		if (this.position) {
+			copy.position = { ...this.position };
+		}
+		if (this.size) {
+			copy.size = { ...this.size };
+		}
+		copy.color = this.color;
+		copy.borderWidth = this.borderWidth;
+		return copy;
+	}
 }
 
 export function isEllipse(entity: Entity): entity is Ellipse {

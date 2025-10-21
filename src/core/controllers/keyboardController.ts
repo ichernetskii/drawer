@@ -52,7 +52,35 @@ export class KeyboardController implements Disposable {
 			case "KeyA": {
 				if (e.metaKey || e.ctrlKey) {
 					// Cmd/Ctrl+A = Select All
+					e.preventDefault();
 					this.selectionOperation.selectAll();
+				}
+				break;
+			}
+			case "KeyC": {
+				if (e.metaKey || e.ctrlKey) {
+					// Cmd/Ctrl+C = Copy
+					e.preventDefault();
+					this.selectionOperation.copy();
+				}
+				break;
+			}
+			case "KeyX": {
+				if (e.metaKey || e.ctrlKey) {
+					// Cmd/Ctrl+X = Cut
+					e.preventDefault();
+					this.selectionOperation.cut();
+				}
+				break;
+			}
+			case "KeyV": {
+				if (e.metaKey || e.ctrlKey) {
+					// Cmd/Ctrl+V = Paste
+					e.preventDefault();
+					this.selectionOperation.paste();
+				} else {
+					// V = Selection tool
+					this.rootStore.sceneStore.tool = SelectionPreview.type;
 				}
 				break;
 			}
@@ -70,10 +98,6 @@ export class KeyboardController implements Disposable {
 			case "ArrowUp":
 			case "ArrowDown":
 				this.handleArrowKeys(e);
-				break;
-
-			case "KeyV":
-				this.rootStore.sceneStore.tool = SelectionPreview.type;
 				break;
 
 			case "KeyR":

@@ -43,6 +43,65 @@ export class SelectionOperation {
 	}
 
 	/**
+	 * Copies selected drawables to clipboard.
+	 */
+	copy() {
+		if (this.rootStore.selectionStore.drawables.length === 0) return;
+
+		// Create deep copies of selected drawables using their copy() method
+		const copiedDrawables = this.rootStore.selectionStore.drawables.map(drawable => drawable.dublicate());
+
+		this.rootStore.selectionStore.clipboard = copiedDrawables;
+	}
+
+	/**
+	 * Cuts selected drawables (copies and deletes them).
+	 */
+	cut() {
+		if (this.rootStore.selectionStore.drawables.length === 0) return;
+
+		// Copy to clipboard first
+		this.copy();
+
+		// Then delete selected drawables
+		this.deleteSelected();
+	}
+
+	/**
+	 * Pastes drawables from clipboard.
+	 */
+	paste() {
+		if (this.rootStore.selectionStore.clipboard.length === 0) return;
+
+		// Create new copies with offset
+		const pasteOffset = 20; // Offset for pasted drawables in scene units
+		const pastedDrawables = this.rootStore.selectionStore.clipboard.map(drawable => {
+			const copy = drawable.dublicate();
+
+			// Apply offset to position
+			if (copy.position) {
+				copy.position = {
+					x: copy.position.x + pasteOffset,
+					y: copy.position.y + pasteOffset,
+				};
+			}
+
+			return copy;
+		});
+
+		// Add to drawable store
+		pastedDrawables.forEach(drawable => {
+			this.rootStore.drawableStore.addDrawable(drawable);
+		});
+
+		// Select the pasted drawables
+		this.rootStore.selectionStore.drawables = pastedDrawables;
+
+		// Add to history
+		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
+	}
+
+	/**
 	 * Deletes selected drawables from the canvas.
 	 */
 	deleteSelected() {

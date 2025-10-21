@@ -15,6 +15,19 @@ export class Rectangle extends Drawable {
 			point.y <= this.position.y + this.size.height
 		);
 	}
+
+	dublicate(): Rectangle {
+		const copy = new Rectangle();
+		if (this.position) {
+			copy.position = { ...this.position };
+		}
+		if (this.size) {
+			copy.size = { ...this.size };
+		}
+		copy.color = this.color;
+		copy.borderWidth = this.borderWidth;
+		return copy;
+	}
 }
 
 export function isRectangle(entity: Entity): entity is Rectangle {

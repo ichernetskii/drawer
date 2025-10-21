@@ -71,6 +71,9 @@ export class SelectionStore {
 	private readonly _selectionHover: SelectionHover = new SelectionHover();
 	@observable private accessor _zoom = 1;
 
+	// Clipboard for copy/paste operations
+	@observable private accessor _clipboard: Drawable[] = [];
+
 	// Resize state: active only during edge/corner drag
 	@observable private accessor _resizeHandle: ResizeHandle | null = null;
 	@observable private accessor _resizeStartBox: ResizeStartBox | null = null;
@@ -104,6 +107,16 @@ export class SelectionStore {
 
 	@action delete(drawable: Drawable) {
 		this.drawables = this.drawables.filter(d => d !== drawable);
+	}
+
+	// ========== Clipboard operations ==========
+
+	@computed get clipboard() {
+		return this._clipboard;
+	}
+
+	@action set clipboard(value) {
+		this._clipboard = value;
 	}
 
 	// ========== Selection preview (mouse drag) ==========

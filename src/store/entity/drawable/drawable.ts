@@ -24,6 +24,12 @@ export abstract class Drawable extends Entity {
 	 * Each drawable must implement its own hit-testing logic.
 	 */
 	abstract isPointInside(point: Position): boolean;
+
+	/**
+	 * Creates a deep copy of this drawable.
+	 * Each drawable must implement its own copying logic.
+	 */
+	abstract dublicate(): Drawable;
 }
 
 export function isDrawable(entity: Entity): entity is Drawable {
