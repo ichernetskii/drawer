@@ -10,11 +10,11 @@ export interface HandleConfig {
 
 export class SelectionBox extends Selection {
 	static readonly type = "selectionBox";
-	private _padding = 10;
-	private _zoom = 1; // needed for handle scaling
+	padding = 10;
+	zoom = 1; // needed for handle scaling
 
 	// Handle configuration (corner squares)
-	readonly handleConfig: HandleConfig = {
+	static readonly handleConfig: HandleConfig = {
 		size: 8,
 		borderColor: "rgb(255,255,255)",
 		fillColor: "rgb(64,255,0)",
@@ -24,22 +24,6 @@ export class SelectionBox extends Selection {
 	constructor() {
 		super();
 		this.color = "rgb(15,207,255)";
-	}
-
-	get padding() {
-		return this._padding;
-	}
-
-	set padding(value) {
-		this._padding = value;
-	}
-
-	get zoom() {
-		return this._zoom;
-	}
-
-	set zoom(value) {
-		this._zoom = value;
 	}
 }
 

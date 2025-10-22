@@ -1,18 +1,20 @@
-import type { Position } from "@/shared/types/types";
+import type { PickFields, Position } from "@/shared/types/types";
 import { Entity } from "@/store/entity/entity.ts";
+
+export type DrawableSerializable = PickFields<Drawable, "type" | "size" | "position" | "color" | "borderWidth">;
 
 const getId = (() => {
 	let counter = 0;
 	return () => counter++;
 })();
 
-export abstract class Drawable extends Entity {
-	static readonly type: string = "drawable";
+export class Drawable extends Entity {
+	static type: string = "drawable";
 	readonly id: number;
 
 	// Configuration for hover highlight
-	readonly hoverColor = "rgba(253,0,0,0.8)"; // Cornflower blue with transparency
-	readonly hoverBorderWidth = 5; // Border width in screen pixels (independent of zoom)
+	static readonly hoverColor = "rgba(253,0,0,0.8)"; // Cornflower blue with transparency
+	static readonly hoverBorderWidth = 5; // Border width in screen pixels (independent of zoom)
 
 	constructor() {
 		super();
@@ -23,13 +25,42 @@ export abstract class Drawable extends Entity {
 	 * Checks if a point is inside the drawable's geometric shape.
 	 * Each drawable must implement its own hit-testing logic.
 	 */
-	abstract isPointInside(point: Position): boolean;
+	isPointInside(point: Position): boolean {
+		throw new Error(`isPointInside must be implemented in subclasses of Drawable. Point: ${point}`);
+	}
 
-	/**
-	 * Creates a deep copy of this drawable.
-	 * Each drawable must implement its own copying logic.
-	 */
-	abstract duplicate(): Drawable;
+	duplicate(): Drawable {
+		const Constructor = this.constructor as typeof Drawable;
+		const copy = new Constructor();
+		if (this.position) {
+			copy.position = { ...this.position };
+		}
+		if (this.size) {
+			copy.size = { ...this.size };
+		}
+		copy.color = this.color;
+		copy.borderWidth = this.borderWidth;
+		return copy;
+	}
+
+	toSerializable(): DrawableSerializable {
+		return {
+			type: this.type,
+			position: this.position,
+			size: this.size,
+			color: this.color,
+			borderWidth: this.borderWidth,
+		};
+	}
+
+	fromSerializable(serializable: DrawableSerializable): Drawable {
+		(this.constructor as typeof Drawable).type = serializable.type;
+		this.size = serializable.size;
+		this.position = serializable.position;
+		this.color = serializable.color;
+		this.borderWidth = serializable.borderWidth;
+		return this;
+	}
 }
 
 export function isDrawable(entity: Entity): entity is Drawable {

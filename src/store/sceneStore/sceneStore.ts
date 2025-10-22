@@ -1,17 +1,13 @@
 import { action, computed, observable } from "mobx";
 
-import type { Position, Size, Storable } from "@/shared/types/types";
+import type { PickFields, Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
 import { snapToGrid } from "@/shared/utils/snap.ts";
 import { Storage } from "@/shared/utils/storage.ts";
 import { Grid } from "@/store/entity/grid/grid.ts";
 import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 
-interface StoredSceneStore {
-	zoom: number;
-	origin: Position;
-	tool: string;
-}
+type SceneStoreSerializable = PickFields<SceneStore, "zoom" | "origin" | "tool">;
 
 export class SceneStore implements Storable {
 	private readonly zoomMin = 1 / 5;
@@ -23,7 +19,7 @@ export class SceneStore implements Storable {
 	readonly gridStep = 10; // Grid step in scene coordinates
 	readonly gridStepShiftMultiplier = 10;
 
-	private storage = new Storage<StoredSceneStore>("sceneStore");
+	private storage = new Storage<SceneStoreSerializable>("sceneStore");
 
 	@observable private accessor _size: Size = { width: 0, height: 0 };
 	@observable private accessor _zoom = 1;

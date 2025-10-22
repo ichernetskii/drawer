@@ -48,10 +48,10 @@ export class SelectionOperation {
 	copy() {
 		if (this.rootStore.selectionStore.drawables.length === 0) return;
 
-		// Create deep copies of selected drawables using their copy() method
-		const copiedDrawables = this.rootStore.selectionStore.drawables.map(drawable => drawable.duplicate());
-
-		this.rootStore.selectionStore.clipboard = copiedDrawables;
+		// Create deep copies of selected drawables using their duplicate() method
+		this.rootStore.selectionStore.clipboard = this.rootStore.selectionStore.drawables.map(drawable =>
+			drawable.duplicate(),
+		);
 	}
 
 	/**

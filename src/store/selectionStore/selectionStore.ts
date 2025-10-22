@@ -143,7 +143,6 @@ export class SelectionStore {
 
 	@action set zoom(value) {
 		this._zoom = value;
-		this._selectionHover.zoom = value;
 	}
 
 	// ========== Selection box (around selected drawables) ==========

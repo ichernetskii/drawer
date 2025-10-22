@@ -5,7 +5,7 @@ import type { Entity } from "@/store/entity/entity.ts";
 export class Ellipse extends Drawable {
 	static readonly type = "ellipse";
 
-	isPointInside(point: Position): boolean {
+	override isPointInside(point: Position): boolean {
 		if (!this.position || !this.size) return false;
 
 		// Uses the standard ellipse equation: ((x - cx) / rx)² + ((y - cy) / ry)² <= 1
@@ -23,19 +23,6 @@ export class Ellipse extends Drawable {
 		const normalizedY = (point.y - cy) / ry;
 
 		return normalizedX * normalizedX + normalizedY * normalizedY <= 1;
-	}
-
-	duplicate(): Ellipse {
-		const copy = new Ellipse();
-		if (this.position) {
-			copy.position = { ...this.position };
-		}
-		if (this.size) {
-			copy.size = { ...this.size };
-		}
-		copy.color = this.color;
-		copy.borderWidth = this.borderWidth;
-		return copy;
 	}
 }
 

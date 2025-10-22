@@ -1,5 +1,5 @@
 import { Renderer } from "@/renderer/renderer.ts";
-import type { SelectionBox } from "@/store/entity/selection/selectionBox/selectionBox.ts";
+import { SelectionBox } from "@/store/entity/selection/selectionBox/selectionBox.ts";
 
 export class SelectionBoxRenderer extends Renderer {
 	render(selectionBox: SelectionBox) {
@@ -20,7 +20,9 @@ export class SelectionBoxRenderer extends Renderer {
 	private renderHandles(selectionBox: SelectionBox) {
 		if (!selectionBox.position || !selectionBox.size) return;
 
-		const { handleConfig, zoom } = selectionBox;
+		const { zoom } = selectionBox;
+		const { handleConfig } = SelectionBox;
+
 		const handleSize = handleConfig.size / zoom;
 		const handleBorderWidth = handleConfig.borderWidth / zoom;
 		const halfSize = handleSize / 2;

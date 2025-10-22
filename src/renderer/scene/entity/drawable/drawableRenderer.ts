@@ -1,7 +1,7 @@
 import { Renderer } from "@/renderer/renderer.ts";
 import { EllipseRenderer } from "@/renderer/scene/entity/drawable/ellipse/ellipseRenderer.ts";
 import { RectangleRenderer } from "@/renderer/scene/entity/drawable/rectangle/rectangleRenderer.ts";
-import type { Drawable } from "@/store/entity/drawable/drawable.ts";
+import { Drawable } from "@/store/entity/drawable/drawable.ts";
 import { isEllipse } from "@/store/entity/drawable/ellipse/ellipse.ts";
 import { isRectangle } from "@/store/entity/drawable/rectangle/rectangle.ts";
 
@@ -27,8 +27,8 @@ export class DrawableRenderer extends Renderer {
 	render(drawable: Drawable | null, options: RenderOptions) {
 		if (!drawable || !drawable.position || !drawable.size) return;
 
-		this.ctx.strokeStyle = options.hover ? drawable.hoverColor : drawable.color;
-		this.ctx.lineWidth = options.hover ? drawable.hoverBorderWidth / options.zoom : drawable.borderWidth;
+		this.ctx.strokeStyle = options.hover ? Drawable.hoverColor : drawable.color;
+		this.ctx.lineWidth = options.hover ? Drawable.hoverBorderWidth / options.zoom : drawable.borderWidth;
 
 		if (isRectangle(drawable)) {
 			this.rectangleRenderer.render(drawable, options);

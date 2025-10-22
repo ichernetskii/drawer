@@ -3,16 +3,15 @@ import { action, computed, observable } from "mobx";
 import type { Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
 import { Storage } from "@/shared/utils/storage.ts";
-import type { Drawable } from "@/store/entity/drawable/drawable.ts";
-import { createEntity } from "@/store/entity/utils.ts";
+import type { Drawable, DrawableSerializable } from "@/store/entity/drawable/drawable.ts";
+import { createDrawable } from "@/store/entity/utils.ts";
 
-type StoredDrawable = Pick<Drawable, "position" | "size" | "color" | "borderWidth"> & { type: string };
-interface StoredDrawableStore {
-	drawables: StoredDrawable[];
+interface DrawableStoreSerializable {
+	drawables: DrawableSerializable[];
 }
 
 export class DrawableStore implements Storable {
-	private storage = new Storage<StoredDrawableStore>("drawableStore");
+	private storage = new Storage<DrawableStoreSerializable>("drawableStore");
 
 	@observable private accessor _drawables: Drawable[] = [];
 	@observable private accessor _drawing: Drawable | null = null;
@@ -79,14 +78,7 @@ export class DrawableStore implements Storable {
 	}
 
 	save = debounce(() => {
-		const serializedDrawables: StoredDrawable[] = this.drawables.map(drawable => ({
-			type: drawable.type,
-			position: drawable.position,
-			size: drawable.size,
-			color: drawable.color,
-			borderWidth: drawable.borderWidth,
-		}));
-
+		const serializedDrawables = this.drawables.map(drawable => drawable.toSerializable());
 		this.storage.save({ drawables: serializedDrawables });
 	}, 1000);
 
@@ -97,15 +89,9 @@ export class DrawableStore implements Storable {
 		const restoredDrawables: Drawable[] = [];
 
 		for (const serialized of data.drawables) {
-			const drawable = createEntity(serialized.type);
-
-			if (drawable) {
-				drawable.position = serialized.position;
-				drawable.size = serialized.size;
-				drawable.color = serialized.color;
-				drawable.borderWidth = serialized.borderWidth;
-				restoredDrawables.push(drawable);
-			}
+			const drawable = createDrawable(serialized.type);
+			drawable.fromSerializable(serialized);
+			restoredDrawables.push(drawable);
 		}
 
 		this.drawables = restoredDrawables;

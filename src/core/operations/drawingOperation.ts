@@ -1,5 +1,5 @@
 import type { Position } from "@/shared/types/types";
-import { createEntity } from "@/store/entity/utils.ts";
+import { createDrawable } from "@/store/entity/utils.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 /**
@@ -18,9 +18,7 @@ export class DrawingOperation {
 	 * Creates an entity based on the currently selected tool.
 	 */
 	start(sceneCoordinates: Position) {
-		const entity = createEntity(this.rootStore.sceneStore.tool);
-		if (!entity) return;
-
+		const entity = createDrawable(this.rootStore.sceneStore.tool);
 		entity.position = sceneCoordinates;
 		this.rootStore.drawableStore.drawing = entity;
 		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
