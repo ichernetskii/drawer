@@ -1,5 +1,5 @@
 import type { NavigationOperation } from "@/application/operations/navigationOperation.ts";
-import type { Disposable } from "@/shared/types/types";
+import type { Disposable } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 export class WheelController implements Disposable {

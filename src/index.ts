@@ -5,9 +5,9 @@ import { NavigationOperation } from "@/application/operations/navigationOperatio
 import { SelectionOperation } from "@/application/operations/selectionOperation.ts";
 import {
 	type DrawableStoreStorable,
-	PersistenceService,
 	type SceneStoreStorable,
-} from "@/application/services/PersistenceService.ts";
+	StorageService,
+} from "@/application/services/StorageService.ts";
 import { LocalStorageAdapter } from "@/infrastructure/storage/LocalStorageAdapter.ts";
 import { KeyboardController } from "@/presentation/controllers/keyboardController.ts";
 import { MouseController } from "@/presentation/controllers/mouseController.ts";
@@ -24,17 +24,8 @@ const rootStore = new RootStore();
 
 const drawableStorage = new LocalStorageAdapter<DrawableStoreStorable>("drawableStore");
 const sceneStorage = new LocalStorageAdapter<SceneStoreStorable>("sceneStore");
-
-// Setup auto-save through PersistenceService
-const persistenceService = new PersistenceService(
-	rootStore.drawableStore,
-	rootStore.sceneStore,
-	rootStore.selectionStore,
-	drawableStorage,
-	sceneStorage,
-);
-
-persistenceService.load();
+const storageService = new StorageService(rootStore, drawableStorage, sceneStorage);
+storageService.load();
 
 rootStore.historyStore.push(rootStore.drawableStore.drawables);
 
@@ -67,7 +58,7 @@ if (import.meta.hot) {
 		keyboardController.dispose();
 		wheelController.dispose();
 		toolbarController.dispose();
-		persistenceService.dispose();
+		storageService.dispose();
 		rootStore.dispose();
 	});
 }

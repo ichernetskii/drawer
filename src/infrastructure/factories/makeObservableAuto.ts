@@ -8,10 +8,7 @@ type AnnotationsMap = Record<string, typeof observable | typeof computed | typeo
  * - Getters -> computed
  * - Methods -> action
  */
-export function makeObservableAuto<T extends object, K extends PropertyKey = never>(
-	target: T,
-	excludeFields: K[] = [],
-): T {
+export function makeObservableAuto<T extends object, K extends keyof T = never>(target: T, excludeFields: K[] = []): T {
 	const annotations: AnnotationsMap = {};
 	const excludeSet = new Set<PropertyKey>(excludeFields);
 	const processedNames = new Set<string>();

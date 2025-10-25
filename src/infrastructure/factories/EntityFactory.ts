@@ -1,6 +1,6 @@
 import { toJS } from "mobx";
 
-import { Drawable } from "@/domain/entities/drawable/Drawable";
+import { Drawable } from "@/domain/entities/drawable/Drawable.ts";
 import { Ellipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
 import { Rectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
 import { Grid } from "@/domain/entities/grid/Grid.ts";
@@ -50,28 +50,16 @@ export function cloneDrawable(drawable: Drawable): Drawable {
 
 export function createSelectionBox(): SelectionBox {
 	const box = new SelectionBox();
-	return makeSelectionBoxObservable(box);
+	return makeObservableAuto(box, ["type"]);
 }
 
 export function createSelectionPreview(): SelectionPreview {
 	const preview = new SelectionPreview();
-	return makeSelectionObservable(preview);
+	return makeObservableAuto(preview, ["type"]);
 }
 
 export function createSelectionHover(): SelectionHover {
 	const hover = new SelectionHover();
-	return makeSelectionHoverObservable(hover);
-}
-
-function makeSelectionObservable<T extends SelectionPreview | SelectionBox>(selection: T): T {
-	return makeObservableAuto(selection, ["type"]);
-}
-
-function makeSelectionBoxObservable(box: SelectionBox): SelectionBox {
-	return makeObservableAuto(box, ["type"]);
-}
-
-function makeSelectionHoverObservable(hover: SelectionHover): SelectionHover {
 	return makeObservableAuto(hover, ["type"]);
 }
 

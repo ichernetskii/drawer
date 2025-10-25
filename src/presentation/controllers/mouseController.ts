@@ -1,7 +1,7 @@
 import type { DrawingOperation } from "@/application/operations/drawingOperation.ts";
 import type { SelectionOperation } from "@/application/operations/selectionOperation.ts";
 import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
-import type { Disposable } from "@/shared/types/types";
+import type { Disposable } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 export class MouseController implements Disposable {
@@ -40,7 +40,7 @@ export class MouseController implements Disposable {
 		const sceneCoordinatesUnsnapped = this.rootStore.sceneStore.getSceneCoordinates(e);
 		const sceneCoordinates = this.rootStore.sceneStore.getSceneCoordinates(e, true);
 		const drawableUnderCursor = this.rootStore.drawableStore.getDrawableAtPosition(sceneCoordinates);
-		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
+		this.rootStore.sceneStore.setMouseDown(sceneCoordinates);
 
 		// Mouse down on the edge of selection → start resize
 		const edge = this.selectionOperation.getEdgeAtPosition(sceneCoordinatesUnsnapped);
@@ -156,7 +156,7 @@ export class MouseController implements Disposable {
 		}
 
 		// No active operation
-		this.rootStore.sceneStore.mouseDown = null;
+		this.rootStore.sceneStore.setMouseDown(null);
 	};
 
 	private handleContextMenu = (e: MouseEvent) => {

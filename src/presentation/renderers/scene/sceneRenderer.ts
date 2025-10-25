@@ -21,7 +21,7 @@ export class SceneRenderer extends Renderer {
 		const { sceneStore, drawableStore, clientStore } = this.rootStore;
 		retinaFix(this.ctx, clientStore.dpr);
 		const { clientWidth, clientHeight } = this.ctx.canvas;
-		sceneStore.size = { width: clientWidth, height: clientHeight };
+		sceneStore.setSize({ width: clientWidth, height: clientHeight });
 
 		this.dispose = autorun(() => {
 			// clear canvas

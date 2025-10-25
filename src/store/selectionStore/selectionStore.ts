@@ -4,8 +4,8 @@ import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
 import { SelectionBox } from "@/domain/entities/selection/selectionBox/SelectionBox.ts";
 import { SelectionHover } from "@/domain/entities/selection/selectionHover/SelectionHover.ts";
 import type { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
-import { createSelectionBox, createSelectionHover } from "@/infrastructure/factories/EntityFactory";
-import type { Position, Size } from "@/shared/types/types";
+import { createSelectionBox, createSelectionHover } from "@/infrastructure/factories/EntityFactory.ts";
+import type { Position, Size } from "@/shared/types/types.d.ts";
 import { snapToGrid } from "@/shared/utils/snap.ts";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -98,20 +98,20 @@ export class SelectionStore {
 		return this._drawables;
 	}
 
-	set drawables(value) {
+	setDrawables(value: Drawable[]) {
 		this._drawables = value;
 	}
 
 	add(drawable: Drawable) {
-		this.drawables.push(drawable);
+		this._drawables.push(drawable);
 	}
 
 	addMany(drawables: Drawable[]) {
-		this.drawables.push(...drawables);
+		this._drawables.push(...drawables);
 	}
 
 	delete(drawable: Drawable) {
-		this.drawables = this.drawables.filter(d => d !== drawable);
+		this._drawables = this._drawables.filter(d => d !== drawable);
 	}
 
 	// ========== Clipboard operations ==========
@@ -120,7 +120,7 @@ export class SelectionStore {
 		return this._clipboard;
 	}
 
-	set clipboard(value) {
+	setClipboard(value: Drawable[]) {
 		this._clipboard = value;
 	}
 
@@ -130,7 +130,7 @@ export class SelectionStore {
 		return this._selectionPreview;
 	}
 
-	set selectionPreview(value) {
+	setSelectionPreview(value: SelectionPreview | null) {
 		this._selectionPreview = value;
 	}
 
@@ -146,7 +146,7 @@ export class SelectionStore {
 		return this._zoom;
 	}
 
-	set zoom(value) {
+	setZoom(value: number) {
 		this._zoom = value;
 	}
 

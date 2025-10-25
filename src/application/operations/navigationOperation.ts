@@ -1,4 +1,4 @@
-import type { Position } from "@/shared/types/types";
+import type { Position } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 export class NavigationOperation {
@@ -14,28 +14,28 @@ export class NavigationOperation {
 	 */
 	zoomAt(sceneCoordinates: Position, factor: number) {
 		this.rootStore.sceneStore.zoomAtSceneCoordinates(sceneCoordinates, factor);
-		this.rootStore.selectionStore.zoom = this.rootStore.sceneStore.zoom;
+		this.rootStore.selectionStore.setZoom(this.rootStore.sceneStore.zoom);
 	}
 
 	/**
 	 * Zooms in by the default zoom factor.
 	 */
 	zoomIn() {
-		this.rootStore.sceneStore.zoom = this.rootStore.sceneStore.zoom * this.rootStore.sceneStore.zoomFactor;
+		this.rootStore.sceneStore.setZoom(this.rootStore.sceneStore.zoom * this.rootStore.sceneStore.zoomFactor);
 	}
 
 	/**
 	 * Zooms out by the default zoom factor.
 	 */
 	zoomOut() {
-		this.rootStore.sceneStore.zoom = this.rootStore.sceneStore.zoom / this.rootStore.sceneStore.zoomFactor;
+		this.rootStore.sceneStore.setZoom(this.rootStore.sceneStore.zoom / this.rootStore.sceneStore.zoomFactor);
 	}
 
 	/**
 	 * Resets zoom to 1:1 (100%).
 	 */
 	resetZoom() {
-		this.rootStore.sceneStore.zoom = 1;
+		this.rootStore.sceneStore.setZoom(1);
 	}
 
 	/**

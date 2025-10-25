@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
-import type { Drawable } from "@/domain/entities/drawable/Drawable";
-import type { Position, Size } from "@/shared/types/types";
+import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
+import type { Position, Size } from "@/shared/types/types.d.ts";
 
 export class DrawableStore {
 	private _drawables: Drawable[] = [];
@@ -15,23 +15,23 @@ export class DrawableStore {
 		return this._drawables;
 	}
 
-	set drawables(value) {
+	setDrawables(value: Drawable[]) {
 		this._drawables = value;
 	}
 
 	addDrawable(drawable: Drawable) {
-		this.drawables.push(drawable);
+		this._drawables.push(drawable);
 	}
 
 	deleteDrawables(drawables: Drawable[]) {
-		this.drawables = this.drawables.filter(drawable => !drawables.includes(drawable));
+		this._drawables = this._drawables.filter(drawable => !drawables.includes(drawable));
 	}
 
 	get drawing() {
 		return this._drawing;
 	}
 
-	set drawing(value) {
+	setDrawing(value: Drawable | null) {
 		this._drawing = value;
 	}
 

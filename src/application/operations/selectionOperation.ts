@@ -1,6 +1,6 @@
 import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import { cloneDrawable, createSelectionPreview } from "@/infrastructure/factories/EntityFactory";
-import type { Position } from "@/shared/types/types";
+import { cloneDrawable, createSelectionPreview } from "@/infrastructure/factories/EntityFactory.ts";
+import type { Position } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -32,14 +32,14 @@ export class SelectionOperation {
 	 * Clears all selection.
 	 */
 	clearSelection() {
-		this.rootStore.selectionStore.drawables = [];
+		this.rootStore.selectionStore.setDrawables([]);
 	}
 
 	/**
 	 * Selects all drawables on the canvas.
 	 */
 	selectAll() {
-		this.rootStore.selectionStore.drawables = [...this.rootStore.drawableStore.drawables];
+		this.rootStore.selectionStore.setDrawables([...this.rootStore.drawableStore.drawables]);
 	}
 
 	/**
@@ -49,7 +49,7 @@ export class SelectionOperation {
 		if (this.rootStore.selectionStore.drawables.length === 0) return;
 
 		// Store references to selected drawables
-		this.rootStore.selectionStore.clipboard = [...this.rootStore.selectionStore.drawables];
+		this.rootStore.selectionStore.setClipboard([...this.rootStore.selectionStore.drawables]);
 	}
 
 	/**
@@ -91,7 +91,7 @@ export class SelectionOperation {
 		});
 
 		// Select the pasted drawables
-		this.rootStore.selectionStore.drawables = pastedDrawables;
+		this.rootStore.selectionStore.setDrawables(pastedDrawables);
 
 		// Add to history
 		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
@@ -102,7 +102,7 @@ export class SelectionOperation {
 	 */
 	deleteSelected() {
 		this.rootStore.drawableStore.deleteDrawables(this.rootStore.selectionStore.drawables);
-		this.rootStore.selectionStore.drawables = [];
+		this.rootStore.selectionStore.setDrawables([]);
 		this.rootStore.selectionStore.selectionHover.setDrawable(null);
 		this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 	}
@@ -116,8 +116,8 @@ export class SelectionOperation {
 		const preview = createSelectionPreview();
 		preview.setPosition(sceneCoordinates);
 		preview.setBorderWidth(preview.borderWidth / this.rootStore.sceneStore.zoom);
-		this.rootStore.selectionStore.selectionPreview = preview;
-		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
+		this.rootStore.selectionStore.setSelectionPreview(preview);
+		this.rootStore.sceneStore.setMouseDown(sceneCoordinates);
 	}
 
 	/**
@@ -149,11 +149,11 @@ export class SelectionOperation {
 		if (shiftKey) {
 			this.rootStore.selectionStore.addMany(selectedDrawables);
 		} else {
-			this.rootStore.selectionStore.drawables = selectedDrawables;
+			this.rootStore.selectionStore.setDrawables(selectedDrawables);
 		}
 
-		this.rootStore.sceneStore.mouseDown = null;
-		this.rootStore.selectionStore.selectionPreview = null;
+		this.rootStore.sceneStore.setMouseDown(null);
+		this.rootStore.selectionStore.setSelectionPreview(null);
 	}
 
 	/**
@@ -203,7 +203,7 @@ export class SelectionOperation {
 				// Click on one drawable from group → select only that one
 				const drawableUnderCursor = this.rootStore.drawableStore.getDrawableAtPosition(sceneCoordinates);
 				if (drawableUnderCursor && drawables.includes(drawableUnderCursor)) {
-					this.rootStore.selectionStore.drawables = [drawableUnderCursor];
+					this.rootStore.selectionStore.setDrawables([drawableUnderCursor]);
 				}
 			}
 		} else {
@@ -211,7 +211,7 @@ export class SelectionOperation {
 		}
 
 		this.rootStore.selectionStore.endMove();
-		this.rootStore.sceneStore.mouseDown = null;
+		this.rootStore.sceneStore.setMouseDown(null);
 	}
 
 	/**
@@ -235,7 +235,7 @@ export class SelectionOperation {
 	 */
 	startResize(edge: ResizeHandle, sceneCoordinates: Position) {
 		this.rootStore.selectionStore.startResize(edge, sceneCoordinates);
-		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
+		this.rootStore.sceneStore.setMouseDown(sceneCoordinates);
 	}
 
 	/**

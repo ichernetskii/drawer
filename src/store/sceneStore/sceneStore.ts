@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
 
 import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
-import { createGrid } from "@/infrastructure/factories/EntityFactory";
-import type { Position, Size } from "@/shared/types/types";
+import { createGrid } from "@/infrastructure/factories/EntityFactory.ts";
+import type { Position, Size } from "@/shared/types/types.d.ts";
 import { snapToGrid } from "@/shared/utils/snap.ts";
 
 export class SceneStore {
@@ -30,7 +30,7 @@ export class SceneStore {
 		return this._size;
 	}
 
-	set size(value) {
+	setSize(value: Size) {
 		this._size = value;
 	}
 
@@ -38,7 +38,7 @@ export class SceneStore {
 		return this._zoom;
 	}
 
-	set zoom(value) {
+	setZoom(value: number) {
 		this._zoom = value > this.zoomMax ? this.zoomMax : value < this.zoomMin ? this.zoomMin : value;
 	}
 
@@ -54,7 +54,7 @@ export class SceneStore {
 		return this._origin;
 	}
 
-	set origin(value) {
+	setOrigin(value: Position) {
 		this._origin = value;
 	}
 
@@ -62,7 +62,7 @@ export class SceneStore {
 		return this._mouseDown;
 	}
 
-	set mouseDown(value) {
+	setMouseDown(value: Position | null) {
 		this._mouseDown = value;
 	}
 
@@ -70,7 +70,7 @@ export class SceneStore {
 		return this._tool;
 	}
 
-	set tool(value) {
+	setTool(value: string) {
 		this._tool = value;
 	}
 
@@ -95,18 +95,18 @@ export class SceneStore {
 	}
 
 	moveOriginBy(delta: Position) {
-		this.origin = { x: this.origin.x + delta.x, y: this.origin.y + delta.y };
+		this.setOrigin({ x: this.origin.x + delta.x, y: this.origin.y + delta.y });
 	}
 
 	zoomAtSceneCoordinates(sceneCoordinated: Position, factor: number) {
 		const prevZoom = this.zoom;
-		this.zoom = prevZoom * factor;
+		this.setZoom(prevZoom * factor);
 		const effectiveFactor = this.zoom / prevZoom;
 
 		const newOriginX = sceneCoordinated.x - (sceneCoordinated.x - this.origin.x) / effectiveFactor;
 		const newOriginY = sceneCoordinated.y - (sceneCoordinated.y - this.origin.y) / effectiveFactor;
 
-		this.origin = { x: newOriginX, y: newOriginY };
+		this.setOrigin({ x: newOriginX, y: newOriginY });
 	}
 
 	getSceneCoordinates(clientCoordinates: Position, snap = false) {

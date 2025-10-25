@@ -3,7 +3,7 @@ import type { SelectionOperation } from "@/application/operations/selectionOpera
 import { Ellipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
 import { Rectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
 import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
-import type { Disposable } from "@/shared/types/types";
+import type { Disposable } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 export class KeyboardController implements Disposable {
@@ -42,8 +42,8 @@ export class KeyboardController implements Disposable {
 						: this.rootStore.historyStore.undo();
 
 					if (snapshot) {
-						this.rootStore.drawableStore.drawables = snapshot;
-						this.rootStore.selectionStore.drawables = [];
+						this.rootStore.drawableStore.setDrawables(snapshot);
+						this.rootStore.selectionStore.setDrawables([]);
 						this.rootStore.selectionStore.selectionHover.setDrawable(null);
 					}
 				}
@@ -80,7 +80,7 @@ export class KeyboardController implements Disposable {
 					this.selectionOperation.paste();
 				} else {
 					// V = Selection tool
-					this.rootStore.sceneStore.tool = SelectionPreview.type;
+					this.rootStore.sceneStore.setTool(SelectionPreview.type);
 				}
 				break;
 			}
@@ -101,11 +101,11 @@ export class KeyboardController implements Disposable {
 				break;
 
 			case "KeyR":
-				this.rootStore.sceneStore.tool = Rectangle.type;
+				this.rootStore.sceneStore.setTool(Rectangle.type);
 				break;
 
 			case "KeyE":
-				this.rootStore.sceneStore.tool = Ellipse.type;
+				this.rootStore.sceneStore.setTool(Ellipse.type);
 				break;
 
 			case "KeyG":

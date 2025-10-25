@@ -1,5 +1,5 @@
-import { createDrawable } from "@/infrastructure/factories/EntityFactory";
-import type { Position } from "@/shared/types/types";
+import { createDrawable } from "@/infrastructure/factories/EntityFactory.ts";
+import type { Position } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 /**
@@ -20,8 +20,8 @@ export class DrawingOperation {
 	start(sceneCoordinates: Position) {
 		const entity = createDrawable(this.rootStore.sceneStore.tool);
 		entity.setPosition(sceneCoordinates);
-		this.rootStore.drawableStore.drawing = entity;
-		this.rootStore.sceneStore.mouseDown = sceneCoordinates;
+		this.rootStore.drawableStore.setDrawing(entity);
+		this.rootStore.sceneStore.setMouseDown(sceneCoordinates);
 	}
 
 	/**
@@ -62,8 +62,8 @@ export class DrawingOperation {
 			this.rootStore.historyStore.push(this.rootStore.drawableStore.drawables);
 		}
 
-		this.rootStore.drawableStore.drawing = null;
-		this.rootStore.sceneStore.mouseDown = null;
+		this.rootStore.drawableStore.setDrawing(null);
+		this.rootStore.sceneStore.setMouseDown(null);
 	}
 
 	/**

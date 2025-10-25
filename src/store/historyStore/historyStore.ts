@@ -1,5 +1,5 @@
 import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import { createDrawable } from "@/infrastructure/factories/EntityFactory";
+import { createDrawable } from "@/infrastructure/factories/EntityFactory.ts";
 
 interface DrawableData {
 	type: string;

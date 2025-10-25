@@ -5,7 +5,7 @@ import { reaction } from "mobx";
 import { Ellipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
 import { Rectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
 import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
-import type { Disposable } from "@/shared/types/types";
+import type { Disposable } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 const CSS_CLASSES = {
@@ -76,7 +76,7 @@ export class ToolbarController implements Disposable {
 
 				const tool = this.toolMap.get(button);
 				if (tool) {
-					this.rootStore.sceneStore.tool = tool;
+					this.rootStore.sceneStore.setTool(tool);
 				}
 			},
 			{ signal: this.abortController.signal },

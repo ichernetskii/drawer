@@ -805,7 +805,7 @@ rootStore.historyStore.push(rootStore.drawableStore.drawables); // Началь�
 
 ### Структура данных
 
-**localStorage["drawableStore"]**:
+**localStorage ([`drawableStore`]**:
 
 ```json
 {
@@ -821,7 +821,7 @@ rootStore.historyStore.push(rootStore.drawableStore.drawables); // Началь�
 }
 ```
 
-**localStorage["sceneStore"]**:
+**localStorage[`sceneStore`]**:
 
 ```json
 {

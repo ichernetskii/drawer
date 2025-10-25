@@ -1,4 +1,4 @@
-import { Entity } from "@/domain/entities/Entity";
+import { Entity } from "@/domain/entities/Entity.ts";
 
 export abstract class Selection extends Entity {
 	static readonly type: string = "selection";

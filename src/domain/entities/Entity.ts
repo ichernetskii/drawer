@@ -1,4 +1,4 @@
-import type { Position, Size } from "@/shared/types/types";
+import type { Position, Size } from "@/shared/types/types.d.ts";
 
 export abstract class Entity {
 	static readonly type: string = "entity";

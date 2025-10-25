@@ -1,5 +1,5 @@
 import { Entity } from "@/domain/entities/Entity.ts";
-import type { Position } from "@/shared/types/types";
+import type { Position } from "@/shared/types/types.d.ts";
 
 export class Grid extends Entity {
 	static readonly type = "grid";

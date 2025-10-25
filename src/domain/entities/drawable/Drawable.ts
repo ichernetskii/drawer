@@ -1,5 +1,5 @@
-import { Entity } from "@/domain/entities/Entity";
-import type { Position } from "@/shared/types/types";
+import { Entity } from "@/domain/entities/Entity.ts";
+import type { Position } from "@/shared/types/types.d.ts";
 
 const getId = (() => {
 	let counter = 0;
