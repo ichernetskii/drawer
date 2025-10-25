@@ -33,12 +33,17 @@ export function makeObservableAuto<T extends object, K extends PropertyKey = nev
 			const descriptor = Object.getOwnPropertyDescriptor(proto, name);
 			if (!descriptor) continue;
 
-			// Check if it's a getter
-			if (descriptor.get) {
+			// Check if it's a getter or setter
+			if (descriptor.get && descriptor.set) {
+				// Accessor property (getter + setter)
 				annotations[name] = computed;
-			}
-			// Check if it's a method (function value)
-			else if (typeof descriptor.value === "function") {
+			} else if (descriptor.get) {
+				annotations[name] = computed;
+			} else if (descriptor.set) {
+				// Pure setter → action
+				annotations[name] = action;
+			} else if (typeof descriptor.value === "function") {
+				// Check if it's a method (function value)
 				annotations[name] = action;
 			}
 		}

@@ -8,11 +8,6 @@ export interface Size {
 	height: number;
 }
 
-export interface Storable {
-	save(): void;
-	load(): void;
-}
-
 export interface Disposable {
 	dispose: () => void;
 }

@@ -1,18 +1,13 @@
 import { makeAutoObservable } from "mobx";
 
 import type { Drawable } from "@/domain/entities/drawable/Drawable";
-import type { DrawableRepository } from "@/infrastructure/persistence/DrawableRepository";
-import type { Position, Size, Storable } from "@/shared/types/types";
-import { debounce } from "@/shared/utils/debounce.ts";
+import type { Position, Size } from "@/shared/types/types";
 
-export class DrawableStore implements Storable {
-	private repository: DrawableRepository;
-
+export class DrawableStore {
 	private _drawables: Drawable[] = [];
 	private _drawing: Drawable | null = null;
 
-	constructor(repository: DrawableRepository) {
-		this.repository = repository;
+	constructor() {
 		makeAutoObservable(this);
 	}
 
@@ -76,15 +71,4 @@ export class DrawableStore implements Storable {
 
 		return result;
 	}
-
-	save = debounce(() => {
-		this.repository.save(this.drawables);
-	}, 1000);
-
-	load = () => {
-		const loadedDrawables = this.repository.load();
-		if (loadedDrawables.length > 0) {
-			this.drawables = loadedDrawables;
-		}
-	};
 }

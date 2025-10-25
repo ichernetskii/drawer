@@ -2,13 +2,10 @@ import { makeAutoObservable } from "mobx";
 
 import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
 import { createGrid } from "@/infrastructure/factories/EntityFactory";
-import type { SceneRepository } from "@/infrastructure/persistence/SceneRepository";
-import type { Position, Size, Storable } from "@/shared/types/types";
-import { debounce } from "@/shared/utils/debounce.ts";
+import type { Position, Size } from "@/shared/types/types";
 import { snapToGrid } from "@/shared/utils/snap.ts";
 
-export class SceneStore implements Storable {
-	private repository: SceneRepository;
+export class SceneStore {
 	private readonly zoomMin = 1 / 5;
 	private readonly zoomMax = 5;
 	readonly zoomFactor = 1.2;
@@ -25,8 +22,7 @@ export class SceneStore implements Storable {
 	private _tool: string = SelectionPreview.type;
 	private _isGridVisible = true;
 
-	constructor(repository: SceneRepository) {
-		this.repository = repository;
+	constructor() {
 		makeAutoObservable(this);
 	}
 
@@ -127,21 +123,4 @@ export class SceneStore implements Storable {
 
 		return { x: sceneX, y: sceneY };
 	}
-
-	save = debounce(() => {
-		this.repository.save({
-			zoom: this.zoom,
-			origin: this.origin,
-			tool: this.tool,
-		});
-	}, 1000);
-
-	load = () => {
-		const data = this.repository.load();
-		if (!data) return;
-
-		this.zoom = data.zoom;
-		this.origin = data.origin;
-		this.tool = data.tool;
-	};
 }

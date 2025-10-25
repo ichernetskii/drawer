@@ -3,6 +3,12 @@ import "@/shared/styles/main.css";
 import { DrawingOperation } from "@/application/operations/drawingOperation.ts";
 import { NavigationOperation } from "@/application/operations/navigationOperation.ts";
 import { SelectionOperation } from "@/application/operations/selectionOperation.ts";
+import {
+	type DrawableStoreStorable,
+	PersistenceService,
+	type SceneStoreStorable,
+} from "@/application/services/PersistenceService.ts";
+import { LocalStorageAdapter } from "@/infrastructure/storage/LocalStorageAdapter.ts";
 import { KeyboardController } from "@/presentation/controllers/keyboardController.ts";
 import { MouseController } from "@/presentation/controllers/mouseController.ts";
 import { ToolbarController } from "@/presentation/controllers/toolbarController.ts";
@@ -16,8 +22,20 @@ const ctx = $canvas.getContext("2d")!;
 
 const rootStore = new RootStore();
 
-rootStore.drawableStore.load();
-rootStore.sceneStore.load();
+const drawableStorage = new LocalStorageAdapter<DrawableStoreStorable>("drawableStore");
+const sceneStorage = new LocalStorageAdapter<SceneStoreStorable>("sceneStore");
+
+// Setup auto-save through PersistenceService
+const persistenceService = new PersistenceService(
+	rootStore.drawableStore,
+	rootStore.sceneStore,
+	rootStore.selectionStore,
+	drawableStorage,
+	sceneStorage,
+);
+
+persistenceService.load();
+
 rootStore.historyStore.push(rootStore.drawableStore.drawables);
 
 const renderer = new SceneRenderer(ctx, rootStore);
@@ -49,6 +67,7 @@ if (import.meta.hot) {
 		keyboardController.dispose();
 		wheelController.dispose();
 		toolbarController.dispose();
+		persistenceService.dispose();
 		rootStore.dispose();
 	});
 }
