@@ -1,11 +1,12 @@
-import { action, computed, observable } from "mobx";
+import { makeAutoObservable } from "mobx";
 
+import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
+import { SelectionBox } from "@/domain/entities/selection/selectionBox/SelectionBox.ts";
+import { SelectionHover } from "@/domain/entities/selection/selectionHover/SelectionHover.ts";
+import type { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import { createSelectionBox, createSelectionHover } from "@/infrastructure/factories/EntityFactory";
 import type { Position, Size } from "@/shared/types/types";
 import { snapToGrid } from "@/shared/utils/snap.ts";
-import type { Drawable } from "@/store/entity/drawable/drawable.ts";
-import { SelectionBox } from "@/store/entity/selection/selectionBox/selectionBox.ts";
-import { SelectionHover } from "@/store/entity/selection/selectionHover/selectionHover.ts";
-import type { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
 
 type ResizeHandle = "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -66,66 +67,70 @@ export class SelectionStore {
 	private readonly selectionPrecision = 5; // hit-test precision in scene pixels
 	private gridStep = 10; // Cached grid step for snapping
 
-	@observable private accessor _drawables: Drawable[] = [];
-	@observable private accessor _selectionPreview: SelectionPreview | null = null;
-	private readonly _selectionHover: SelectionHover = new SelectionHover();
-	@observable private accessor _zoom = 1;
+	private _drawables: Drawable[] = [];
+	private _selectionPreview: SelectionPreview | null = null;
+	private readonly _selectionHover: SelectionHover = createSelectionHover();
+	private _zoom = 1;
 
 	// Clipboard for copy/paste operations
-	@observable private accessor _clipboard: Drawable[] = [];
+	private _clipboard: Drawable[] = [];
 
 	// Resize state: active only during edge/corner drag
-	@observable private accessor _resizeHandle: ResizeHandle | null = null;
-	@observable private accessor _resizeStartBox: ResizeStartBox | null = null;
-	@observable private accessor _resizeStartSnapshots: DrawableSnapshot[] = [];
-	@observable private accessor _resizeCursor: Position | null = null;
-	@observable private accessor _resizeGrabOffset: Position | null = null;
-	@observable private accessor _resizeShiftKey: boolean = false;
+	private _resizeHandle: ResizeHandle | null = null;
+	private _resizeStartBox: ResizeStartBox | null = null;
+	private _resizeStartSnapshots: DrawableSnapshot[] = [];
+	private _resizeCursor: Position | null = null;
+	private _resizeGrabOffset: Position | null = null;
+	private _resizeShiftKey: boolean = false;
 
 	// Move state: active when dragging selection
-	@observable private accessor _isMoving = false;
-	@observable private accessor _moveStartPosition: Position | null = null;
-	@observable private accessor _moveStartSnapshots: DrawableSnapshot[] = [];
+	private _isMoving = false;
+	private _moveStartPosition: Position | null = null;
+	private _moveStartSnapshots: DrawableSnapshot[] = [];
+
+	constructor() {
+		makeAutoObservable(this);
+	}
 
 	// ========== Selection management ==========
 
-	@computed get drawables() {
+	get drawables() {
 		return this._drawables;
 	}
 
-	@action set drawables(value) {
+	set drawables(value) {
 		this._drawables = value;
 	}
 
-	@action add(drawable: Drawable) {
+	add(drawable: Drawable) {
 		this.drawables.push(drawable);
 	}
 
-	@action addMany(drawables: Drawable[]) {
+	addMany(drawables: Drawable[]) {
 		this.drawables.push(...drawables);
 	}
 
-	@action delete(drawable: Drawable) {
+	delete(drawable: Drawable) {
 		this.drawables = this.drawables.filter(d => d !== drawable);
 	}
 
 	// ========== Clipboard operations ==========
 
-	@computed get clipboard() {
+	get clipboard() {
 		return this._clipboard;
 	}
 
-	@action set clipboard(value) {
+	set clipboard(value) {
 		this._clipboard = value;
 	}
 
 	// ========== Selection preview (mouse drag) ==========
 
-	@computed get selectionPreview() {
+	get selectionPreview() {
 		return this._selectionPreview;
 	}
 
-	@action set selectionPreview(value) {
+	set selectionPreview(value) {
 		this._selectionPreview = value;
 	}
 
@@ -137,11 +142,11 @@ export class SelectionStore {
 
 	// ========== Zoom state ==========
 
-	@computed get zoom() {
+	get zoom() {
 		return this._zoom;
 	}
 
-	@action set zoom(value) {
+	set zoom(value) {
 		this._zoom = value;
 	}
 
@@ -152,13 +157,13 @@ export class SelectionStore {
 	 * During resize, uses the start box + current cursor position.
 	 * Otherwise, calculates from current drawable positions.
 	 */
-	@computed get selectionBox(): SelectionBox | null {
+	get selectionBox(): SelectionBox | null {
 		if (this.drawables.length === 0) return null;
 
-		const box = new SelectionBox();
-		box.zoom = this.zoom;
-		box.borderWidth /= this.zoom;
-		box.padding /= this.zoom;
+		const box = createSelectionBox();
+		box.setZoom(this.zoom);
+		box.setBorderWidth(box.borderWidth / this.zoom);
+		box.setPadding(box.padding / this.zoom);
 
 		let contentBounds: ContentBounds;
 
@@ -172,8 +177,8 @@ export class SelectionStore {
 
 		// Convert content bounds to selection box outer bounds (add border + padding)
 		const { position, size } = this.convertContentToSelectionBox(contentBounds, box.borderWidth, box.padding);
-		box.position = position;
-		box.size = size;
+		box.setPosition(position);
+		box.setSize(size);
 
 		return box;
 	}
@@ -266,11 +271,11 @@ export class SelectionStore {
 
 	// ========== Resize operations ==========
 
-	@computed get isResizing() {
+	get isResizing() {
 		return this._resizeHandle !== null;
 	}
 
-	@computed get isMoving() {
+	get isMoving() {
 		return this._isMoving;
 	}
 
@@ -278,7 +283,7 @@ export class SelectionStore {
 	 * Begins a resize operation when user grabs an edge/corner.
 	 * Captures the start state and grab offset to prevent cursor snap.
 	 */
-	@action startResize(handle: ResizeHandle, cursor: Position) {
+	startResize(handle: ResizeHandle, cursor: Position) {
 		const box = this.selectionBox;
 		if (!box || !box.position || !box.size) return;
 
@@ -314,7 +319,7 @@ export class SelectionStore {
 	 * Updates drawable positions/sizes during resize as cursor moves.
 	 * If shiftKey is pressed, maintains the original aspect ratio.
 	 */
-	@action updateResize(cursor: Position, shiftKey: boolean = false, gridStep?: number) {
+	updateResize(cursor: Position, shiftKey: boolean = false, gridStep?: number) {
 		if (!this._resizeHandle || !this._resizeStartBox) return;
 
 		this._resizeCursor = cursor;
@@ -341,7 +346,7 @@ export class SelectionStore {
 	 * Ends the resize operation, clearing all resize state.
 	 * Final geometry is already set by last updateResize call.
 	 */
-	@action endResize() {
+	endResize() {
 		this._resizeHandle = null;
 		this._resizeStartBox = null;
 		this._resizeStartSnapshots = [];
@@ -355,7 +360,7 @@ export class SelectionStore {
 	/**
 	 * Begins a move operation when user clicks inside selection box.
 	 */
-	@action startMove(startPosition: Position) {
+	startMove(startPosition: Position) {
 		this._isMoving = true;
 		this._moveStartPosition = startPosition;
 		this._moveStartSnapshots = this._drawables.map(drawable => ({
@@ -368,7 +373,7 @@ export class SelectionStore {
 	/**
 	 * Updates the move operation with a new position (with grid snapping).
 	 */
-	@action updateMove(currentPosition: Position) {
+	updateMove(currentPosition: Position) {
 		if (!this._moveStartPosition) return;
 
 		const deltaX = currentPosition.x - this._moveStartPosition.x;
@@ -376,10 +381,10 @@ export class SelectionStore {
 
 		this._moveStartSnapshots.forEach(({ drawable, position }) => {
 			if (position) {
-				drawable.position = {
+				drawable.setPosition({
 					x: position.x + deltaX,
 					y: position.y + deltaY,
-				};
+				});
 			}
 		});
 	}
@@ -387,7 +392,7 @@ export class SelectionStore {
 	/**
 	 * Ends the move operation.
 	 */
-	@action endMove() {
+	endMove() {
 		this._isMoving = false;
 		this._moveStartPosition = null;
 		this._moveStartSnapshots = [];
@@ -586,7 +591,7 @@ export class SelectionStore {
 		const snappedWidth = snapToGrid(newRight - newLeft, this.gridStep);
 		const snappedHeight = snapToGrid(newTop - newBottom, this.gridStep);
 
-		snap.drawable.position = { x: snappedLeft, y: snappedBottom };
-		snap.drawable.size = { width: snappedWidth, height: snappedHeight };
+		snap.drawable.setPosition({ x: snappedLeft, y: snappedBottom });
+		snap.drawable.setSize({ width: snappedWidth, height: snappedHeight });
 	}
 }

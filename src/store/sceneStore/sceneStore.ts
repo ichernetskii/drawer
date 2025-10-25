@@ -1,15 +1,14 @@
-import { action, computed, observable } from "mobx";
+import { makeAutoObservable } from "mobx";
 
-import type { PickFields, Position, Size, Storable } from "@/shared/types/types";
+import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import { createGrid } from "@/infrastructure/factories/EntityFactory";
+import type { SceneRepository } from "@/infrastructure/persistence/SceneRepository";
+import type { Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
 import { snapToGrid } from "@/shared/utils/snap.ts";
-import { Storage } from "@/shared/utils/storage.ts";
-import { Grid } from "@/store/entity/grid/grid.ts";
-import { SelectionPreview } from "@/store/entity/selection/selectionPreview/selectionPreview.ts";
-
-type SceneStoreSerializable = PickFields<SceneStore, "zoom" | "origin" | "tool">;
 
 export class SceneStore implements Storable {
+	private repository: SceneRepository;
 	private readonly zoomMin = 1 / 5;
 	private readonly zoomMax = 5;
 	readonly zoomFactor = 1.2;
@@ -19,28 +18,31 @@ export class SceneStore implements Storable {
 	readonly gridStep = 10; // Grid step in scene coordinates
 	readonly gridStepShiftMultiplier = 10;
 
-	private storage = new Storage<SceneStoreSerializable>("sceneStore");
+	private _size: Size = { width: 0, height: 0 };
+	private _zoom = 1;
+	private _origin: Position = { x: 0, y: 0 };
+	private _mouseDown: Position | null = null;
+	private _tool: string = SelectionPreview.type;
+	private _isGridVisible = true;
 
-	@observable private accessor _size: Size = { width: 0, height: 0 };
-	@observable private accessor _zoom = 1;
-	@observable private accessor _origin: Position = { x: 0, y: 0 };
-	@observable private accessor _mouseDown: Position | null = null;
-	@observable private accessor _tool: string = SelectionPreview.type;
-	@observable private accessor _isGridVisible = true;
+	constructor(repository: SceneRepository) {
+		this.repository = repository;
+		makeAutoObservable(this);
+	}
 
-	@computed get size() {
+	get size() {
 		return this._size;
 	}
 
-	@action set size(value) {
+	set size(value) {
 		this._size = value;
 	}
 
-	@computed get zoom() {
+	get zoom() {
 		return this._zoom;
 	}
 
-	@action set zoom(value) {
+	set zoom(value) {
 		this._zoom = value > this.zoomMax ? this.zoomMax : value < this.zoomMin ? this.zoomMin : value;
 	}
 
@@ -52,52 +54,55 @@ export class SceneStore implements Storable {
 		return Math.exp(-deltaY * zoomSensitivity);
 	}
 
-	@computed get origin() {
+	get origin() {
 		return this._origin;
 	}
 
-	@action set origin(value) {
+	set origin(value) {
 		this._origin = value;
 	}
 
-	@computed get mouseDown() {
+	get mouseDown() {
 		return this._mouseDown;
 	}
 
-	@action set mouseDown(value) {
+	set mouseDown(value) {
 		this._mouseDown = value;
 	}
 
-	@computed get tool() {
+	get tool() {
 		return this._tool;
 	}
 
-	@action set tool(value) {
+	set tool(value) {
 		this._tool = value;
 	}
 
-	@computed get grid() {
-		const grid = new Grid();
-		grid.gridStep = this.gridStep;
-		grid.zoom = this.zoom;
-		grid.topLeft = this.getSceneCoordinates({ x: 0, y: 0 });
-		grid.bottomRight = this.getSceneCoordinates({ x: this.size.width, y: this.size.height });
+	get grid() {
+		const grid = createGrid();
+		grid.setGridStep(this.gridStep);
+		grid.setZoom(this.zoom);
+		grid.setTopLeft(this.getSceneCoordinates({ x: 0, y: 0 }));
+		grid.setBottomRight(this.getSceneCoordinates({ x: this.size.width, y: this.size.height }));
+		grid.setPosition(null);
+		grid.setSize(null);
+		grid.setBorderWidth(10);
 		return grid;
 	}
 
-	@action toggleGrid() {
+	toggleGrid() {
 		this._isGridVisible = !this._isGridVisible;
 	}
 
-	@computed get isGridVisible() {
+	get isGridVisible() {
 		return this._isGridVisible;
 	}
 
-	@action moveOriginBy(delta: Position) {
+	moveOriginBy(delta: Position) {
 		this.origin = { x: this.origin.x + delta.x, y: this.origin.y + delta.y };
 	}
 
-	@action zoomAtSceneCoordinates(sceneCoordinated: Position, factor: number) {
+	zoomAtSceneCoordinates(sceneCoordinated: Position, factor: number) {
 		const prevZoom = this.zoom;
 		this.zoom = prevZoom * factor;
 		const effectiveFactor = this.zoom / prevZoom;
@@ -124,7 +129,7 @@ export class SceneStore implements Storable {
 	}
 
 	save = debounce(() => {
-		this.storage.save({
+		this.repository.save({
 			zoom: this.zoom,
 			origin: this.origin,
 			tool: this.tool,
@@ -132,7 +137,7 @@ export class SceneStore implements Storable {
 	}, 1000);
 
 	load = () => {
-		const data = this.storage.load();
+		const data = this.repository.load();
 		if (!data) return;
 
 		this.zoom = data.zoom;

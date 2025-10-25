@@ -15,7 +15,7 @@ export function handleZoomChangeScene(sceneStore: SceneStore, selectionStore: Se
 		() => sceneStore.zoom,
 		zoom => {
 			selectionStore.zoom = zoom;
-			selectionStore.selectionHover.zoom = zoom;
+			selectionStore.selectionHover.setZoom(zoom);
 		},
 	);
 }

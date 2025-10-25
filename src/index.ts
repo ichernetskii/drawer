@@ -1,13 +1,13 @@
 import "@/shared/styles/main.css";
 
-import { KeyboardController } from "@/core/controllers/keyboardController.ts";
-import { MouseController } from "@/core/controllers/mouseController.ts";
-import { ToolbarController } from "@/core/controllers/toolbarController.ts";
-import { WheelController } from "@/core/controllers/wheelController.ts";
-import { DrawingOperation } from "@/core/operations/drawingOperation.ts";
-import { NavigationOperation } from "@/core/operations/navigationOperation.ts";
-import { SelectionOperation } from "@/core/operations/selectionOperation.ts";
-import { SceneRenderer } from "@/renderer/scene/sceneRenderer.ts";
+import { DrawingOperation } from "@/application/operations/drawingOperation.ts";
+import { NavigationOperation } from "@/application/operations/navigationOperation.ts";
+import { SelectionOperation } from "@/application/operations/selectionOperation.ts";
+import { KeyboardController } from "@/presentation/controllers/keyboardController.ts";
+import { MouseController } from "@/presentation/controllers/mouseController.ts";
+import { ToolbarController } from "@/presentation/controllers/toolbarController.ts";
+import { WheelController } from "@/presentation/controllers/wheelController.ts";
+import { SceneRenderer } from "@/presentation/renderers/scene/sceneRenderer.ts";
 import { RootStore } from "@/store/rootStore.ts";
 
 const $canvas = document.querySelector("canvas")!;

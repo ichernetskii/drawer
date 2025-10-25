@@ -1,30 +1,30 @@
-import { action, computed, observable } from "mobx";
+import { makeAutoObservable } from "mobx";
 
+import type { Drawable } from "@/domain/entities/drawable/Drawable";
+import type { DrawableRepository } from "@/infrastructure/persistence/DrawableRepository";
 import type { Position, Size, Storable } from "@/shared/types/types";
 import { debounce } from "@/shared/utils/debounce.ts";
-import { Storage } from "@/shared/utils/storage.ts";
-import type { Drawable, DrawableSerializable } from "@/store/entity/drawable/drawable.ts";
-import { createDrawable } from "@/store/entity/utils.ts";
-
-interface DrawableStoreSerializable {
-	drawables: DrawableSerializable[];
-}
 
 export class DrawableStore implements Storable {
-	private storage = new Storage<DrawableStoreSerializable>("drawableStore");
+	private repository: DrawableRepository;
 
-	@observable private accessor _drawables: Drawable[] = [];
-	@observable private accessor _drawing: Drawable | null = null;
+	private _drawables: Drawable[] = [];
+	private _drawing: Drawable | null = null;
 
-	@computed get drawables() {
+	constructor(repository: DrawableRepository) {
+		this.repository = repository;
+		makeAutoObservable(this);
+	}
+
+	get drawables() {
 		return this._drawables;
 	}
 
-	@action set drawables(value) {
+	set drawables(value) {
 		this._drawables = value;
 	}
 
-	@action addDrawable(drawable: Drawable) {
+	addDrawable(drawable: Drawable) {
 		this.drawables.push(drawable);
 	}
 
@@ -32,11 +32,11 @@ export class DrawableStore implements Storable {
 		this.drawables = this.drawables.filter(drawable => !drawables.includes(drawable));
 	}
 
-	@computed get drawing() {
+	get drawing() {
 		return this._drawing;
 	}
 
-	@action set drawing(value) {
+	set drawing(value) {
 		this._drawing = value;
 	}
 
@@ -78,22 +78,13 @@ export class DrawableStore implements Storable {
 	}
 
 	save = debounce(() => {
-		const serializedDrawables = this.drawables.map(drawable => drawable.toSerializable());
-		this.storage.save({ drawables: serializedDrawables });
+		this.repository.save(this.drawables);
 	}, 1000);
 
 	load = () => {
-		const data = this.storage.load();
-		if (!data) return;
-
-		const restoredDrawables: Drawable[] = [];
-
-		for (const serialized of data.drawables) {
-			const drawable = createDrawable(serialized.type);
-			drawable.fromSerializable(serialized);
-			restoredDrawables.push(drawable);
+		const loadedDrawables = this.repository.load();
+		if (loadedDrawables.length > 0) {
+			this.drawables = loadedDrawables;
 		}
-
-		this.drawables = restoredDrawables;
 	};
 }

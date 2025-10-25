@@ -1,7 +1,11 @@
-import { computed } from "mobx";
+import { makeAutoObservable } from "mobx";
 
 export class ClientStore {
-	@computed get dpr() {
+	constructor() {
+		makeAutoObservable(this);
+	}
+
+	get dpr() {
 		return window.devicePixelRatio || 1;
 	}
 }
