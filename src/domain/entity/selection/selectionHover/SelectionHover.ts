@@ -1,5 +1,5 @@
-import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import { Selection } from "@/domain/entities/selection/Selection.ts";
+import type { Drawable } from "@/domain/entity/drawable/Drawable.ts";
+import { Selection } from "@/domain/entity/selection/Selection.ts";
 
 /**
  * Visual highlight that appears when hovering over a drawable.

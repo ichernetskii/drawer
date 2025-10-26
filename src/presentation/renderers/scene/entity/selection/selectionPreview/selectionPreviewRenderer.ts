@@ -1,4 +1,4 @@
-import type { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import type { SelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 
 export class SelectionPreviewRenderer extends Renderer {

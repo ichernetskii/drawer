@@ -1,6 +1,6 @@
-import { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import { isEllipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
-import { isRectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
+import { Drawable } from "@/domain/entity/drawable/Drawable.ts";
+import { isEllipse } from "@/domain/entity/drawable/ellipse/Ellipse.ts";
+import { isRectangle } from "@/domain/entity/drawable/rectangle/Rectangle.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 import { EllipseRenderer } from "@/presentation/renderers/scene/entity/drawable/ellipse/ellipseRenderer.ts";
 import { RectangleRenderer } from "@/presentation/renderers/scene/entity/drawable/rectangle/rectangleRenderer.ts";

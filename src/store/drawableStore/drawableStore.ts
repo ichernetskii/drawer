@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 
-import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
+import type { Drawable } from "@/domain/entity/drawable/Drawable.ts";
 import type { Position, Size } from "@/shared/types/types.d.ts";
 
 export class DrawableStore {

@@ -11,3 +11,13 @@ export interface Size {
 export interface Disposable {
 	dispose: () => void;
 }
+
+export type ResizeHandle =
+	| "top"
+	| "bottom"
+	| "left"
+	| "right"
+	| "top-left"
+	| "top-right"
+	| "bottom-left"
+	| "bottom-right";

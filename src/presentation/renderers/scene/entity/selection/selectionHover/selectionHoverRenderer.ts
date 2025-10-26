@@ -1,4 +1,4 @@
-import type { SelectionHover } from "@/domain/entities/selection/selectionHover/SelectionHover.ts";
+import type { SelectionHover } from "@/domain/entity/selection/selectionHover/SelectionHover.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 import { DrawableRenderer } from "@/presentation/renderers/scene/entity/drawable/drawableRenderer.ts";
 

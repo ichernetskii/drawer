@@ -1,7 +1,7 @@
-import type { Selection } from "@/domain/entities/selection/Selection.ts";
-import { isSelectionBox } from "@/domain/entities/selection/selectionBox/SelectionBox.ts";
-import { isSelectionHover } from "@/domain/entities/selection/selectionHover/SelectionHover.ts";
-import { isSelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import type { Selection } from "@/domain/entity/selection/Selection.ts";
+import { isSelectionBox } from "@/domain/entity/selection/selectionBox/SelectionBox.ts";
+import { isSelectionHover } from "@/domain/entity/selection/selectionHover/SelectionHover.ts";
+import { isSelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 import { SelectionBoxRenderer } from "@/presentation/renderers/scene/entity/selection/selectionBox/selectionBoxRenderer.ts";
 import { SelectionHoverRenderer } from "@/presentation/renderers/scene/entity/selection/selectionHover/selectionHoverRenderer.ts";

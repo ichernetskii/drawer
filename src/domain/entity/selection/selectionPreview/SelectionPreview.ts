@@ -1,5 +1,5 @@
-import type { Entity } from "@/domain/entities/Entity.ts";
-import { Selection } from "@/domain/entities/selection/Selection.ts";
+import type { Entity } from "@/domain/entity/Entity.ts";
+import { Selection } from "@/domain/entity/selection/Selection.ts";
 
 export class SelectionPreview extends Selection {
 	static readonly type = "selectionPreview";

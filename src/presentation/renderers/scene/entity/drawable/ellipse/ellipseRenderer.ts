@@ -1,4 +1,4 @@
-import type { Ellipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
+import type { Ellipse } from "@/domain/entity/drawable/ellipse/Ellipse.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 import type { RenderOptions } from "@/presentation/renderers/scene/entity/drawable/drawableRenderer.ts";
 

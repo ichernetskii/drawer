@@ -1,7 +1,7 @@
-import { isDrawable } from "@/domain/entities/drawable/Drawable.ts";
-import type { Entity } from "@/domain/entities/Entity.ts";
-import { isGrid } from "@/domain/entities/grid/Grid.ts";
-import { isSelection } from "@/domain/entities/selection/Selection.ts";
+import { isDrawable } from "@/domain/entity/drawable/Drawable.ts";
+import type { Entity } from "@/domain/entity/Entity.ts";
+import { isGrid } from "@/domain/entity/grid/Grid.ts";
+import { isSelection } from "@/domain/entity/selection/Selection.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 import { DrawableRenderer } from "@/presentation/renderers/scene/entity/drawable/drawableRenderer.ts";
 import { GridRenderer } from "@/presentation/renderers/scene/entity/grid/gridRenderer.ts";

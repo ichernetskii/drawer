@@ -2,9 +2,9 @@ import "@/shared/styles/toolbar.css";
 
 import { reaction } from "mobx";
 
-import { Ellipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
-import { Rectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
-import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import { Ellipse } from "@/domain/entity/drawable/ellipse/Ellipse.ts";
+import { Rectangle } from "@/domain/entity/drawable/rectangle/Rectangle.ts";
+import { SelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import type { Disposable } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 

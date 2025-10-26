@@ -1,24 +1,32 @@
+import type { ClipboardOperation } from "@/application/operations/clipboardOperation.ts";
+import type { MoveOperation } from "@/application/operations/moveOperation.ts";
 import type { NavigationOperation } from "@/application/operations/navigationOperation.ts";
-import type { SelectionOperation } from "@/application/operations/selectionOperation.ts";
-import { Ellipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
-import { Rectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
-import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import type { SelectionBoxOperation } from "@/application/operations/selectionBoxOperation.ts";
+import { Ellipse } from "@/domain/entity/drawable/ellipse/Ellipse.ts";
+import { Rectangle } from "@/domain/entity/drawable/rectangle/Rectangle.ts";
+import { SelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import type { Disposable } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 export class KeyboardController implements Disposable {
 	private navigationOperation: NavigationOperation;
-	private selectionOperation: SelectionOperation;
+	private selectionBoxOperation: SelectionBoxOperation;
+	private clipboardOperation: ClipboardOperation;
+	private moveOperation: MoveOperation;
 	private rootStore: RootStore;
 	private abortController = new AbortController();
 
 	constructor(
 		navigationOperation: NavigationOperation,
-		selectionOperation: SelectionOperation,
+		selectionBoxOperation: SelectionBoxOperation,
+		clipboardOperation: ClipboardOperation,
+		moveOperation: MoveOperation,
 		rootStore: RootStore,
 	) {
 		this.rootStore = rootStore;
-		this.selectionOperation = selectionOperation;
+		this.selectionBoxOperation = selectionBoxOperation;
+		this.clipboardOperation = clipboardOperation;
+		this.moveOperation = moveOperation;
 		this.navigationOperation = navigationOperation;
 	}
 
@@ -31,7 +39,7 @@ export class KeyboardController implements Disposable {
 		this.abortController.abort();
 	}
 
-	private handleKeyDown = (e: KeyboardEvent) => {
+	private handleKeyDown = async (e: KeyboardEvent) => {
 		switch (e.code) {
 			case "KeyZ": {
 				if (e.metaKey || e.ctrlKey) {
@@ -53,7 +61,7 @@ export class KeyboardController implements Disposable {
 				if (e.metaKey || e.ctrlKey) {
 					// Cmd/Ctrl+A = Select All
 					e.preventDefault();
-					this.selectionOperation.selectAll();
+					this.selectionBoxOperation.selectAll();
 				}
 				break;
 			}
@@ -61,7 +69,7 @@ export class KeyboardController implements Disposable {
 				if (e.metaKey || e.ctrlKey) {
 					// Cmd/Ctrl+C = Copy
 					e.preventDefault();
-					this.selectionOperation.copy();
+					await this.clipboardOperation.copy();
 				}
 				break;
 			}
@@ -69,7 +77,7 @@ export class KeyboardController implements Disposable {
 				if (e.metaKey || e.ctrlKey) {
 					// Cmd/Ctrl+X = Cut
 					e.preventDefault();
-					this.selectionOperation.cut();
+					await this.clipboardOperation.cut();
 				}
 				break;
 			}
@@ -77,7 +85,7 @@ export class KeyboardController implements Disposable {
 				if (e.metaKey || e.ctrlKey) {
 					// Cmd/Ctrl+V = Paste
 					e.preventDefault();
-					this.selectionOperation.paste();
+					await this.clipboardOperation.paste();
 				} else {
 					// V = Selection tool
 					this.rootStore.sceneStore.setTool(SelectionPreview.type);
@@ -85,12 +93,12 @@ export class KeyboardController implements Disposable {
 				break;
 			}
 			case "Escape":
-				this.selectionOperation.clearSelection();
+				this.selectionBoxOperation.clearAll();
 				break;
 
 			case "Backspace":
 			case "Delete":
-				this.selectionOperation.deleteSelected();
+				this.selectionBoxOperation.delete();
 				break;
 
 			case "ArrowRight":
@@ -162,7 +170,7 @@ export class KeyboardController implements Disposable {
 
 		if (this.rootStore.selectionStore.drawables.length !== 0) {
 			// Move selected items
-			this.selectionOperation.moveBy(deltaX, deltaY);
+			this.moveOperation.moveBy(deltaX, deltaY);
 		} else {
 			// Pan canvas
 			this.navigationOperation.moveOriginBy(deltaX, deltaY);

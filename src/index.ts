@@ -1,13 +1,19 @@
 import "@/shared/styles/main.css";
 
+import { ClipboardOperation } from "@/application/operations/clipboardOperation.ts";
 import { DrawingOperation } from "@/application/operations/drawingOperation.ts";
+import { HoverOperation } from "@/application/operations/hoverOperation.ts";
+import { MoveOperation } from "@/application/operations/moveOperation.ts";
 import { NavigationOperation } from "@/application/operations/navigationOperation.ts";
-import { SelectionOperation } from "@/application/operations/selectionOperation.ts";
+import { ResizeOperation } from "@/application/operations/resizeOperation.ts";
+import { SelectionBoxOperation } from "@/application/operations/selectionBoxOperation.ts";
+import { SelectionPreviewOperation } from "@/application/operations/selectionPreviewOperation.ts";
 import {
 	type DrawableStoreStorable,
 	type SceneStoreStorable,
 	StorageService,
 } from "@/application/services/StorageService.ts";
+import { ClipboardAdapter } from "@/infrastructure/clipboard/ClipboardAdapter.ts";
 import { LocalStorageAdapter } from "@/infrastructure/storage/LocalStorageAdapter.ts";
 import { KeyboardController } from "@/presentation/controllers/keyboardController.ts";
 import { MouseController } from "@/presentation/controllers/mouseController.ts";
@@ -22,21 +28,47 @@ const ctx = $canvas.getContext("2d")!;
 
 const rootStore = new RootStore();
 
-const drawableStorage = new LocalStorageAdapter<DrawableStoreStorable>("drawableStore");
-const sceneStorage = new LocalStorageAdapter<SceneStoreStorable>("sceneStore");
-const storageService = new StorageService(rootStore, drawableStorage, sceneStorage);
+// Adapters
+const clipboardAdapter = new ClipboardAdapter();
+const drawableStorageAdapter = new LocalStorageAdapter<DrawableStoreStorable>("drawableStore");
+const sceneStorageAdapter = new LocalStorageAdapter<SceneStoreStorable>("sceneStore");
+
+// Services
+const storageService = new StorageService(rootStore, drawableStorageAdapter, sceneStorageAdapter);
 storageService.load();
 
 rootStore.historyStore.push(rootStore.drawableStore.drawables);
 
 const renderer = new SceneRenderer(ctx, rootStore);
 
+// Operations
 const drawingOperation = new DrawingOperation(rootStore);
-const selectionOperation = new SelectionOperation(rootStore);
 const navigationOperation = new NavigationOperation(rootStore);
+const selectionBoxOperation = new SelectionBoxOperation(rootStore);
+const clipboardOperation = new ClipboardOperation(rootStore, clipboardAdapter);
+const selectionPreviewOperation = new SelectionPreviewOperation(rootStore);
+const moveOperation = new MoveOperation(rootStore);
+const resizeOperation = new ResizeOperation(rootStore);
+const hoverOperation = new HoverOperation(rootStore);
 
-const mouseController = new MouseController($canvas, drawingOperation, selectionOperation, rootStore);
-const keyboardController = new KeyboardController(navigationOperation, selectionOperation, rootStore);
+// Controllers
+const mouseController = new MouseController(
+	$canvas,
+	drawingOperation,
+	selectionBoxOperation,
+	selectionPreviewOperation,
+	moveOperation,
+	resizeOperation,
+	hoverOperation,
+	rootStore,
+);
+const keyboardController = new KeyboardController(
+	navigationOperation,
+	selectionBoxOperation,
+	clipboardOperation,
+	moveOperation,
+	rootStore,
+);
 const wheelController = new WheelController($canvas, navigationOperation, rootStore);
 const toolbarController = new ToolbarController($toolbar, rootStore);
 

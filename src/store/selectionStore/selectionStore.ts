@@ -1,9 +1,9 @@
 import { makeAutoObservable } from "mobx";
 
-import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import { SelectionBox } from "@/domain/entities/selection/selectionBox/SelectionBox.ts";
-import { SelectionHover } from "@/domain/entities/selection/selectionHover/SelectionHover.ts";
-import type { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import type { Drawable } from "@/domain/entity/drawable/Drawable.ts";
+import { SelectionBox } from "@/domain/entity/selection/selectionBox/SelectionBox.ts";
+import { SelectionHover } from "@/domain/entity/selection/selectionHover/SelectionHover.ts";
+import type { SelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import { createSelectionBox, createSelectionHover } from "@/infrastructure/factories/EntityFactory.ts";
 import type { Position, Size } from "@/shared/types/types.d.ts";
 import { snapToGrid } from "@/shared/utils/snap.ts";
@@ -72,9 +72,6 @@ export class SelectionStore {
 	private readonly _selectionHover: SelectionHover = createSelectionHover();
 	private _zoom = 1;
 
-	// Clipboard for copy/paste operations
-	private _clipboard: Drawable[] = [];
-
 	// Resize state: active only during edge/corner drag
 	private _resizeHandle: ResizeHandle | null = null;
 	private _resizeStartBox: ResizeStartBox | null = null;
@@ -112,16 +109,6 @@ export class SelectionStore {
 
 	delete(drawable: Drawable) {
 		this._drawables = this._drawables.filter(d => d !== drawable);
-	}
-
-	// ========== Clipboard operations ==========
-
-	get clipboard() {
-		return this._clipboard;
-	}
-
-	setClipboard(value: Drawable[]) {
-		this._clipboard = value;
 	}
 
 	// ========== Selection preview (mouse drag) ==========
@@ -187,7 +174,7 @@ export class SelectionStore {
 	 * Hit-test: checks if cursor is near an edge or corner of the selection box.
 	 * Returns the handle type (e.g., "top-left", "right") or null.
 	 */
-	getPositionOnEdgeOfSelection(sceneCoordinates: Position): ResizeHandle | null {
+	getEdgeAtPosition(sceneCoordinates: Position): ResizeHandle | null {
 		const box = this.selectionBox;
 		if (!box || !box.position || !box.size) return null;
 
@@ -240,7 +227,7 @@ export class SelectionStore {
 		if (!isInside) return false;
 
 		// Exclude edges/corners (those are for resize)
-		const edge = this.getPositionOnEdgeOfSelection(sceneCoordinates);
+		const edge = this.getEdgeAtPosition(sceneCoordinates);
 		return edge === null;
 	}
 
@@ -255,7 +242,7 @@ export class SelectionStore {
 		}
 
 		// Check if mouse is over selection edge/corner
-		const handle = this.getPositionOnEdgeOfSelection(sceneCoordinates);
+		const handle = this.getEdgeAtPosition(sceneCoordinates);
 		if (handle) {
 			return CURSOR[handle];
 		}

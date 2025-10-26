@@ -1,25 +1,41 @@
 import type { DrawingOperation } from "@/application/operations/drawingOperation.ts";
-import type { SelectionOperation } from "@/application/operations/selectionOperation.ts";
-import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import type { HoverOperation } from "@/application/operations/hoverOperation.ts";
+import type { MoveOperation } from "@/application/operations/moveOperation.ts";
+import type { ResizeOperation } from "@/application/operations/resizeOperation.ts";
+import type { SelectionBoxOperation } from "@/application/operations/selectionBoxOperation.ts";
+import type { SelectionPreviewOperation } from "@/application/operations/selectionPreviewOperation.ts";
+import { SelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import type { Disposable } from "@/shared/types/types.d.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 
 export class MouseController implements Disposable {
 	private canvas: HTMLCanvasElement;
 	private drawingOperation: DrawingOperation;
-	private selectionOperation: SelectionOperation;
+	private selectionBoxOperation: SelectionBoxOperation;
+	private selectionPreviewOperation: SelectionPreviewOperation;
+	private moveOperation: MoveOperation;
+	private resizeOperation: ResizeOperation;
+	private hoverOperation: HoverOperation;
 	private rootStore: RootStore;
 	private abortController = new AbortController();
 
 	constructor(
 		canvas: HTMLCanvasElement,
 		drawingOperation: DrawingOperation,
-		selectionOperation: SelectionOperation,
+		selectionBoxOperation: SelectionBoxOperation,
+		selectionPreviewOperation: SelectionPreviewOperation,
+		moveOperation: MoveOperation,
+		resizeOperation: ResizeOperation,
+		hoverOperation: HoverOperation,
 		rootStore: RootStore,
 	) {
 		this.canvas = canvas;
 		this.drawingOperation = drawingOperation;
-		this.selectionOperation = selectionOperation;
+		this.selectionBoxOperation = selectionBoxOperation;
+		this.selectionPreviewOperation = selectionPreviewOperation;
+		this.moveOperation = moveOperation;
+		this.resizeOperation = resizeOperation;
+		this.hoverOperation = hoverOperation;
 		this.rootStore = rootStore;
 	}
 
@@ -43,14 +59,14 @@ export class MouseController implements Disposable {
 		this.rootStore.sceneStore.setMouseDown(sceneCoordinates);
 
 		// Mouse down on the edge of selection → start resize
-		const edge = this.selectionOperation.getEdgeAtPosition(sceneCoordinatesUnsnapped);
+		const edge = this.rootStore.selectionStore.getEdgeAtPosition(sceneCoordinatesUnsnapped);
 		if (edge) {
-			this.selectionOperation.startResize(edge, sceneCoordinates);
+			this.resizeOperation.start(edge, sceneCoordinates);
 			return;
 		}
 
 		// Mouse down inside selection box (not on edge) → prepare for move
-		const isInsideSelection = this.selectionOperation.isPositionInsideSelection(sceneCoordinates);
+		const isInsideSelection = this.rootStore.selectionStore.isPositionInsideSelection(sceneCoordinates);
 		if (isInsideSelection) {
 			// Shift + mousedown inside selection on specific drawable → remove from selection
 			if (
@@ -58,29 +74,29 @@ export class MouseController implements Disposable {
 				drawableUnderCursor &&
 				this.rootStore.selectionStore.drawables.includes(drawableUnderCursor)
 			) {
-				this.selectionOperation.removeFromSelection(drawableUnderCursor);
+				this.selectionBoxOperation.clear(drawableUnderCursor);
 				return;
 			}
 			// Start move operation (keep hover active)
-			this.selectionOperation.startMove(sceneCoordinates);
+			this.moveOperation.start(sceneCoordinates);
 			return;
 		}
 
 		// Clear selection if not holding shift
 		if (!e.shiftKey) {
-			this.selectionOperation.clearSelection();
+			this.selectionBoxOperation.clearAll();
 		}
 
 		// Mouse down on not selected entity
 		if (drawableUnderCursor) {
-			this.selectionOperation.addToSelection(drawableUnderCursor);
-			this.selectionOperation.startMove(sceneCoordinates);
+			this.selectionBoxOperation.add(drawableUnderCursor);
+			this.moveOperation.start(sceneCoordinates);
 			return;
 		}
 
 		// Mouse down on empty space + selection tool
 		if (this.rootStore.sceneStore.tool === SelectionPreview.type) {
-			this.selectionOperation.startSelectionPreview(sceneCoordinates);
+			this.selectionPreviewOperation.start(sceneCoordinates);
 			return;
 		}
 
@@ -94,11 +110,11 @@ export class MouseController implements Disposable {
 		const sceneCoordinatesSnapped = this.rootStore.sceneStore.getSceneCoordinates(e, true);
 
 		// Update cursor based on position and state
-		this.canvas.style.cursor = this.selectionOperation.getCursor(sceneCoordinates);
+		this.canvas.style.cursor = this.rootStore.selectionStore.getCursor(sceneCoordinates);
 
 		// Update hover highlight (when not drawing or selecting)
-		if (!this.drawingOperation.isDrawing() && !this.selectionOperation.isSelectionPreviewActive()) {
-			this.selectionOperation.updateHover(sceneCoordinates);
+		if (!this.drawingOperation.isDrawing() && !this.selectionPreviewOperation.isActive()) {
+			this.hoverOperation.update(sceneCoordinates);
 		}
 
 		if (!isMainMouseButtonPressed) return;
@@ -110,20 +126,20 @@ export class MouseController implements Disposable {
 		}
 
 		// Selection preview (with grid snapping)
-		if (this.selectionOperation.isSelectionPreviewActive()) {
-			this.selectionOperation.updateSelectionPreview(sceneCoordinatesSnapped);
+		if (this.selectionPreviewOperation.isActive()) {
+			this.selectionPreviewOperation.update(sceneCoordinatesSnapped);
 			return;
 		}
 
 		// Selection box resize (with grid snapping)
-		if (this.selectionOperation.isResizing()) {
-			this.selectionOperation.updateResize(sceneCoordinatesSnapped, e.shiftKey);
+		if (this.resizeOperation.isResizing()) {
+			this.resizeOperation.update(sceneCoordinatesSnapped, e.shiftKey);
 			return;
 		}
 
 		// Move selected drawables (with grid snapping)
-		if (this.selectionOperation.isMoving()) {
-			this.selectionOperation.updateMove(sceneCoordinatesSnapped);
+		if (this.moveOperation.isMoving()) {
+			this.moveOperation.update(sceneCoordinatesSnapped);
 			return;
 		}
 	};
@@ -138,20 +154,20 @@ export class MouseController implements Disposable {
 		}
 
 		// Selection preview finished
-		if (this.selectionOperation.isSelectionPreviewActive()) {
-			this.selectionOperation.finishSelectionPreview(e.shiftKey);
+		if (this.selectionPreviewOperation.isActive()) {
+			this.selectionPreviewOperation.finish(e.shiftKey);
 			return;
 		}
 
 		// Selection box resize finished
-		if (this.selectionOperation.isResizing()) {
-			this.selectionOperation.finishResize();
+		if (this.resizeOperation.isResizing()) {
+			this.resizeOperation.finish();
 			return;
 		}
 
 		// Move finished
-		if (this.selectionOperation.isMoving()) {
-			this.selectionOperation.finishMove(sceneCoordinates, e.shiftKey);
+		if (this.moveOperation.isMoving()) {
+			this.moveOperation.finish(sceneCoordinates, e.shiftKey);
 			return;
 		}
 

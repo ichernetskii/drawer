@@ -1,7 +1,7 @@
 import { reaction } from "mobx";
 
-import type { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import { createDrawable } from "@/infrastructure/factories/EntityFactory.ts";
+import type { DrawableStorable } from "@/infrastructure/serialization/drawableSerialization.ts";
+import { deserializeDrawables, serializeDrawables } from "@/infrastructure/serialization/drawableSerialization.ts";
 import { LocalStorageAdapter } from "@/infrastructure/storage/LocalStorageAdapter.ts";
 import type { Disposable } from "@/shared/types/types.d.ts";
 import { debounce } from "@/shared/utils/debounce.ts";
@@ -9,10 +9,8 @@ import type { DrawableStore } from "@/store/drawableStore/drawableStore.ts";
 import type { RootStore } from "@/store/rootStore.ts";
 import type { SceneStore } from "@/store/sceneStore/sceneStore.ts";
 
-type DrawableStorableKeys = Extract<keyof Drawable, "type" | "position" | "size" | "color" | "borderWidth">;
-
 export type DrawableStoreStorable = {
-	[Key in Extract<keyof DrawableStore, "drawables">]: Pick<Drawable, DrawableStorableKeys>[];
+	[Key in Extract<keyof DrawableStore, "drawables">]: DrawableStorable[];
 };
 
 export type SceneStoreStorable = Pick<SceneStore, "tool" | "origin" | "zoom">;
@@ -51,30 +49,14 @@ export class StorageService implements Disposable {
 
 		const drawableStoreStorable = this.drawableStorage.load();
 		if (drawableStoreStorable) {
-			const restoredDrawables: Drawable[] = [];
-
-			for (const serialized of drawableStoreStorable.drawables) {
-				const drawable = createDrawable(serialized.type);
-				drawable.setPosition(serialized.position);
-				drawable.setSize(serialized.size);
-				drawable.setColor(serialized.color);
-				drawable.setBorderWidth(serialized.borderWidth);
-				restoredDrawables.push(drawable);
-			}
-
+			const restoredDrawables = deserializeDrawables(drawableStoreStorable.drawables);
 			this.rootStore.drawableStore.setDrawables(restoredDrawables);
 		}
 	}
 
 	private saveDrawables = debounce(() => {
 		const drawableStoreStorable: DrawableStoreStorable = {
-			drawables: this.rootStore.drawableStore.drawables.map(drawable => ({
-				type: drawable.type,
-				position: drawable.position,
-				size: drawable.size,
-				color: drawable.color,
-				borderWidth: drawable.borderWidth,
-			})),
+			drawables: serializeDrawables(this.rootStore.drawableStore.drawables),
 		};
 		this.drawableStorage.save(drawableStoreStorable);
 	}, AUTOSAVE_TIMEOUT);

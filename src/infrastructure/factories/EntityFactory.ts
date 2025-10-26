@@ -1,12 +1,12 @@
 import { toJS } from "mobx";
 
-import { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import { Ellipse } from "@/domain/entities/drawable/ellipse/Ellipse.ts";
-import { Rectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
-import { Grid } from "@/domain/entities/grid/Grid.ts";
-import { SelectionBox } from "@/domain/entities/selection/selectionBox/SelectionBox.ts";
-import { SelectionHover } from "@/domain/entities/selection/selectionHover/SelectionHover.ts";
-import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import { Drawable } from "@/domain/entity/drawable/Drawable.ts";
+import { Ellipse } from "@/domain/entity/drawable/ellipse/Ellipse.ts";
+import { Rectangle } from "@/domain/entity/drawable/rectangle/Rectangle.ts";
+import { Grid } from "@/domain/entity/grid/Grid.ts";
+import { SelectionBox } from "@/domain/entity/selection/selectionBox/SelectionBox.ts";
+import { SelectionHover } from "@/domain/entity/selection/selectionHover/SelectionHover.ts";
+import { SelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import { makeObservableAuto } from "@/infrastructure/factories/makeObservableAuto.ts";
 
 // ========== Drawable Factories ==========

@@ -1,4 +1,4 @@
-import type { Rectangle } from "@/domain/entities/drawable/rectangle/Rectangle.ts";
+import type { Rectangle } from "@/domain/entity/drawable/rectangle/Rectangle.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 import type { RenderOptions } from "@/presentation/renderers/scene/entity/drawable/drawableRenderer.ts";
 

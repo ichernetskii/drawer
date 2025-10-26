@@ -1,4 +1,4 @@
-import type { Grid } from "@/domain/entities/grid/Grid.ts";
+import type { Grid } from "@/domain/entity/grid/Grid.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 import { snapToGridCeil, snapToGridFloor } from "@/shared/utils/snap.ts";
 

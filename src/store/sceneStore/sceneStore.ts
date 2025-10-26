@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 
-import { SelectionPreview } from "@/domain/entities/selection/selectionPreview/SelectionPreview.ts";
+import { SelectionPreview } from "@/domain/entity/selection/selectionPreview/SelectionPreview.ts";
 import { createGrid } from "@/infrastructure/factories/EntityFactory.ts";
 import type { Position, Size } from "@/shared/types/types.d.ts";
 import { snapToGrid } from "@/shared/utils/snap.ts";

@@ -1,4 +1,4 @@
-import { SelectionBox } from "@/domain/entities/selection/selectionBox/SelectionBox.ts";
+import { SelectionBox } from "@/domain/entity/selection/selectionBox/SelectionBox.ts";
 import { Renderer } from "@/presentation/renderers/renderer.ts";
 
 export class SelectionBoxRenderer extends Renderer {

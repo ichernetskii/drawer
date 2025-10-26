@@ -1,4 +1,4 @@
-import { Entity } from "@/domain/entities/Entity.ts";
+import { Entity } from "@/domain/entity/Entity.ts";
 import type { Position } from "@/shared/types/types.d.ts";
 
 export class Grid extends Entity {

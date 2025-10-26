@@ -1,5 +1,5 @@
-import { Drawable } from "@/domain/entities/drawable/Drawable.ts";
-import type { Entity } from "@/domain/entities/Entity.ts";
+import { Drawable } from "@/domain/entity/drawable/Drawable.ts";
+import type { Entity } from "@/domain/entity/Entity.ts";
 import type { Position } from "@/shared/types/types.d.ts";
 
 export class Ellipse extends Drawable {
