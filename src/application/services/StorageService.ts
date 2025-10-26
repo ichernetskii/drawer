@@ -1,6 +1,6 @@
 import { reaction } from "mobx";
 
-import type { DrawableStorable } from "@/infrastructure/serialization/drawableSerialization.ts";
+import type { DrawableStorable } from "@/domain/entity/drawable/Drawable.ts";
 import { deserializeDrawables, serializeDrawables } from "@/infrastructure/serialization/drawableSerialization.ts";
 import { LocalStorageAdapter } from "@/infrastructure/storage/LocalStorageAdapter.ts";
 import type { Disposable } from "@/shared/types/types.d.ts";

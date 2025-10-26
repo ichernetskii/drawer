@@ -1,15 +1,7 @@
-import type { Drawable } from "@/domain/entity/drawable/Drawable.ts";
+import type { Drawable, DrawableStorable } from "@/domain/entity/drawable/Drawable.ts";
 import { createDrawable } from "@/infrastructure/factories/EntityFactory.ts";
 
-interface DrawableData {
-	type: string;
-	position: { x: number; y: number } | null;
-	size: { width: number; height: number } | null;
-	color: string;
-	borderWidth: number;
-}
-
-type Snapshot = DrawableData[];
+type Snapshot = DrawableStorable[];
 
 export class HistoryStore {
 	private readonly history: Snapshot[] = [];
@@ -17,13 +9,8 @@ export class HistoryStore {
 	private readonly limit = 100;
 
 	push(drawables: Drawable[]) {
-		const snapshot: Snapshot = drawables.map(drawable => ({
-			type: drawable.type,
-			position: drawable.position,
-			size: drawable.size,
-			color: drawable.color,
-			borderWidth: drawable.borderWidth,
-		}));
+		// Serialize drawables using their toStorable() method
+		const snapshot: Snapshot = drawables.map(drawable => drawable.toStorable());
 
 		// Remove any history after current index (when new action is performed after undo)
 		this.history.length = this.currentIndex + 1;
@@ -60,16 +47,11 @@ export class HistoryStore {
 	}
 
 	private restoreSnapshot(snapshot: Snapshot): Drawable[] {
-		const restored: Drawable[] = [];
-		for (const serialized of snapshot) {
-			const drawable = createDrawable(serialized.type);
-			drawable.setPosition(serialized.position);
-			drawable.setSize(serialized.size);
-			drawable.setColor(serialized.color);
-			drawable.setBorderWidth(serialized.borderWidth);
-			restored.push(drawable);
-		}
-
-		return restored;
+		// Deserialize drawables using their fromStorable() method
+		return snapshot.map(data => {
+			const drawable = createDrawable(data.type);
+			drawable.fromStorable(data);
+			return drawable;
+		});
 	}
 }

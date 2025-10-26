@@ -1,32 +1,21 @@
-import type { Drawable } from "@/domain/entity/drawable/Drawable.ts";
+import type { Drawable, DrawableStorable } from "@/domain/entity/drawable/Drawable.ts";
 import { createDrawable } from "@/infrastructure/factories/EntityFactory.ts";
-
-type DrawableStorableKeys = Extract<keyof Drawable, "type" | "position" | "size" | "color" | "borderWidth">;
-
-export type DrawableStorable = Pick<Drawable, DrawableStorableKeys>;
 
 /**
  * Serializes a single drawable to plain data object.
+ * Uses the drawable's toStorable() method for polymorphic serialization.
  */
 function serializeDrawable(drawable: Drawable): DrawableStorable {
-	return {
-		type: drawable.type,
-		position: drawable.position,
-		size: drawable.size,
-		color: drawable.color,
-		borderWidth: drawable.borderWidth,
-	};
+	return drawable.toStorable();
 }
 
 /**
  * Deserializes plain data object to a drawable entity.
+ * Uses the drawable's fromStorable() method for polymorphic deserialization.
  */
 function deserializeDrawable(data: DrawableStorable): Drawable {
 	const drawable = createDrawable(data.type);
-	drawable.setPosition(data.position);
-	drawable.setSize(data.size);
-	drawable.setColor(data.color);
-	drawable.setBorderWidth(data.borderWidth);
+	drawable.fromStorable(data);
 	return drawable;
 }
 

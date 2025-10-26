@@ -1,5 +1,3 @@
-import { toJS } from "mobx";
-
 import { Drawable } from "@/domain/entity/drawable/Drawable.ts";
 import { Ellipse } from "@/domain/entity/drawable/ellipse/Ellipse.ts";
 import { Rectangle } from "@/domain/entity/drawable/rectangle/Rectangle.ts";
@@ -29,21 +27,11 @@ export function createDrawable(type: (typeof Drawable)["type"]): Drawable {
 }
 
 export function cloneDrawable(drawable: Drawable): Drawable {
-	// Create new instance with same prototype
-	const clone = Object.create(Object.getPrototypeOf(drawable));
+	// Use domain's clone method to create a plain copy
+	const plainCopy = drawable.clone();
 
-	// Deep copy all properties using structuredClone
-	const deepCopied = structuredClone(toJS(drawable));
-
-	// Assign deep copied properties, but create a new instance to get a fresh id
-	Object.assign(clone, deepCopied);
-
-	// Call constructor to generate new id
-	const Constructor = drawable.constructor as new () => Drawable;
-	const newInstance = new Constructor();
-	clone.id = newInstance.id;
-
-	return makeObservableAuto(clone, ["type"]);
+	// Wrap with MobX observable
+	return makeObservableAuto(plainCopy, ["type"]);
 }
 
 // ========== Selection Factories ==========

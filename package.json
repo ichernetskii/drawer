@@ -11,7 +11,8 @@
     "eslint": "eslint .",
     "eslint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
-    "prettier:fix": "prettier --write ."
+    "prettier:fix": "prettier --write .",
+    "prettier:setup": "yarn dlx @yarnpkg/sdks vscode"
   },
   "packageManager": "yarn@4.10.3",
   "devDependencies": {

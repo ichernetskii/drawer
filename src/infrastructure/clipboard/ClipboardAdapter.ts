@@ -1,5 +1,5 @@
-import type { Drawable } from "@/domain/entity/drawable/Drawable.ts";
-import type { DrawableStorable } from "@/infrastructure/serialization/drawableSerialization.ts";
+import type { Drawable, DrawableStorable } from "@/domain/entity/drawable/Drawable.ts";
+import { cloneDrawable } from "@/infrastructure/factories/EntityFactory.ts";
 import { deserializeDrawables, serializeDrawables } from "@/infrastructure/serialization/drawableSerialization.ts";
 
 interface ClipboardData {
@@ -58,9 +58,8 @@ export class ClipboardAdapter {
 		// Fallback: use internal clipboard
 		if (this.internalClipboard.length === 0) return [];
 
-		// Clone drawables from internal clipboard using serialization
-		const data = serializeDrawables(this.internalClipboard);
-		return deserializeDrawables(data);
+		// Clone drawables from internal clipboard (creates observable copies)
+		return this.internalClipboard.map(drawable => cloneDrawable(drawable));
 	}
 
 	/**

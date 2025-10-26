@@ -59,8 +59,12 @@ export function makeObservableAuto<T extends object, K extends keyof T = never>(
 
 		// If it's a data property (not getter/setter), mark as observable
 		if (descriptor.value !== undefined && typeof descriptor.value !== "function") {
-			annotations[name] = observable;
-			processedNames.add(name);
+			if (typeof descriptor.value === "object") {
+				makeObservableAuto(descriptor.value);
+			} else {
+				annotations[name] = observable;
+				processedNames.add(name);
+			}
 		}
 	}
 
