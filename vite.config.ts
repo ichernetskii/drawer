@@ -9,6 +9,10 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "src"),
+			"@domain": path.resolve(__dirname, "src_clean_architecture", "domain"),
+			"@use-cases": path.resolve(__dirname, "src_clean_architecture", "use-cases"),
+			"@adapters": path.resolve(__dirname, "src_clean_architecture", "adapters"),
+			"@infrastructure": path.resolve(__dirname, "src_clean_architecture", "infrastructure"),
 		},
 	},
 });

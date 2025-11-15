@@ -1,0 +1,315 @@
+@startuml Canvas Drawing Application - Current Architecture
+
+!define LIGHTBLUE #E3F2FD
+!define LIGHTGREEN #E8F5E9
+!define LIGHTYELLOW #FFF9C4
+!define LIGHTPINK #FCE4EC
+!define LIGHTGRAY #F5F5F5
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ====================
+' PRESENTATION LAYER
+' ====================
+package "Presentation Layer" as presentation LIGHTBLUE {
+
+    package "Controllers" {
+        [MouseController] as mouse
+        [KeyboardController] as keyboard
+        [WheelController] as wheel
+        [ToolbarController] as toolbar
+    }
+
+    package "Renderers" {
+        [SceneRenderer] as sceneRenderer
+        [EntityRenderer] as entityRenderer
+
+        package "Drawable Renderers" {
+            [DrawableRenderer] as drawableRenderer
+            [RectangleRenderer] as rectRenderer
+            [EllipseRenderer] as ellipseRenderer
+        }
+
+        package "Selection Renderers" {
+            [SelectionRenderer] as selectionRenderer
+            [SelectionBoxRenderer] as boxRenderer
+            [SelectionPreviewRenderer] as previewRenderer
+            [SelectionHoverRenderer] as hoverRenderer
+        }
+
+        [GridRenderer] as gridRenderer
+    }
+}
+
+' ====================
+' APPLICATION LAYER
+' ====================
+package "Application Layer" as application LIGHTGREEN {
+    package "Operations" {
+        [DrawingOperation] as drawingOp
+        [SelectionBoxOperation] as selectionBoxOp
+        [SelectionPreviewOperation] as selectionPreviewOp
+        [MoveOperation] as moveOp
+        [ResizeOperation] as resizeOp
+        [HoverOperation] as hoverOp
+        [NavigationOperation] as navOp
+        [ClipboardOperation] as clipboardOp
+    }
+
+    package "Services" {
+        [StorageService] as storageService
+    }
+}
+
+' ====================
+' INFRASTRUCTURE LAYER
+' ====================
+package "Infrastructure Layer" as infrastructure LIGHTYELLOW {
+    package "Factories" {
+        [EntityFactory] as entityFactory
+        [makeObservableAuto] as makeObservable
+    }
+
+    package "Serialization" {
+        [DrawableSerialization] as serialization
+    }
+
+    package "Storage" {
+        [LocalStorageAdapter] as localStorage
+    }
+
+    package "Clipboard" {
+        [ClipboardAdapter] as clipboard
+    }
+}
+
+' ====================
+' DOMAIN LAYER
+' ====================
+package "Domain Layer" as domain LIGHTPINK {
+    package "Entities" {
+        [Entity] as entityBase
+        [Drawable] as drawableBase
+
+        package "Drawable Types" {
+            [Rectangle] as rect
+            [Ellipse] as ellipse
+        }
+
+        package "Selection Types" {
+            [Selection] as selectionBase
+            [SelectionBox] as selBox
+            [SelectionPreview] as selPreview
+            [SelectionHover] as selHover
+        }
+
+        [Grid]
+    }
+}
+
+' ====================
+' STORE LAYER (MobX State Management)
+' ====================
+package "Store Layer" as store LIGHTGRAY {
+    [RootStore] as rootStore
+    [DrawableStore] as drawableStore
+    [SelectionStore] as selectionStore
+    [SceneStore] as sceneStore
+    [ClientStore] as clientStore
+    [HistoryStore] as historyStore
+}
+
+' ====================
+' SHARED UTILITIES
+' ====================
+package "Shared Utilities" {
+    [debounce]
+    [snap]
+    [retinaFix]
+    [exhaustiveCheck]
+}
+
+' ====================================
+' RELATIONSHIPS - PRESENTATION LAYER
+' ====================================
+
+' Controllers -> Operations
+mouse --> drawingOp
+mouse --> selectionBoxOp
+mouse --> selectionPreviewOp
+mouse --> moveOp
+mouse --> resizeOp
+mouse --> hoverOp
+mouse --> rootStore
+
+keyboard --> selectionBoxOp
+keyboard --> clipboardOp
+keyboard --> historyStore
+keyboard --> rootStore
+
+wheel --> navOp
+wheel --> rootStore
+
+toolbar --> rootStore
+
+' Renderers Hierarchy
+sceneRenderer --> entityRenderer
+sceneRenderer --> rootStore
+sceneRenderer ..> retinaFix
+
+entityRenderer --> drawableRenderer
+entityRenderer --> selectionRenderer
+entityRenderer --> gridRenderer
+
+drawableRenderer --> rectRenderer
+drawableRenderer --> ellipseRenderer
+
+selectionRenderer --> boxRenderer
+selectionRenderer --> previewRenderer
+selectionRenderer --> hoverRenderer
+
+' ====================================
+' RELATIONSHIPS - APPLICATION LAYER
+' ====================================
+
+' Operations -> Stores
+drawingOp --> rootStore
+drawingOp --> entityFactory
+selectionBoxOp --> rootStore
+selectionPreviewOp --> rootStore
+moveOp --> rootStore
+resizeOp --> rootStore
+hoverOp --> rootStore
+navOp --> rootStore
+clipboardOp --> rootStore
+clipboardOp --> clipboard
+clipboardOp --> entityFactory
+
+' StorageService
+storageService --> rootStore
+storageService --> localStorage
+storageService --> serialization
+
+' ====================================
+' RELATIONSHIPS - INFRASTRUCTURE LAYER
+' ====================================
+
+' EntityFactory
+entityFactory --> rect
+entityFactory --> ellipse
+entityFactory --> selBox
+entityFactory --> selPreview
+entityFactory --> selHover
+entityFactory --> Grid
+entityFactory --> makeObservable
+
+' Serialization
+serialization --> entityFactory
+
+' ====================================
+' RELATIONSHIPS - DOMAIN LAYER
+' ====================================
+
+' Entity Hierarchy
+drawableBase --|> entityBase
+rect --|> drawableBase
+ellipse --|> drawableBase
+
+selectionBase --|> entityBase
+selBox --|> selectionBase
+selPreview --|> selectionBase
+selHover --|> selectionBase
+
+Grid --|> entityBase
+
+' ====================================
+' RELATIONSHIPS - STORE LAYER
+' ====================================
+
+' RootStore composition
+rootStore *-- drawableStore
+rootStore *-- selectionStore
+rootStore *-- sceneStore
+rootStore *-- clientStore
+rootStore *-- historyStore
+
+' Stores -> Domain Entities
+drawableStore --> drawableBase
+selectionStore --> selBox
+selectionStore --> selPreview
+selectionStore --> selHover
+sceneStore --> Grid
+
+' Stores -> Infrastructure
+drawableStore ..> entityFactory
+selectionStore ..> entityFactory
+
+' ====================================
+' UTILITIES
+' ====================================
+sceneStore ..> snap
+storageService ..> debounce
+
+' ====================================
+' NOTES
+' ====================================
+
+note top of presentation
+  **Presentation Layer**
+  Handles user input (controllers)
+  and visual output (renderers)
+
+  MobX observers for reactive rendering
+end note
+
+note top of application
+  **Application Layer**
+  Contains business logic
+  orchestrating user workflows
+
+  Operations coordinate between
+  controllers and stores
+end note
+
+note top of infrastructure
+  **Infrastructure Layer**
+  MobX integration via factories
+  Persistence and I/O adapters
+
+  Bridges domain and framework
+end note
+
+note top of domain
+  **Domain Layer**
+  Pure TypeScript entities
+  No MobX dependencies
+
+  Business rules and geometry
+end note
+
+note top of store
+  **Store Layer (MobX)**
+  Reactive state management
+  All stores use makeAutoObservable
+
+  RootStore aggregates all stores
+end note
+
+note right of entityFactory
+  **Factory Pattern**
+  Creates domain entities
+  and wraps with MobX observables
+
+  Enables serialization/deserialization
+end note
+
+note left of sceneRenderer
+  **Coordinate Systems**
+  Manages transform stack:
+  1. translate(center)
+  2. scale(zoom, -zoom)
+  3. translate(-origin)
+end note
+
+@enduml

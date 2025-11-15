@@ -1,0 +1,336 @@
+@startuml
+
+namespace "Infrastructure Layer" as infrastructure {
+    namespace infrastructure.factories {
+        namespace infrastructure.factories.mobx {
+            class EntityFactoryMobX {
+                +override createEntity(type: string, position: Position): Entity
+            }
+            rectangle makeObservableAuto {
+            }
+            EntityFactoryMobX -> makeObservableAuto
+        }
+
+        namespace infrastructure.factories.redux {
+            class EntityFactoryRedux {
+                +override createEntity(type: string, position: Position): Entity
+            }
+        }
+
+        EntityFactoryMobX ..|> .domain.factories.IEntityFactory
+        EntityFactoryRedux ..|> .domain.factories.IEntityFactory
+    }
+
+    namespace infrastructure.repositories {
+        interface IReactiveRepository {
+              subscribe(listener: () => void): () => void;
+        }
+
+        namespace infrastructure.repositories.mobx {
+            class EntityRepositoryMobX implements .infrastructure.repositories.IReactiveRepository {
+                +subscribe(listener: () => void): () => void
+            }
+
+            class SceneRepositoryMobX implements .infrastructure.repositories.IReactiveRepository {
+                +subscribe(listener: () => void): () => void
+            }
+
+            EntityRepositoryMobX ...|> .domain.repositories.IEntityRepository
+            SceneRepositoryMobX ...|> .adapters.repositories.ISceneRepository
+        }
+
+        namespace infrastructure.repositories.redux {
+            class EntityRepositoryRedux implements .infrastructure.repositories.IReactiveRepository {
+                -listeners: () => void[]
+                -notify(): void
+                +subscribe(listener: () => void): () => void
+            }
+
+            class SceneRepositoryRedux implements .infrastructure.repositories.IReactiveRepository {
+                -listeners: () => void[]
+                -notify(): void
+                +subscribe(listener: () => void): () => void
+            }
+
+            EntityRepositoryRedux ...|> .domain.repositories.IEntityRepository
+            SceneRepositoryRedux ...|> .adapters.repositories.ISceneRepository
+        }
+    }
+
+    namespace infrastructure.ui {
+        namespace infrastructure.ui.renderers {
+            class SceneRenderer {
+
+            }
+            abstract class Renderer {
+                #ctx: CanvasRenderingContext2D
+                +constructor(ctx: CanvasRenderingContext2D)
+                {abstract} +render(viewModel: EntityViewModel): void
+            }
+            class EntityRenderer extends Renderer {
+                -renderers: Map<string, Renderer> = new Map([\n  [Rectangle.type, new RectangleRenderer(ctx)],\n  ... // other types\n]);
+                +constructor(ctx: CanvasRenderingContext2D)
+                +render(viewModel: EntityViewModel): void
+            }
+            class RectangleRenderer extends Renderer<RectangleViewModel> {
+                +render(viewModel: RectangleViewModel): void
+            }
+            class TextRenderer extends Renderer<TextViewModel> {
+                +render(viewModel: TextViewModel): void
+            }
+
+            EntityRenderer --o RectangleRenderer
+            EntityRenderer --o TextRenderer
+            RectangleRenderer ---o .adapters.viewModels.RectangleViewModel
+            TextRenderer ---o .adapters.viewModels.TextViewModel
+            SceneRenderer -o EntityRenderer
+        }
+
+        namespace infrastructure.ui.eventHandlers {
+            class CanvasEventHandler {
+                -abortController: AbortController
+                -canvas: HTMLCanvasElement
+                -mouseController: MouseController
+                +constructor(\n  canvas: HTMLCanvasElement,\n  mouseController: MouseController\n)
+                +init(): void // subscribe on DOM events
+                +dispose(): void // unsubscribe
+            }
+
+            CanvasEventHandler --o .adapters.controllers.MouseController
+        }
+    }
+
+    namespace infrastructure.di {
+        class Application {
+            +constructor(canvasId: string)
+            +start(): void
+            +stop(): void
+        }
+        note right of Application::start
+            this.canvasEventHandler.init();
+            this.sceneRenderer.start();
+        end note
+        note right of Application::stop
+            this.sceneRenderer.stop();
+            this.canvasEventHandler.dispose();
+        end note
+        note right of Application::constructor
+            // 1. Infrastructure
+            this.repository = new EntityRepositoryMobX();
+            this.factory = new EntityFactoryMobX();
+
+            // 2. Use Cases
+            this.drawShapeUseCase = new DrawShapeUseCase(
+              this.repository,
+              this.factory
+            );
+
+            // 3. Adapters
+            this.scenePresenter = new ScenePresenter(
+              this.repository,
+              this.drawShapeUseCase
+            );
+
+            this.mouseController = new MouseController(
+              this.drawShapeUseCase
+            );
+
+            // 4. Infrastructure UI
+            this.sceneRenderer = new SceneRenderer(
+              ctx,
+              this.scenePresenter,
+              this.repository
+            );
+
+            this.canvasEventHandler = new CanvasEventHandler(
+              canvas,
+              this.mouseController
+            );
+        end note
+    }
+
+    namespace infrastructure.main {
+        rectangle "main.ts" as main {
+        }
+        note right of main
+            const app = new Application('canvas');
+            app.start();
+
+            // HMR
+            if (import.meta.hot) {
+              import.meta.hot.dispose(() => app.stop());
+            }
+        end note
+        main --o .infrastructure.di.Application
+    }
+}
+
+namespace "Adapters Layer" as adapters {
+    namespace adapters.repositories {
+        interface ISceneRepository {
+            +zoom: number;
+            +origin: Position;
+            +size: Size;
+            +setZoom(zoom: number): void;
+            +setOrigin(origin: Position): void;
+            +setSize(size: Size): void;
+        }
+    }
+
+    namespace adapters.services {
+        class CoordinateTransformService {
+            +{static} sceneToClient(scenePos: Position, scene: ISceneRepository): Position
+            +{static} clientToScene(clientPos: Position, scene: ISceneRepository): Position
+            +{static} sceneSizeToClient(sceneSize: Size, scene: ISceneRepository): Size
+            +{static}  clientSizeToScene(clientSize: Size, scene: ISceneRepository): Size
+        }
+
+        CoordinateTransformService --o .adapters.repositories.ISceneRepository
+    }
+
+    namespace adapters.controllers {
+        class MouseController {
+            -drawEntityUseCase: DrawEntityUseCase
+            -scene: ISceneRepository
+            +constructor(drawEntityUseCase: DrawEntityUseCase, scene: ISceneRepository)
+            +onMouseDown(event: MouseEvent): void
+            +onMouseMove(event: MouseEvent): void
+            +onMouseUp(event: MouseEvent): void
+            +onContextMenu(event: MouseEvent): void
+        }
+
+        MouseController ---o .useCases.DrawEntityUseCase
+        MouseController --o .adapters.repositories.ISceneRepository
+    }
+
+    namespace adapters.viewModels {
+        abstract class EntityViewModel {
+            +readonly id: number
+            +readonly type: string
+            +readonly x: number // client coordinates
+            +readonly y: number // client coordinates
+            +readonly width: number
+            +readonly height: number
+            +readonly fillColor: string
+            +readonly strokeColor: string
+            +readonly strokeWidth: number
+            #colorToRgba(color: Color): string
+            +constructor(entity: Entity)
+        }
+        class RectangleViewModel extends EntityViewModel {
+            {static} +tryCreate(entity: Entity): RectangleViewModel | null
+            +constructor(entity: Rectangle) // Try to implement tryCreate in ctr
+        }
+        class TextViewModel extends EntityViewModel {
+            {static} +tryCreate(entity: Entity): TextViewModel | null
+            +readonly text: string
+            +readonly textFillColor: string
+            +constructor(entity: Text)  // Try to implement tryCreate in ctr
+        }
+
+        EntityViewModel --o .domain.entity.Entity
+    }
+
+    namespace adapters.dataModels {
+        abstract class EntityDataModel {
+            +readonly type: string;
+            +readonly position: Position
+            +readonly size: Size
+            +readonly style: IEntityStyle
+            +constructor(entity: Entity)
+            {static} +load(data: object): EntityDataModel
+        }
+        class TextDataModel extends EntityDataModel {
+            +style: ITextStyle;
+        }
+        class RectangleDataModel extends EntityDataModel {
+
+        }
+        EntityDataModel --o .domain.entity.Entity
+    }
+}
+
+namespace "Use Cases Layer" as useCases {
+    class DrawEntityUseCase {
+        -repository: IEntityRepository
+        -factory: IEntityFactory
+        -currentEntity: Entity
+        -startPosition: Position
+        +constructor(\n  repository: IEntityRepository,\n  factory: IEntityFactory\n)
+        +start(position: Position)
+        +update(size: Size)
+        +finish()
+    }
+
+    DrawEntityUseCase --o .domain.factories.IEntityFactory
+    DrawEntityUseCase --o .domain.repositories.IEntityRepository
+    DrawEntityUseCase --o .domain.entity.Entity
+
+    class ManageEntitiesUseCase {
+        +constructor(repository: IEntityRepository)
+        +removeDrawable(id: number): void
+        +clearAll(): void
+    }
+
+    ManageEntitiesUseCase --o .domain.repositories.IEntityRepository
+}
+
+namespace "Domain Layer" as domain {
+    namespace domain.entity {
+        interface IEntityStyle {}
+
+        abstract class Entity implements IEntityStyle {
+            +{static} readonly type: string
+            +getType(): string
+            +id: number
+            +position: Position // scene coordinates
+            +size: Size
+            +style: IEntityStyle
+            +constructor(position: Position)
+            +{static} is(): boolean // Rectangle.is(entity)
+            +isPointInside(point: Position)
+            +clone(): this
+        }
+
+        class Rectangle extends Entity {
+            +{static} override readonly type: "rectangle"
+        }
+
+        class Ellipse extends Entity {
+            +{static} override readonly type: "ellipse"
+        }
+
+        interface ITextStyle extends IEntityStyle {}
+
+        class Text extends Entity implements ITextStyle {
+            +{static} override readonly type: "text"
+            +style: ITextStyle
+            +text: string
+        }
+    }
+
+    namespace domain.factories {
+        interface IEntityFactory {
+            +createEntity(type: string, position: Position): Entity
+        }
+    }
+
+    namespace domain.repositories {
+        interface IEntityRepository {
+            -entities: Entity[]
+            __
+            .. Queries ..
+            +getAll(): Entity[];
+            +findById(id: number): Entity | null;
+            +findAtPosition(position: Position): Entity | null;
+            +getDrawingEntity(): Entity | null;
+            .. Commands ..
+            +add(entity: Entity): void;
+            +remove(id: number): void;
+            +clear(): void;
+            +setDrawingEntity(drawingEntity: Entity | null): void;
+        }
+    }
+}
+
+@enduml

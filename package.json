@@ -14,22 +14,22 @@
     "prettier:fix": "prettier --write .",
     "prettier:setup": "yarn dlx @yarnpkg/sdks vscode"
   },
-  "packageManager": "yarn@4.10.3",
   "devDependencies": {
-    "@eslint/css": "^0.11.1",
-    "@eslint/js": "^9.36.0",
-    "@eslint/json": "^0.13.2",
-    "@eslint/markdown": "^7.3.0",
-    "@types/node": "^24.5.2",
-    "eslint": "^9.36.0",
+    "@eslint/css": "^0.14.1",
+    "@eslint/js": "^9.39.1",
+    "@eslint/json": "^0.14.0",
+    "@eslint/markdown": "^7.5.1",
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "globals": "^16.4.0",
+    "globals": "^16.5.0",
     "prettier": "3.6.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.1",
-    "vite": "^7.1.7"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^7.2.2"
   },
   "dependencies": {
     "mobx": "^6.15.0"
-  }
+  },
+  "packageManager": "yarn@4.10.3"
 }
