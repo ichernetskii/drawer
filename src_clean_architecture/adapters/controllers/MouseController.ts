@@ -13,31 +13,31 @@ export class MouseController {
 		this.drawEntityUseCase = drawEntityUseCase;
 	}
 
-	onMouseDown(event: MouseEvent) {
-		this.mouseDownPosition = new Position(event.x, event.y);
+	onMouseDown = (event: MouseEvent) => {
+		this.mouseDownPosition = new Position(event.offsetX, event.offsetY);
 		const newScenePosition = CoordinateTransformService.clientPositionToScene(
 			this.mouseDownPosition,
 			this.sceneRepository,
 		);
 		this.drawEntityUseCase.start(this.sceneRepository.tool, newScenePosition);
-	}
+	};
 
-	onMouseMove(event: MouseEvent) {
+	onMouseMove = (event: MouseEvent) => {
 		if (this.mouseDownPosition) {
-			const width = event.x - this.mouseDownPosition.x;
-			const height = event.y - this.mouseDownPosition.y;
+			const width = event.offsetX - this.mouseDownPosition.x;
+			const height = event.offsetY - this.mouseDownPosition.y;
 			const newClientSize = new Size(width, height);
 			const newSceneSize = CoordinateTransformService.clientSizeToScene(newClientSize, this.sceneRepository);
 			this.drawEntityUseCase.update(newSceneSize);
 		}
-	}
+	};
 
-	onMouseUp() {
+	onMouseUp = () => {
 		this.mouseDownPosition = null;
 		this.drawEntityUseCase.finish();
-	}
+	};
 
-	onContextMenu(event: MouseEvent) {
+	onContextMenu = (event: MouseEvent) => {
 		event.preventDefault();
-	}
+	};
 }

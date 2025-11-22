@@ -15,15 +15,14 @@ export class DrawEntityUseCase {
 	}
 
 	update(size: Size) {
-		const drawingEntity = this.entityRepository.getDrawingEntity()?.clone();
+		const drawingEntity = this.entityRepository.drawingEntity;
 		if (drawingEntity) {
-			drawingEntity.size = size.clone();
-			this.entityRepository.setDrawingEntity(drawingEntity);
+			this.entityRepository.setSize(drawingEntity, size);
 		}
 	}
 
 	finish() {
-		const drawingEntity = this.entityRepository.getDrawingEntity();
+		const drawingEntity = this.entityRepository.drawingEntity;
 		if (drawingEntity) {
 			this.entityRepository.add(drawingEntity);
 		}

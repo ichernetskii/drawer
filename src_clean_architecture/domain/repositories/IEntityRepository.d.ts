@@ -1,16 +1,16 @@
 import { type Entity } from "@domain/entities/Entity.ts";
-import { type Position } from "@domain/value-objects/Position.ts";
+import { Size } from "@domain/value-objects/Size.ts";
 
 export interface IEntityRepository {
 	// Queries
 	findById(id: number): Entity | null;
-	findAtPosition(position: Position): Entity | null;
 	getAll(): Entity[];
-	getDrawingEntity(): Entity | null;
+	readonly drawingEntity: Entity | null;
 
 	// Commands
 	add(entity: Entity): void;
 	remove(id: number): void;
 	clear(): void;
+	setSize(entity: Entity, size: Size);
 	setDrawingEntity(drawingEntity: Entity | null): void;
 }

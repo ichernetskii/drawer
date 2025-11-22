@@ -16,7 +16,7 @@ export interface IEntityStyle {
 
 export abstract class Entity implements IClonable {
 	static readonly type: string; // abstract, will be overridden by subclasses
-	getType<T extends typeof Entity>(this: InstanceType<T>) {
+	getType<T extends typeof Entity>(this: InstanceType<T>): T["type"] {
 		// T, typeof Entity - constructor
 		// InstanceType<T> - class
 		return (this.constructor as T).type;
@@ -39,7 +39,7 @@ export abstract class Entity implements IClonable {
 		this.position = position;
 	}
 
-	static is<T extends typeof Entity>(this: T, entity: Entity): entity is InstanceType<T> {
+	static satisfies<T extends typeof Entity>(this: T, entity: Entity): entity is InstanceType<T> {
 		// T, typeof Entity - constructor
 		// InstanceType<T> - class
 		return this.type === entity.getType();

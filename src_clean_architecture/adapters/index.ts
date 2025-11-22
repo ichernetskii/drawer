@@ -1,3 +1,9 @@
 export { MouseController } from "./controllers/MouseController.ts";
-export { RectangleViewModel } from "./viewModels/RectangleViewModel.ts";
-export { TextViewModel } from "./viewModels/TextViewModel.ts";
+export {
+	type IEntityViewModel,
+	type IRectangleViewModel,
+	isRectangleViewModel,
+	isTextViewModel,
+	type ITextViewModel,
+	toViewModel,
+} from "./viewModels/toViewModel.ts";

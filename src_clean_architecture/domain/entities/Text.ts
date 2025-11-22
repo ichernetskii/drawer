@@ -1,11 +1,9 @@
 import { Entity, type IEntityStyle } from "@domain/entities/Entity.ts";
 import type { IClonable } from "@domain/interfaces/IClonable.d.ts";
-import { Color } from "@domain/value-objects/Color.ts";
+import { Font } from "@domain/value-objects/Font.ts";
 
 interface ITextStyle extends IEntityStyle {
-	text: {
-		color: Color;
-	};
+	font: Font;
 }
 
 export class Text extends Entity implements IClonable<Text> {
@@ -14,9 +12,7 @@ export class Text extends Entity implements IClonable<Text> {
 
 	override style: ITextStyle = {
 		...this.style,
-		text: {
-			color: Color.White,
-		},
+		font: new Font(),
 	};
 
 	text: string = "";
@@ -24,9 +20,7 @@ export class Text extends Entity implements IClonable<Text> {
 	override clone() {
 		const clone = super.clone();
 		clone.text = this.text;
-		clone.style.text = {
-			color: this.style.text.color.clone(),
-		};
+		clone.style.font = this.style.font.clone();
 		return clone;
 	}
 }

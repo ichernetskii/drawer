@@ -5,5 +5,6 @@ export { Text } from "./entities/Text.ts";
 export type { IEntityFactory } from "./factories/IEntityFactory.d.ts";
 export type { IEntityRepository } from "./repositories/IEntityRepository.d.ts";
 export { Color } from "./value-objects/Color.ts";
+export { Font } from "./value-objects/Font.ts";
 export { Position } from "./value-objects/Position.ts";
 export { Size } from "./value-objects/Size.ts";
