@@ -82,6 +82,18 @@ function ellipseToDataModel(ellipse: Ellipse): IEllipseDataModel {
 	};
 }
 
+export function isRectangleDataModel(dataModel: IEntityDataModel): dataModel is IRectangleDataModel {
+	return dataModel.type === Rectangle.type;
+}
+
+export function isEllipseDataModel(dataModel: IEntityDataModel): dataModel is IEllipseDataModel {
+	return dataModel.type === Ellipse.type;
+}
+
+export function isTextDataModel(dataModel: IEntityDataModel): dataModel is ITextDataModel {
+	return dataModel.type === Text.type;
+}
+
 export function entityToDataModel(entity: Entity): IEntityDataModel {
 	if (Rectangle.satisfies(entity)) {
 		return rectangleToDataModel(entity);
@@ -122,10 +134,9 @@ export function dataModelToEntity(dataModel: IEntityDataModel) {
 		},
 	};
 
-	if (Text.satisfies(entity)) {
-		const textModel = dataModel as ITextDataModel;
-		entity.text = textModel.text;
-		entity.style.font = new Font(textModel.style.font.size, textModel.style.font.family);
+	if (isTextDataModel(dataModel) && Text.satisfies(entity)) {
+		entity.text = dataModel.text;
+		entity.style.font = new Font(dataModel.style.font.size, dataModel.style.font.family);
 	}
 
 	return entity;

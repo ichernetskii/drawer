@@ -1,4 +1,4 @@
-import type { ISceneRepository } from "@adapters";
+import { type ISceneRepository } from "@adapters";
 
 import type { ToPlainObject } from "./ToPlainObject.d.ts";
 
