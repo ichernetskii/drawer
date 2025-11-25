@@ -1,4 +1,4 @@
-import { toViewModel } from "@adapters";
+import { entityToViewModel } from "@adapters";
 import type { ISceneRepository } from "@adapters/repositories/ISceneRepository";
 import type { IEntityRepository } from "@domain";
 import { EntityRenderer } from "@infrastructure/ui/renderers/EntityRenderer.ts";
@@ -21,12 +21,12 @@ export class SceneRenderer {
 		this.ctx.clearRect(0, 0, clientWidth, clientHeight);
 
 		this.entityRepository.getAll().forEach(entity => {
-			this.entityRenderer.render(toViewModel(entity, this.sceneRepository));
+			this.entityRenderer.render(entityToViewModel(entity, this.sceneRepository));
 		});
 
 		const drawingEntity = this.entityRepository.drawingEntity;
 		if (drawingEntity) {
-			this.entityRenderer.render(toViewModel(drawingEntity, this.sceneRepository));
+			this.entityRenderer.render(entityToViewModel(drawingEntity, this.sceneRepository));
 		}
 	}
 }

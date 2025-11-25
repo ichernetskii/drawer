@@ -1,4 +1,4 @@
-import type { ISceneRepository, Tool } from "@adapters/repositories/ISceneRepository";
+import type { ISceneRepository, Tool } from "@adapters";
 import { Position, Rectangle, Size } from "@domain";
 import type { IReactiveRepository } from "@infrastructure/repositories/IReactiveRepository";
 import { autorun, makeAutoObservable } from "mobx";

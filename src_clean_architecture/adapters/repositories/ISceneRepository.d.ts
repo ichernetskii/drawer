@@ -1,6 +1,6 @@
-import type { Ellipse, Position, Rectangle, Size } from "@domain";
+import type { Ellipse, Position, Rectangle, Size, Text } from "@domain";
 
-type Tool = typeof Rectangle.type | typeof Ellipse.type;
+export type Tool = typeof Rectangle.type | typeof Ellipse.type | typeof Text.type;
 
 export interface ISceneRepository {
 	// Queries

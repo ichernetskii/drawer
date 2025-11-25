@@ -1,5 +1,5 @@
 import type { IClonable } from "@domain/interfaces/IClonable.d.ts";
-import { createId } from "@domain/kernel/create-id.ts";
+import { generateUUID } from "@domain/kernel/generate-uuid.ts";
 import { Color } from "@domain/value-objects/Color.ts";
 import { Position } from "@domain/value-objects/Position.ts";
 import { Size } from "@domain/value-objects/Size.ts";
@@ -22,7 +22,7 @@ export abstract class Entity implements IClonable {
 		return (this.constructor as T).type;
 	}
 
-	readonly id: number = createId();
+	id: string;
 	position: Position;
 	size: Size = new Size();
 	style: IEntityStyle = {
@@ -37,6 +37,7 @@ export abstract class Entity implements IClonable {
 
 	constructor(position: Position) {
 		this.position = position;
+		this.id = generateUUID();
 	}
 
 	static satisfies<T extends typeof Entity>(this: T, entity: Entity): entity is InstanceType<T> {

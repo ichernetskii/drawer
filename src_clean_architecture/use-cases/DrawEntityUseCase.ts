@@ -10,7 +10,7 @@ export class DrawEntityUseCase {
 	}
 
 	start(type: string, position: Position) {
-		const drawingEntity = this.entityFactory.createEntity(type, position);
+		const drawingEntity = this.entityFactory(type, position);
 		this.entityRepository.setDrawingEntity(drawingEntity);
 	}
 
@@ -25,6 +25,7 @@ export class DrawEntityUseCase {
 		const drawingEntity = this.entityRepository.drawingEntity;
 		if (drawingEntity) {
 			this.entityRepository.add(drawingEntity);
+			this.entityRepository.setDrawingEntity(null);
 		}
 	}
 }

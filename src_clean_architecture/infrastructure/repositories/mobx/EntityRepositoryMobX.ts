@@ -12,10 +12,6 @@ export class EntityRepositoryMobX implements IEntityRepository, IReactiveReposit
 	}
 
 	// Queries
-	findById(id: number): Entity | null {
-		return this._entities.find(entity => entity.id === id) ?? null;
-	}
-
 	getAll(): Entity[] {
 		return this._entities;
 	}
@@ -30,7 +26,7 @@ export class EntityRepositoryMobX implements IEntityRepository, IReactiveReposit
 		this._entities.push(entity);
 	}
 
-	remove(id: number) {
+	remove(id: string) {
 		this._entities = this._entities.filter(entity => entity.id !== id);
 	}
 

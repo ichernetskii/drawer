@@ -1,15 +1,15 @@
-import { MouseController } from "@adapters";
+import { entityFactory, MouseController } from "@adapters";
 import { Size } from "@domain";
-import { EntityFactory } from "@infrastructure/factories/EntityFactory.ts";
-import { EntityRepositoryMobX } from "@infrastructure/repositories/mobx/EntityRepositoryMobX.ts";
-import { SceneRepositoryMobX } from "@infrastructure/repositories/mobx/SceneRepositoryMobX.ts";
+import { EntityRepositoryRedux } from "@infrastructure/repositories/redux/EntityRepositoryRedux.ts";
+import { SceneRepositoryRedux } from "@infrastructure/repositories/redux/SceneRepositoryRedux.ts";
+import { entityStoreAdapterRedux, sceneStoreAdapterRedux } from "@infrastructure/repositories/redux/store/store.ts";
 import { CanvasEventHandler } from "@infrastructure/ui/eventHandlers/CanvasEventHandler.ts";
 import { SceneRenderer } from "@infrastructure/ui/renderers/SceneRenderer.ts";
 import { retinaFix } from "@infrastructure/ui/utils/retina-fix.ts";
 import { DrawEntityUseCase } from "@use-cases";
 
 export class Application {
-	private unsubscribeCollection: (() => void)[] = [];
+	private disposeBag: Array<() => void> = [];
 
 	constructor() {
 		const $canvas = document.querySelector("canvas");
@@ -21,10 +21,13 @@ export class Application {
 		const dpr = window.devicePixelRatio || 1;
 		retinaFix(ctx, dpr);
 
-		const entityFactory = new EntityFactory();
-
-		const entityRepository = new EntityRepositoryMobX();
-		const sceneRepository = new SceneRepositoryMobX(new Size($canvas.clientWidth, $canvas.clientHeight));
+		// const entityRepository = new EntityRepositoryMobX();
+		const entityRepository = new EntityRepositoryRedux(entityStoreAdapterRedux);
+		// const sceneRepository = new SceneRepositoryMobX(new Size($canvas.clientWidth, $canvas.clientHeight));
+		const sceneRepository = new SceneRepositoryRedux(
+			new Size($canvas.clientWidth, $canvas.clientHeight),
+			sceneStoreAdapterRedux,
+		);
 
 		const drawEntityUseCase = new DrawEntityUseCase(entityRepository, entityFactory);
 
@@ -32,7 +35,7 @@ export class Application {
 		const sceneRenderer = new SceneRenderer(ctx, entityRepository, sceneRepository);
 		const canvasEventHandler = new CanvasEventHandler($canvas, mouseController);
 
-		this.unsubscribeCollection = [
+		this.disposeBag = [
 			canvasEventHandler.subscribe(),
 			entityRepository.subscribe(() => {
 				sceneRenderer.render();
@@ -44,6 +47,6 @@ export class Application {
 	}
 
 	dispose() {
-		this.unsubscribeCollection.forEach(unsubscribe => unsubscribe());
+		this.disposeBag.forEach(dispose => dispose());
 	}
 }
