@@ -1,5 +1,6 @@
 import type { IRectangleViewModel } from "@adapters";
-import { EntityRenderer } from "@infrastructure/ui/renderers/entity/EntityRenderer.ts";
+
+import { EntityRenderer } from "./EntityRenderer.ts";
 
 export class RectangleRenderer extends EntityRenderer {
 	override render(viewModel: IRectangleViewModel) {

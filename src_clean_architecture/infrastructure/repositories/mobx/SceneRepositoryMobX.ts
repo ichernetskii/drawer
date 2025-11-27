@@ -1,7 +1,7 @@
 import type { ISceneRepository, Tool } from "@adapters";
 import { Position, Rectangle, Size } from "@domain";
 import type { IReactiveRepository } from "@infrastructure/repositories/IReactiveRepository";
-import { autorun, makeAutoObservable } from "mobx";
+import { comparer, makeAutoObservable, reaction, toJS } from "mobx";
 
 export class SceneRepositoryMobX implements ISceneRepository, IReactiveRepository {
 	_zoom: number = 1;
@@ -49,8 +49,15 @@ export class SceneRepositoryMobX implements ISceneRepository, IReactiveRepositor
 	}
 
 	subscribe(listener: () => void): () => void {
-		return autorun(() => {
-			listener();
-		});
+		return reaction(
+			() => toJS(this),
+			() => {
+				listener();
+			},
+			{
+				equals: comparer.structural,
+				fireImmediately: true,
+			},
+		);
 	}
 }

@@ -1,5 +1,6 @@
 import type { IEllipseViewModel } from "@adapters";
-import { EntityRenderer } from "@infrastructure/ui/renderers/entity/EntityRenderer.ts";
+
+import { EntityRenderer } from "./EntityRenderer.ts";
 
 export class EllipseRenderer extends EntityRenderer {
 	override render(viewModel: IEllipseViewModel) {

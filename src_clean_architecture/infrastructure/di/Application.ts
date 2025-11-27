@@ -3,8 +3,9 @@ import { Size } from "@domain";
 import { EntityRepositoryMobX } from "@infrastructure/repositories/mobx/EntityRepositoryMobX.ts";
 import { SceneRepositoryMobX } from "@infrastructure/repositories/mobx/SceneRepositoryMobX.ts";
 import { CanvasEventHandler } from "@infrastructure/ui/eventHandlers/CanvasEventHandler.ts";
-import { EntityRepositoryRenderer } from "@infrastructure/ui/renderers/entity/EntityRepositoryRenderer.ts";
-import { SceneRepositoryRenderer } from "@infrastructure/ui/renderers/scene/SceneRepositoryRenderer.ts";
+import { EntityRepositoryRenderer } from "@infrastructure/ui/renderers/entityRepository/EntityRepositoryRenderer.ts";
+import { RepositoriesRenderer } from "@infrastructure/ui/renderers/RepositoriesRenderer.ts";
+import { SceneRepositoryRenderer } from "@infrastructure/ui/renderers/sceneRepository/SceneRepositoryRenderer.ts";
 import { retinaFix } from "@infrastructure/ui/utils/retina-fix.ts";
 import { DrawEntityUseCase } from "@use-cases";
 
@@ -32,18 +33,20 @@ export class Application {
 		const drawEntityUseCase = new DrawEntityUseCase(entityRepository, entityFactory);
 
 		const mouseController = new MouseController(sceneRepository, drawEntityUseCase);
+
 		const entityRepositoryRenderer = new EntityRepositoryRenderer(ctx, entityRepository, sceneRepository);
 		const sceneRepositoryRenderer = new SceneRepositoryRenderer(ctx, sceneRepository);
+		const repositoriesRenderer = new RepositoriesRenderer(ctx, entityRepositoryRenderer, sceneRepositoryRenderer);
+
 		const canvasEventHandler = new CanvasEventHandler($canvas, mouseController);
 
 		this.disposeBag = [
 			canvasEventHandler.subscribe(),
 			entityRepository.subscribe(() => {
-				entityRepositoryRenderer.render();
+				repositoriesRenderer.render();
 			}),
 			sceneRepository.subscribe(() => {
-				sceneRepositoryRenderer.render();
-				entityRepositoryRenderer.render();
+				repositoriesRenderer.render();
 			}),
 		];
 	}

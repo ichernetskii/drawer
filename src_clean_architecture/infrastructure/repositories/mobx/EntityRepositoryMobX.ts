@@ -1,7 +1,7 @@
 import { Entity, type IEntityRepository, Size } from "@domain";
 import type { IReactiveRepository } from "@infrastructure/repositories/IReactiveRepository.d.ts";
 import { makeObservableAuto } from "@infrastructure/repositories/mobx/makeObservableAuto.ts";
-import { autorun, isObservable, makeAutoObservable } from "mobx";
+import { comparer, isObservable, makeAutoObservable, reaction, toJS } from "mobx";
 
 export class EntityRepositoryMobX implements IEntityRepository, IReactiveRepository {
 	private _entities: Entity[] = [];
@@ -47,8 +47,15 @@ export class EntityRepositoryMobX implements IEntityRepository, IReactiveReposit
 	}
 
 	subscribe(listener: () => void): () => void {
-		return autorun(() => {
-			listener();
-		});
+		return reaction(
+			() => toJS(this),
+			() => {
+				listener();
+			},
+			{
+				equals: comparer.structural,
+				fireImmediately: true,
+			},
+		);
 	}
 }

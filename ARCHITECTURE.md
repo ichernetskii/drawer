@@ -879,25 +879,25 @@ export function createDrawable(type: string): Drawable {
 
 ```typescript
 // src/presentation/renderers/scene/entity/drawable/circle/circleRenderer.ts
-export class CircleRenderer extends Renderer {
-	render(ctx: CanvasRenderingContext2D, circle: Circle) {
-		if (!circle.position || !circle.size) return;
+export class CircleRenderer extends RepositoriesRenderer {
+    render(ctx: CanvasRenderingContext2D, circle: Circle) {
+        if (!circle.position || !circle.size) return;
 
-		const centerX = circle.position.x + circle.size.width / 2;
-		const centerY = circle.position.y + circle.size.height / 2;
-		const radiusX = circle.size.width / 2;
-		const radiusY = circle.size.height / 2;
+        const centerX = circle.position.x + circle.size.width / 2;
+        const centerY = circle.position.y + circle.size.height / 2;
+        const radiusX = circle.size.width / 2;
+        const radiusY = circle.size.height / 2;
 
-		ctx.save();
-		ctx.beginPath();
-		ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
-		ctx.fillStyle = circle.color;
-		ctx.fill();
-		ctx.strokeStyle = circle.color;
-		ctx.lineWidth = circle.borderWidth;
-		ctx.stroke();
-		ctx.restore();
-	}
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = circle.color;
+        ctx.fill();
+        ctx.strokeStyle = circle.color;
+        ctx.lineWidth = circle.borderWidth;
+        ctx.stroke();
+        ctx.restore();
+    }
 }
 ```
 

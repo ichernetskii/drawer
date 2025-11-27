@@ -6,19 +6,19 @@ import {
 	isTextViewModel,
 } from "@adapters";
 import { type IEntityRepository } from "@domain";
-import { EllipseRenderer } from "@infrastructure/ui/renderers/entity/EllipseRenderer.ts";
-import { RectangleRenderer } from "@infrastructure/ui/renderers/entity/RectangleRenderer.ts";
-import { TextRenderer } from "@infrastructure/ui/renderers/entity/TextRenderer.ts";
-export class EntityRepositoryRenderer {
-	ctx: CanvasRenderingContext2D;
-	entityRepository: IEntityRepository;
-	sceneRepository: ISceneRepository;
-	rectangleRenderer: RectangleRenderer;
-	ellipseRenderer: EllipseRenderer;
-	textRenderer: TextRenderer;
+import type { IRenderer } from "@infrastructure/ui/renderers/IRenderer.d.ts";
+
+import { EllipseRenderer } from "./entity/EllipseRenderer.ts";
+import { RectangleRenderer } from "./entity/RectangleRenderer.ts";
+import { TextRenderer } from "./entity/TextRenderer.ts";
+export class EntityRepositoryRenderer implements IRenderer {
+	private entityRepository: IEntityRepository;
+	private sceneRepository: ISceneRepository;
+	private rectangleRenderer: RectangleRenderer;
+	private ellipseRenderer: EllipseRenderer;
+	private textRenderer: TextRenderer;
 
 	constructor(ctx: CanvasRenderingContext2D, entityRepository: IEntityRepository, sceneRepository: ISceneRepository) {
-		this.ctx = ctx;
 		this.entityRepository = entityRepository;
 		this.sceneRepository = sceneRepository;
 		this.rectangleRenderer = new RectangleRenderer(ctx);
@@ -27,9 +27,6 @@ export class EntityRepositoryRenderer {
 	}
 
 	render() {
-		const { clientWidth, clientHeight } = this.ctx.canvas;
-		this.ctx.clearRect(0, 0, clientWidth, clientHeight);
-
 		const viewModels = [...this.entityRepository.getAll(), this.entityRepository.drawingEntity]
 			.filter(entity => !!entity)
 			.map(entity => entityToViewModel(entity, this.sceneRepository));

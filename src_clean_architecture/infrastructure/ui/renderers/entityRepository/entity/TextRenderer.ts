@@ -1,5 +1,6 @@
 import type { ITextViewModel } from "@adapters";
-import { EntityRenderer } from "@infrastructure/ui/renderers/entity/EntityRenderer.ts";
+
+import { EntityRenderer } from "./EntityRenderer.ts";
 
 export class TextRenderer extends EntityRenderer {
 	override render(viewModel: ITextViewModel) {
