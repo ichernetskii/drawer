@@ -1,15 +1,15 @@
 import type { ToPlainObject } from "@adapters/dataModels/ToPlainObject";
-import { Position } from "@domain";
+import { ScenePosition } from "@domain";
 
-export type IPositionDataModel = ToPlainObject<Position>;
+export type IPositionDataModel = ToPlainObject<ScenePosition>;
 
-export function positionToDataModel(position: Position): IPositionDataModel {
+export function positionToDataModel(position: ScenePosition): IPositionDataModel {
 	return {
 		x: position.x,
 		y: position.y,
 	};
 }
 
-export function dataModelToPosition(dataModel: IPositionDataModel): Position {
-	return new Position(dataModel.x, dataModel.y);
+export function dataModelToPosition(dataModel: IPositionDataModel): ScenePosition {
+	return new ScenePosition(dataModel.x, dataModel.y);
 }

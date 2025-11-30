@@ -1,4 +1,4 @@
-import type { IEntityFactory, IEntityRepository, Position, Size } from "@domain";
+import type { IEntityFactory, IEntityRepository, ScenePosition, SceneSize } from "@domain";
 
 export class DrawEntityUseCase {
 	entityRepository: IEntityRepository;
@@ -9,22 +9,22 @@ export class DrawEntityUseCase {
 		this.entityFactory = entityFactory;
 	}
 
-	start(type: string, position: Position) {
+	start(type: string, position: ScenePosition) {
 		const drawingEntity = this.entityFactory(type, position);
 		this.entityRepository.setDrawingEntity(drawingEntity);
 	}
 
-	update(size: Size) {
+	update(size: SceneSize) {
 		const drawingEntity = this.entityRepository.drawingEntity;
 		if (drawingEntity) {
-			this.entityRepository.setSize(drawingEntity, size);
+			this.entityRepository.setEntitySize(drawingEntity.id, size);
 		}
 	}
 
 	finish() {
 		const drawingEntity = this.entityRepository.drawingEntity;
 		if (drawingEntity) {
-			this.entityRepository.add(drawingEntity);
+			this.entityRepository.addEntity(drawingEntity);
 			this.entityRepository.setDrawingEntity(null);
 		}
 	}

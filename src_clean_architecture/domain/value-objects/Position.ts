@@ -1,6 +1,6 @@
 import type { IClonable } from "@domain/interfaces/IClonable.d.ts";
 
-export class Position implements IClonable {
+abstract class Position {
 	x: number;
 	y: number;
 
@@ -10,12 +10,12 @@ export class Position implements IClonable {
 		this.x = x;
 		this.y = y;
 	}
+}
 
-	clone(): Position {
-		return new Position(this.x, this.y);
-	}
+export class ClientPosition extends Position {}
 
-	moveBy(x: number, y: number): Position {
-		return new Position(this.x + x, this.y + y);
+export class ScenePosition extends Position implements IClonable {
+	clone(): ScenePosition {
+		return new ScenePosition(this.x, this.y);
 	}
 }

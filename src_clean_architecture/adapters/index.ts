@@ -7,10 +7,9 @@ export {
 	isTextDataModel,
 } from "./dataModels/EntityDataModel.ts";
 export { dataModelToPosition, type IPositionDataModel, positionToDataModel } from "./dataModels/PositionDataModel.ts";
-export { type ISceneDataModel } from "./dataModels/SceneDataModel.ts";
+export { dataModelToScene, type ISceneDataModel, sceneToDataModel } from "./dataModels/SceneDataModel.ts";
 export { dataModelToSize, type ISizeDataModel, sizeToDataModel } from "./dataModels/SizeDataModel.ts";
 export { entityFactory } from "./factories/EntityFactory.ts";
-export type { ISceneRepository, Tool } from "./repositories/ISceneRepository.d.ts";
 export {
 	entityToViewModel,
 	type IEllipseViewModel,
@@ -21,3 +20,4 @@ export {
 	isTextViewModel,
 	type ITextViewModel,
 } from "./viewModels/EntityViewModel.ts";
+export { type ISceneViewModel, sceneToViewModel } from "./viewModels/SceneViewModel.ts";

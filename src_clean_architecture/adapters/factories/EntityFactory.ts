@@ -1,6 +1,6 @@
-import { Ellipse, type Entity, type IEntityFactory, Position, Rectangle, Text } from "@domain";
+import { Ellipse, type Entity, type IEntityFactory, Rectangle, type ScenePosition, Text } from "@domain";
 
-export const entityFactory: IEntityFactory = (type: string, position: Position): Entity => {
+export const entityFactory: IEntityFactory = (type: string, position: ScenePosition): Entity => {
 	switch (type) {
 		case Rectangle.type:
 			return new Rectangle(position);

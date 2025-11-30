@@ -1,6 +1,4 @@
-import type { ISceneRepository } from "@adapters/repositories/ISceneRepository";
-import { CoordinateTransformService } from "@adapters/services/CoordinateTransformService.ts";
-import { Ellipse, type Entity, Rectangle, Text } from "@domain";
+import { Ellipse, type Entity, Rectangle, Scene, Text } from "@domain";
 
 export interface IEntityViewModel {
 	readonly type: string;
@@ -39,9 +37,9 @@ export function isTextViewModel(viewModel: IEntityViewModel): viewModel is IText
 	return viewModel.type === Text.type;
 }
 
-const entityBaseToViewModel = (entity: Entity, sceneRepository: ISceneRepository): IEntityViewModel => {
-	const position = CoordinateTransformService.scenePositionToClient(entity.position, sceneRepository);
-	const size = CoordinateTransformService.sceneSizeToClient(entity.size, sceneRepository);
+const entityBaseToViewModel = (entity: Entity, scene: Scene): IEntityViewModel => {
+	const position = scene.toClientPosition(entity.position);
+	const size = scene.toClientSize(entity.size);
 
 	return {
 		type: entity.getType(),
@@ -55,38 +53,38 @@ const entityBaseToViewModel = (entity: Entity, sceneRepository: ISceneRepository
 	};
 };
 
-const rectangleToViewModel = (rectangle: Rectangle, sceneRepository: ISceneRepository): IRectangleViewModel => {
+const rectangleToViewModel = (rectangle: Rectangle, scene: Scene): IRectangleViewModel => {
 	return {
-		...entityBaseToViewModel(rectangle, sceneRepository),
+		...entityBaseToViewModel(rectangle, scene),
 		type: Rectangle.type,
 	};
 };
 
-const ellipseToViewModel = (ellipse: Ellipse, sceneRepository: ISceneRepository): IEllipseViewModel => {
+const ellipseToViewModel = (ellipse: Ellipse, scene: Scene): IEllipseViewModel => {
 	return {
-		...entityBaseToViewModel(ellipse, sceneRepository),
+		...entityBaseToViewModel(ellipse, scene),
 		type: Ellipse.type,
 	};
 };
 
-const textToViewModel = (text: Text, sceneRepository: ISceneRepository): ITextViewModel => {
+const textToViewModel = (text: Text, scene: Scene): ITextViewModel => {
 	return {
-		...entityBaseToViewModel(text, sceneRepository),
+		...entityBaseToViewModel(text, scene),
 		type: Text.type,
 		text: text.text,
 		font: text.style.font.toString(),
 	};
 };
 
-export const entityToViewModel = (entity: Entity, sceneRepository: ISceneRepository) => {
+export const entityToViewModel = (entity: Entity, scene: Scene) => {
 	if (Rectangle.satisfies(entity)) {
-		return rectangleToViewModel(entity, sceneRepository);
+		return rectangleToViewModel(entity, scene);
 	}
 	if (Ellipse.satisfies(entity)) {
-		return ellipseToViewModel(entity, sceneRepository);
+		return ellipseToViewModel(entity, scene);
 	}
 	if (Text.satisfies(entity)) {
-		return textToViewModel(entity, sceneRepository);
+		return textToViewModel(entity, scene);
 	}
 	throw new Error(`Unknown entity type: ${entity.getType()}`);
 };

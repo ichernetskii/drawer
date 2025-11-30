@@ -1,12 +1,16 @@
-import type { IPositionDataModel, ISceneDataModel, ISizeDataModel, Tool } from "@adapters";
-import { Rectangle } from "@domain";
+import type { IPositionDataModel, ISceneDataModel, ISizeDataModel } from "@adapters";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-const initialState: ISceneDataModel = {
-	zoom: 1,
-	origin: { x: 0, y: 0 },
-	size: { width: 0, height: 0 },
-	tool: Rectangle.type,
+export interface ISceneState {
+	scene: ISceneDataModel;
+}
+
+const initialState: ISceneState = {
+	scene: {
+		zoom: 1,
+		origin: { x: 0, y: 0 },
+		size: { width: 0, height: 0 },
+	},
 };
 
 export const sceneSlice = createSlice({
@@ -14,23 +18,19 @@ export const sceneSlice = createSlice({
 	initialState,
 	reducers: {
 		setZoom: (state, action: PayloadAction<number>) => {
-			state.zoom = action.payload;
+			state.scene.zoom = action.payload;
 		},
 		setOrigin: (state, action: PayloadAction<IPositionDataModel>) => {
-			state.origin = action.payload;
+			state.scene.origin = action.payload;
 		},
 		setSize: (state, action: PayloadAction<ISizeDataModel>) => {
-			state.size = action.payload;
-		},
-		setTool: (state, action: PayloadAction<Tool>) => {
-			state.tool = action.payload;
+			state.scene.size = action.payload;
 		},
 	},
 	selectors: {
-		selectZoom: state => state.zoom,
-		selectOrigin: state => state.origin,
-		selectSize: state => state.size,
-		selectTool: state => state.tool,
+		selectZoom: state => state.scene.zoom,
+		selectOrigin: state => state.scene.origin,
+		selectSize: state => state.scene.size,
 	},
 });
 

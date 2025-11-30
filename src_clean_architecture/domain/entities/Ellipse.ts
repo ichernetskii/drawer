@@ -1,11 +1,11 @@
 import { Entity } from "@domain/entities/Entity.ts";
-import { type Position } from "@domain/value-objects/Position.ts";
+import type { ScenePosition } from "@domain/value-objects/Position.ts";
 
 export class Ellipse extends Entity {
 	static override readonly type = "ellipse" as const;
 	declare getType: () => typeof Ellipse.type;
 
-	override isPointInside(point: Position): boolean {
+	override isPointInside(point: ScenePosition): boolean {
 		// Uses the standard ellipse equation: ((x - cx) / rx)² + ((y - cy) / ry)² <= 1
 		// Calculate center and radius
 		const cx = this.position.x + this.size.width / 2;

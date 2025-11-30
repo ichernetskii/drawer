@@ -1,8 +1,7 @@
-import type { ISceneDataModel } from "@adapters";
 import { configureStore, createListenerMiddleware, type TypedStartListening } from "@reduxjs/toolkit";
 
-import { entitySlice, type EntityState, type IEntityActions } from "./entitySlice";
-import { type ISceneActions, sceneSlice } from "./sceneSlice";
+import { entitySlice, type IEntityActions, type IEntityState } from "./entitySlice.ts";
+import { type ISceneActions, type ISceneState, sceneSlice } from "./sceneSlice.ts";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -21,6 +20,7 @@ const startAppListening = listenerMiddleware.startListening as TypedStartListeni
 
 function createSelectiveSubscribe<T>(selector: (state: IRootState) => T) {
 	return (listener: () => void): (() => void) => {
+		listener();
 		return startAppListening({
 			predicate: (_, currentState, previousState) => {
 				return selector(currentState) !== selector(previousState);
@@ -33,13 +33,13 @@ function createSelectiveSubscribe<T>(selector: (state: IRootState) => T) {
 }
 
 export interface IEntityStoreRedux {
-	getState(): EntityState;
+	getState(): IEntityState;
 	dispatch(action: IEntityActions): void;
 	subscribe(listener: () => void): () => void;
 }
 
 export interface ISceneStoreRedux {
-	getState(): ISceneDataModel;
+	getState(): ISceneState;
 	dispatch(action: ISceneActions): void;
 	subscribe(listener: () => void): () => void;
 }

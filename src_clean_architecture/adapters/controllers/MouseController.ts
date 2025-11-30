@@ -1,33 +1,35 @@
-import type { ISceneRepository } from "@adapters/repositories/ISceneRepository.d.ts";
-import { CoordinateTransformService } from "@adapters/services/CoordinateTransformService.ts";
-import { Position, Size } from "@domain";
+import { ClientPosition, ClientSize, type IEntityRepository } from "@domain";
+import type { ISceneRepository } from "@domain/interfaces/repositories/ISceneRepository.d.ts";
 import type { DrawEntityUseCase } from "@use-cases";
 
 export class MouseController {
+	entityRepository: IEntityRepository;
 	sceneRepository: ISceneRepository;
 	drawEntityUseCase: DrawEntityUseCase;
-	private mouseDownPosition: Position | null = null;
+	private mouseDownPosition: ClientPosition | null = null;
 
-	constructor(sceneRepository: ISceneRepository, drawEntityUseCase: DrawEntityUseCase) {
+	constructor(
+		entityRepository: IEntityRepository,
+		sceneRepository: ISceneRepository,
+		drawEntityUseCase: DrawEntityUseCase,
+	) {
+		this.entityRepository = entityRepository;
 		this.sceneRepository = sceneRepository;
 		this.drawEntityUseCase = drawEntityUseCase;
 	}
 
 	onMouseDown = (event: MouseEvent) => {
-		this.mouseDownPosition = new Position(event.offsetX, event.offsetY);
-		const newScenePosition = CoordinateTransformService.clientPositionToScene(
-			this.mouseDownPosition,
-			this.sceneRepository,
-		);
-		this.drawEntityUseCase.start(this.sceneRepository.tool, newScenePosition);
+		this.mouseDownPosition = new ClientPosition(event.offsetX, event.offsetY);
+		const newScenePosition = this.sceneRepository.scene.toScenePosition(this.mouseDownPosition);
+		this.drawEntityUseCase.start(this.entityRepository.tool, newScenePosition);
 	};
 
 	onMouseMove = (event: MouseEvent) => {
 		if (this.mouseDownPosition) {
 			const width = event.offsetX - this.mouseDownPosition.x;
 			const height = event.offsetY - this.mouseDownPosition.y;
-			const newClientSize = new Size(width, height);
-			const newSceneSize = CoordinateTransformService.clientSizeToScene(newClientSize, this.sceneRepository);
+			const newClientSize = new ClientSize(width, height);
+			const newSceneSize = this.sceneRepository.scene.toSceneSize(newClientSize);
 			this.drawEntityUseCase.update(newSceneSize);
 		}
 	};

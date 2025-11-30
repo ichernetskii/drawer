@@ -1,12 +1,11 @@
 import {
 	dataModelToPosition,
+	dataModelToScene,
 	dataModelToSize,
-	type ISceneRepository,
 	positionToDataModel,
 	sizeToDataModel,
-	type Tool,
 } from "@adapters";
-import { Position, Size } from "@domain";
+import type { ClientSize, ISceneRepository, ScenePosition } from "@domain";
 import type { IReactiveRepository } from "@infrastructure/repositories/IReactiveRepository.d.ts";
 
 import { sceneActions } from "./store/sceneSlice.ts";
@@ -15,26 +14,26 @@ import { type ISceneStoreRedux } from "./store/store.ts";
 export class SceneRepositoryRedux implements ISceneRepository, IReactiveRepository {
 	private store: ISceneStoreRedux;
 
-	constructor(size: Size, store: ISceneStoreRedux) {
+	constructor(size: ClientSize, store: ISceneStoreRedux) {
 		this.store = store;
 		this.setSize(size);
 	}
 
 	// Queries
+	get scene() {
+		return dataModelToScene(this.store.getState().scene);
+	}
+
 	get zoom(): number {
-		return this.store.getState().zoom;
+		return this.scene.zoom;
 	}
 
-	get origin(): Position {
-		return dataModelToPosition(this.store.getState().origin);
+	get origin(): ScenePosition {
+		return dataModelToPosition(this.scene.origin);
 	}
 
-	get size(): Size {
-		return dataModelToSize(this.store.getState().size);
-	}
-
-	get tool(): Tool {
-		return this.store.getState().tool;
+	get size(): ClientSize {
+		return dataModelToSize(this.scene.size);
 	}
 
 	// Commands
@@ -42,16 +41,12 @@ export class SceneRepositoryRedux implements ISceneRepository, IReactiveReposito
 		this.store.dispatch(sceneActions.setZoom(zoom));
 	}
 
-	setOrigin(origin: Position): void {
+	setOrigin(origin: ScenePosition): void {
 		this.store.dispatch(sceneActions.setOrigin(positionToDataModel(origin)));
 	}
 
-	setSize(size: Size): void {
+	setSize(size: ClientSize): void {
 		this.store.dispatch(sceneActions.setSize(sizeToDataModel(size)));
-	}
-
-	setTool(tool: Tool): void {
-		this.store.dispatch(sceneActions.setTool(tool));
 	}
 
 	subscribe(listener: () => void): () => void {

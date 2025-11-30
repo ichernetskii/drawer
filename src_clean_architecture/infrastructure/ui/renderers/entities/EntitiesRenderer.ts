@@ -1,35 +1,30 @@
-import {
-	entityToViewModel,
-	type ISceneRepository,
-	isEllipseViewModel,
-	isRectangleViewModel,
-	isTextViewModel,
-} from "@adapters";
-import { type IEntityRepository } from "@domain";
-import type { IRenderer } from "@infrastructure/ui/renderers/IRenderer.d.ts";
+import { entityToViewModel, isEllipseViewModel, isRectangleViewModel, isTextViewModel } from "@adapters";
+import { type IEntityRepository, type Scene } from "@domain";
+import { AbstractRenderer } from "@infrastructure/ui/renderers/AbstractRenderer.ts";
 
 import { EllipseRenderer } from "./entity/EllipseRenderer.ts";
 import { RectangleRenderer } from "./entity/RectangleRenderer.ts";
 import { TextRenderer } from "./entity/TextRenderer.ts";
-export class EntityRepositoryRenderer implements IRenderer {
+export class EntitiesRenderer extends AbstractRenderer {
 	private entityRepository: IEntityRepository;
-	private sceneRepository: ISceneRepository;
+	private scene: Scene;
 	private rectangleRenderer: RectangleRenderer;
 	private ellipseRenderer: EllipseRenderer;
 	private textRenderer: TextRenderer;
 
-	constructor(ctx: CanvasRenderingContext2D, entityRepository: IEntityRepository, sceneRepository: ISceneRepository) {
+	constructor(ctx: CanvasRenderingContext2D, entityRepository: IEntityRepository, scene: Scene) {
+		super(ctx);
 		this.entityRepository = entityRepository;
-		this.sceneRepository = sceneRepository;
+		this.scene = scene;
 		this.rectangleRenderer = new RectangleRenderer(ctx);
 		this.ellipseRenderer = new EllipseRenderer(ctx);
 		this.textRenderer = new TextRenderer(ctx);
 	}
 
 	render() {
-		const viewModels = [...this.entityRepository.getAll(), this.entityRepository.drawingEntity]
+		const viewModels = [...this.entityRepository.entities, this.entityRepository.drawingEntity]
 			.filter(entity => !!entity)
-			.map(entity => entityToViewModel(entity, this.sceneRepository));
+			.map(entity => entityToViewModel(entity, this.scene));
 
 		viewModels.forEach(viewModel => {
 			if (isRectangleViewModel(viewModel)) {

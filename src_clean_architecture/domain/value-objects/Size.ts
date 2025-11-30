@@ -1,6 +1,6 @@
 import type { IClonable } from "@domain/interfaces/IClonable.d.ts";
 
-export class Size implements IClonable {
+abstract class Size {
 	width: number;
 	height: number;
 
@@ -10,14 +10,12 @@ export class Size implements IClonable {
 		this.width = width;
 		this.height = height;
 	}
+}
 
-	clone(): Size {
-		return new Size(this.width, this.height);
-	}
+export class ClientSize extends Size {}
 
-	scale(factor: number): Size;
-	scale(factorX: number, factorY: number): Size;
-	scale(factorX: number, factorY?: number): Size {
-		return new Size(this.width * factorX, this.height * (factorY ?? factorX));
+export class SceneSize extends Size implements IClonable {
+	clone(): SceneSize {
+		return new SceneSize(this.width, this.height);
 	}
 }

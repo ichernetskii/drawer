@@ -1,8 +1,8 @@
 import type { IClonable } from "@domain/interfaces/IClonable.d.ts";
 import { generateUUID } from "@domain/kernel/generate-uuid.ts";
 import { Color } from "@domain/value-objects/Color.ts";
-import { Position } from "@domain/value-objects/Position.ts";
-import { Size } from "@domain/value-objects/Size.ts";
+import type { ScenePosition } from "@domain/value-objects/Position.ts";
+import { SceneSize } from "@domain/value-objects/Size.ts";
 
 export interface IEntityStyle {
 	border: {
@@ -23,8 +23,8 @@ export abstract class Entity implements IClonable {
 	}
 
 	id: string;
-	position: Position;
-	size: Size = new Size();
+	position: ScenePosition;
+	size: SceneSize = new SceneSize();
 	style: IEntityStyle = {
 		border: {
 			width: 1,
@@ -35,7 +35,7 @@ export abstract class Entity implements IClonable {
 		},
 	};
 
-	constructor(position: Position) {
+	constructor(position: ScenePosition) {
 		this.position = position;
 		this.id = generateUUID();
 	}
@@ -46,7 +46,7 @@ export abstract class Entity implements IClonable {
 		return this.type === entity.getType();
 	}
 
-	isPointInside(point: Position): boolean {
+	isPointInside(point: ScenePosition): boolean {
 		return (
 			point.x >= this.position.x &&
 			point.x <= this.position.x + this.size.width &&

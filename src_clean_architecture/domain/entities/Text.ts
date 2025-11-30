@@ -2,7 +2,7 @@ import { Entity, type IEntityStyle } from "@domain/entities/Entity.ts";
 import type { IClonable } from "@domain/interfaces/IClonable.d.ts";
 import { Color } from "@domain/value-objects/Color.ts";
 import { Font } from "@domain/value-objects/Font.ts";
-import type { Position } from "@domain/value-objects/Position.ts";
+import type { ScenePosition } from "@domain/value-objects/Position.ts";
 
 interface ITextStyle extends IEntityStyle {
 	font: Font;
@@ -15,7 +15,7 @@ export class Text extends Entity implements IClonable<Text> {
 	override style: ITextStyle = this.style;
 	text: string = "";
 
-	constructor(position: Position) {
+	constructor(position: ScenePosition) {
 		super(position);
 		this.style.font = new Font();
 		this.style.fill.color = Color.White;

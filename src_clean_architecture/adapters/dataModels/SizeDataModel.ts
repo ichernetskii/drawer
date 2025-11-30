@@ -1,15 +1,15 @@
-import type { ToPlainObject } from "@adapters/dataModels/ToPlainObject";
-import { Size } from "@domain";
+import type { ToPlainObject } from "@adapters/dataModels/ToPlainObject.d.ts";
+import { ClientSize } from "@domain";
 
-export type ISizeDataModel = ToPlainObject<Size>;
+export type ISizeDataModel = ToPlainObject<ClientSize>;
 
-export function sizeToDataModel(size: Size): ISizeDataModel {
+export function sizeToDataModel(size: ClientSize): ISizeDataModel {
 	return {
 		width: size.width,
 		height: size.height,
 	};
 }
 
-export function dataModelToSize(dataModel: ISizeDataModel): Size {
-	return new Size(dataModel.width, dataModel.height);
+export function dataModelToSize(dataModel: ISizeDataModel): ClientSize {
+	return new ClientSize(dataModel.width, dataModel.height);
 }

@@ -1,10 +1,13 @@
+export { Scene } from "./aggregates/Scene.ts";
 export { Ellipse } from "./entities/Ellipse.ts";
 export { Entity } from "./entities/Entity.ts";
 export { Rectangle } from "./entities/Rectangle.ts";
 export { Text } from "./entities/Text.ts";
-export type { IEntityFactory } from "./factories/IEntityFactory.d.ts";
-export type { IEntityRepository } from "./repositories/IEntityRepository.d.ts";
+export type { IEntityFactory } from "./interfaces/IEntityFactory.d.ts";
+export type { IEntityRepository } from "./interfaces/repositories/IEntityRepository.d.ts";
+export type { Tool } from "./interfaces/repositories/IEntityRepository.d.ts";
+export type { ISceneRepository } from "./interfaces/repositories/ISceneRepository.d.ts";
 export { Color } from "./value-objects/Color.ts";
 export { Font } from "./value-objects/Font.ts";
-export { Position } from "./value-objects/Position.ts";
-export { Size } from "./value-objects/Size.ts";
+export { ClientPosition, ScenePosition } from "./value-objects/Position.ts";
+export { ClientSize, SceneSize } from "./value-objects/Size.ts";

@@ -1,5 +1,5 @@
 import { entityFactory } from "@adapters";
-import { Color, Ellipse, Entity, Font, Position, Rectangle, Size, Text } from "@domain";
+import { Color, Ellipse, Entity, Font, Rectangle, ScenePosition, SceneSize, Text } from "@domain";
 
 import type { ToPlainObject } from "./ToPlainObject.d.ts";
 
@@ -108,11 +108,11 @@ export function entityToDataModel(entity: Entity): IEntityDataModel {
 }
 
 export function dataModelToEntity(dataModel: IEntityDataModel) {
-	const position = new Position(dataModel.position.x, dataModel.position.y);
+	const position = new ScenePosition(dataModel.position.x, dataModel.position.y);
 
 	const entity = entityFactory(dataModel.type, position);
 
-	entity.size = new Size(dataModel.size.width, dataModel.size.height);
+	entity.size = new SceneSize(dataModel.size.width, dataModel.size.height);
 
 	entity.style = {
 		border: {

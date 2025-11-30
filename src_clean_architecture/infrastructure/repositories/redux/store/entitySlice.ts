@@ -1,15 +1,18 @@
 import type { ISizeDataModel } from "@adapters";
 import type { IEntityDataModel } from "@adapters/dataModels/EntityDataModel.ts";
+import { Rectangle, type Tool } from "@domain";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-export interface EntityState {
+export interface IEntityState {
 	entities: IEntityDataModel[];
 	drawingEntity: IEntityDataModel | null;
+	tool: Tool;
 }
 
-const initialState: EntityState = {
+const initialState: IEntityState = {
 	entities: [],
 	drawingEntity: null,
+	tool: Rectangle.type,
 };
 
 export const entitySlice = createSlice({
@@ -28,11 +31,14 @@ export const entitySlice = createSlice({
 		setDrawingEntity: (state, action: PayloadAction<IEntityDataModel | null>) => {
 			state.drawingEntity = action.payload;
 		},
-		setSize: (state, action: PayloadAction<{ entity: IEntityDataModel; size: ISizeDataModel }>) => {
-			const entity = state.entities.find(entity => entity === action.payload.entity) ?? state.drawingEntity;
+		setSize: (state, action: PayloadAction<{ id: string; size: ISizeDataModel }>) => {
+			const entity = state.entities.find(entity => entity.id === action.payload.id) ?? state.drawingEntity;
 			if (entity) {
 				entity.size = action.payload.size;
 			}
+		},
+		setTool: (state, action: PayloadAction<Tool>) => {
+			state.tool = action.payload;
 		},
 	},
 	selectors: {

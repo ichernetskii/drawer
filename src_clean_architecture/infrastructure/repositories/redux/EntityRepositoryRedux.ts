@@ -1,5 +1,5 @@
 import { dataModelToEntity, entityToDataModel, sizeToDataModel } from "@adapters";
-import { type Entity, type IEntityRepository, type Size } from "@domain";
+import type { Entity, IEntityRepository, SceneSize, Tool } from "@domain";
 import type { IReactiveRepository } from "@infrastructure/repositories/IReactiveRepository.d.ts";
 
 import { entityActions } from "./store/entitySlice.ts";
@@ -13,7 +13,7 @@ export class EntityRepositoryRedux implements IEntityRepository, IReactiveReposi
 	}
 
 	// Queries
-	getAll(): Entity[] {
+	get entities(): Entity[] {
 		return this.store.getState().entities.map(dataModelToEntity);
 	}
 
@@ -25,16 +25,20 @@ export class EntityRepositoryRedux implements IEntityRepository, IReactiveReposi
 		return null;
 	}
 
+	get tool(): Tool {
+		return this.store.getState().tool;
+	}
+
 	// Commands
-	add(entity: Entity): void {
+	addEntity(entity: Entity): void {
 		this.store.dispatch(entityActions.add(entityToDataModel(entity)));
 	}
 
-	remove(id: string): void {
+	removeEntity(id: string): void {
 		this.store.dispatch(entityActions.remove(id));
 	}
 
-	clear(): void {
+	clearEntities(): void {
 		this.store.dispatch(entityActions.clear());
 	}
 
@@ -42,13 +46,17 @@ export class EntityRepositoryRedux implements IEntityRepository, IReactiveReposi
 		this.store.dispatch(entityActions.setDrawingEntity(drawingEntity ? entityToDataModel(drawingEntity) : null));
 	}
 
-	setSize(entity: Entity, size: Size): void {
+	setEntitySize(id: string, size: SceneSize): void {
 		this.store.dispatch(
 			entityActions.setSize({
-				entity: entityToDataModel(entity),
+				id: id,
 				size: sizeToDataModel(size),
 			}),
 		);
+	}
+
+	setTool(tool: Tool) {
+		this.store.dispatch(entityActions.setTool(tool));
 	}
 
 	subscribe(listener: () => void): () => void {
