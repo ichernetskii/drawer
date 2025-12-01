@@ -1,336 +1,686 @@
-@startuml
+@startuml CleanArchitecture
+'Архитектура приложения Canvas Drawing (src_clean_architecture)
+'Следует Clean Architecture с четким разделением слоев
 
-namespace "Infrastructure Layer" as infrastructure {
-    namespace infrastructure.factories {
-        namespace infrastructure.factories.mobx {
-            class EntityFactoryMobX {
-                +override createEntity(type: string, position: Position): Entity
-            }
-            rectangle makeObservableAuto {
-            }
-            EntityFactoryMobX -> makeObservableAuto
-        }
+' КРИТИЧЕСКИ ВАЖНО: Вертикальное направление
+top to bottom direction
 
-        namespace infrastructure.factories.redux {
-            class EntityFactoryRedux {
-                +override createEntity(type: string, position: Position): Entity
-            }
-        }
+' Настройки стиля
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam DefaultFontSize 10
+skinparam Padding 10
+skinparam ranksep 200
+skinparam nodesep 120
 
-        EntityFactoryMobX ..|> .domain.factories.IEntityFactory
-        EntityFactoryRedux ..|> .domain.factories.IEntityFactory
-    }
+' Усиленный контроль вертикального layout
+skinparam rankdir TB
 
+' Цвета для слоёв Clean Architecture
+skinparam package<<infrastructure>> {
+    BackgroundColor #FFE6E6
+    BorderColor #CC0000
+    FontColor #000000
+    BorderThickness 3
+}
+
+skinparam package<<adapters>> {
+    BackgroundColor #E6F3FF
+    BorderColor #0066CC
+    FontColor #000000
+    BorderThickness 3
+}
+
+skinparam package<<usecases>> {
+    BackgroundColor #E6FFE6
+    BorderColor #00AA00
+    FontColor #000000
+    BorderThickness 3
+}
+
+skinparam package<<domain>> {
+    BackgroundColor #FFF9E6
+    BorderColor #FF9900
+    FontColor #000000
+    BorderThickness 3
+}
+
+package "Infrastructure Layer" as infrastructure <<infrastructure>> {
     namespace infrastructure.repositories {
         interface IReactiveRepository {
-              subscribe(listener: () => void): () => void;
+            +subscribe(listener): unsubscribe
         }
 
         namespace infrastructure.repositories.mobx {
-            class EntityRepositoryMobX implements .infrastructure.repositories.IReactiveRepository {
-                +subscribe(listener: () => void): () => void
+            rectangle makeObservableAuto {
             }
 
-            class SceneRepositoryMobX implements .infrastructure.repositories.IReactiveRepository {
-                +subscribe(listener: () => void): () => void
+            class EntityRepositoryMobX {
+                -_entities: Entity~list~
+                -_drawingEntity: Entity
+                -_tool: Tool
+                __
+                .. Queries ..
+                +get entities(): Entity~list~
+                +get drawingEntity(): Entity
+                +get tool(): Tool
+                .. Commands ..
+                +addEntity(entity: Entity): void
+                +removeEntity(id: string): void
+                +clearEntities(): void
+                +setEntitySize(id, size): void
+                +setDrawingEntity(entity): void
+                +setTool(tool: Tool): void
+                +subscribe(listener): unsubscribe
             }
 
-            EntityRepositoryMobX ...|> .domain.repositories.IEntityRepository
-            SceneRepositoryMobX ...|> .adapters.repositories.ISceneRepository
+            class SceneRepositoryMobX {
+                -_scene: Scene
+                __
+                .. Queries ..
+                +get scene(): Scene
+                +get zoom(): number
+                +get origin(): ScenePosition
+                +get size(): ClientSize
+                .. Commands ..
+                +setZoom(zoom): void
+                +setOrigin(origin): void
+                +setSize(size): void
+                +subscribe(listener): unsubscribe
+            }
+
+            EntityRepositoryMobX ..|> IReactiveRepository
+            SceneRepositoryMobX ..|> IReactiveRepository
+            EntityRepositoryMobX ..|> .domain.repositories.IEntityRepository
+            SceneRepositoryMobX ..|> .domain.repositories.ISceneRepository
+            EntityRepositoryMobX --> makeObservableAuto
+            SceneRepositoryMobX --> makeObservableAuto
         }
 
         namespace infrastructure.repositories.redux {
-            class EntityRepositoryRedux implements .infrastructure.repositories.IReactiveRepository {
-                -listeners: () => void[]
-                -notify(): void
-                +subscribe(listener: () => void): () => void
+            class EntityRepositoryRedux {
+                -store: IEntityStoreRedux
+                __
+                .. Queries ..
+                +get entities(): Entity~list~
+                +get drawingEntity(): Entity
+                +get tool(): Tool
+                .. Commands ..
+                +addEntity(entity): void
+                +removeEntity(id): void
+                +clearEntities(): void
+                +setEntitySize(id, size): void
+                +setDrawingEntity(entity): void
+                +setTool(tool): void
+                +subscribe(listener): unsubscribe
             }
 
-            class SceneRepositoryRedux implements .infrastructure.repositories.IReactiveRepository {
-                -listeners: () => void[]
-                -notify(): void
-                +subscribe(listener: () => void): () => void
+            class SceneRepositoryRedux {
+                -store: ISceneStoreRedux
+                __
+                .. Queries ..
+                +get scene(): Scene
+                +get zoom(): number
+                +get origin(): ScenePosition
+                +get size(): ClientSize
+                .. Commands ..
+                +setZoom(zoom): void
+                +setOrigin(origin): void
+                +setSize(size): void
+                +subscribe(listener): unsubscribe
             }
 
-            EntityRepositoryRedux ...|> .domain.repositories.IEntityRepository
-            SceneRepositoryRedux ...|> .adapters.repositories.ISceneRepository
+            EntityRepositoryRedux ..|> IReactiveRepository
+            SceneRepositoryRedux ..|> IReactiveRepository
+            EntityRepositoryRedux ..|> .domain.repositories.IEntityRepository
+            SceneRepositoryRedux ..|> .domain.repositories.ISceneRepository
+            EntityRepositoryRedux --> .adapters.dataModels.EntityDataModel
+            SceneRepositoryRedux --> .adapters.dataModels.SceneDataModel
         }
     }
 
     namespace infrastructure.ui {
         namespace infrastructure.ui.renderers {
-            class SceneRenderer {
-
-            }
-            abstract class Renderer {
+            abstract class AbstractRenderer {
                 #ctx: CanvasRenderingContext2D
                 +constructor(ctx: CanvasRenderingContext2D)
-                {abstract} +render(viewModel: EntityViewModel): void
-            }
-            class EntityRenderer extends Renderer {
-                -renderers: Map<string, Renderer> = new Map([\n  [Rectangle.type, new RectangleRenderer(ctx)],\n  ... // other types\n]);
-                +constructor(ctx: CanvasRenderingContext2D)
-                +render(viewModel: EntityViewModel): void
-            }
-            class RectangleRenderer extends Renderer<RectangleViewModel> {
-                +render(viewModel: RectangleViewModel): void
-            }
-            class TextRenderer extends Renderer<TextViewModel> {
-                +render(viewModel: TextViewModel): void
+                {abstract} +render(...args): void
             }
 
-            EntityRenderer --o RectangleRenderer
-            EntityRenderer --o TextRenderer
-            RectangleRenderer ---o .adapters.viewModels.RectangleViewModel
-            TextRenderer ---o .adapters.viewModels.TextViewModel
-            SceneRenderer -o EntityRenderer
+            class Renderer {
+                -entitiesRenderer: EntitiesRenderer
+                -sceneRenderer: SceneRenderer
+                +constructor(ctx, entitiesRenderer, sceneRenderer)
+                +render(): void
+            }
+
+            class SceneRenderer {
+                -scene: Scene
+                +constructor(ctx: CanvasRenderingContext2D, scene: Scene)
+                +render(): void
+            }
+
+            class EntitiesRenderer {
+                -entityRepository: IEntityRepository
+                -scene: Scene
+                -rectangleRenderer: RectangleRenderer
+                -ellipseRenderer: EllipseRenderer
+                -textRenderer: TextRenderer
+                +constructor(ctx, entityRepository, scene)
+                +render(): void
+            }
+
+            class RectangleRenderer {
+                +render(viewModel: IRectangleViewModel): void
+            }
+
+            class EllipseRenderer {
+                +render(viewModel: IEllipseViewModel): void
+            }
+
+            class TextRenderer {
+                +render(viewModel: ITextViewModel): void
+            }
+
+            Renderer --|> AbstractRenderer
+            SceneRenderer --|> AbstractRenderer
+            EntitiesRenderer --|> AbstractRenderer
+            RectangleRenderer --|> AbstractRenderer
+            EllipseRenderer --|> AbstractRenderer
+            TextRenderer --|> AbstractRenderer
+
+            Renderer *--> EntitiesRenderer
+            Renderer *--> SceneRenderer
+            EntitiesRenderer *--> RectangleRenderer
+            EntitiesRenderer *--> EllipseRenderer
+            EntitiesRenderer *--> TextRenderer
+            
+            EntitiesRenderer --> .adapters.viewModels.EntityViewModel : uses
+            SceneRenderer --> .adapters.viewModels.SceneViewModel : uses
+            EntitiesRenderer --> .domain.repositories.IEntityRepository
+            EntitiesRenderer --> .domain.aggregates.Scene
+            SceneRenderer --> .domain.aggregates.Scene
         }
 
         namespace infrastructure.ui.eventHandlers {
             class CanvasEventHandler {
-                -abortController: AbortController
                 -canvas: HTMLCanvasElement
                 -mouseController: MouseController
-                +constructor(\n  canvas: HTMLCanvasElement,\n  mouseController: MouseController\n)
-                +init(): void // subscribe on DOM events
-                +dispose(): void // unsubscribe
+                +constructor(canvas, mouseController)
+                +subscribe(): unsubscribe
             }
 
-            CanvasEventHandler --o .adapters.controllers.MouseController
+            CanvasEventHandler --> .adapters.controllers.MouseController
+        }
+
+        namespace infrastructure.ui.utils {
+            rectangle retinaFix {
+            }
         }
     }
 
     namespace infrastructure.di {
         class Application {
-            +constructor(canvasId: string)
-            +start(): void
-            +stop(): void
+            -disposeBag: Array<() => void>
+            +constructor()
+            +dispose(): void
         }
-        note right of Application::start
-            this.canvasEventHandler.init();
-            this.sceneRenderer.start();
-        end note
-        note right of Application::stop
-            this.sceneRenderer.stop();
-            this.canvasEventHandler.dispose();
-        end note
+
         note right of Application::constructor
-            // 1. Infrastructure
-            this.repository = new EntityRepositoryMobX();
-            this.factory = new EntityFactoryMobX();
+            // Canvas setup
+            const ctx = canvas.getContext("2d");
+            retinaFix(ctx, dpr);
 
-            // 2. Use Cases
-            this.drawShapeUseCase = new DrawShapeUseCase(
-              this.repository,
-              this.factory
-            );
+            // Infrastructure Layer
+            const entityRepository =
+              new EntityRepositoryRedux(entityStoreAdapter);
+            const sceneRepository =
+              new SceneRepositoryRedux(size, sceneStoreAdapter);
 
-            // 3. Adapters
-            this.scenePresenter = new ScenePresenter(
-              this.repository,
-              this.drawShapeUseCase
-            );
+            // Use Cases Layer
+            const drawEntityUseCase =
+              new DrawEntityUseCase(
+                entityRepository,
+                entityFactory
+              );
 
-            this.mouseController = new MouseController(
-              this.drawShapeUseCase
-            );
+            // Adapters Layer
+            const mouseController =
+              new MouseController(
+                entityRepository,
+                sceneRepository,
+                drawEntityUseCase
+              );
 
-            // 4. Infrastructure UI
-            this.sceneRenderer = new SceneRenderer(
-              ctx,
-              this.scenePresenter,
-              this.repository
-            );
+            // Infrastructure UI Layer
+            const entitiesRenderer =
+              new EntitiesRenderer(
+                ctx,
+                entityRepository,
+                sceneRepository.scene
+              );
+            const sceneRenderer =
+              new SceneRenderer(ctx, sceneRepository.scene);
+            const renderer =
+              new Renderer(ctx, entitiesRenderer, sceneRenderer);
+            const canvasEventHandler =
+              new CanvasEventHandler($canvas, mouseController);
 
-            this.canvasEventHandler = new CanvasEventHandler(
-              canvas,
-              this.mouseController
-            );
+            // Subscribe to changes
+            this.disposeBag = [
+              canvasEventHandler.subscribe(),
+              entityRepository.subscribe(() => renderer.render()),
+              sceneRepository.subscribe(() => renderer.render()),
+            ];
         end note
+
+        Application --> .infrastructure.repositories.mobx.EntityRepositoryMobX
+        Application --> .infrastructure.repositories.redux.EntityRepositoryRedux
+        Application --> .infrastructure.repositories.mobx.SceneRepositoryMobX
+        Application --> .infrastructure.repositories.redux.SceneRepositoryRedux
+        Application --> .adapters.factories.entityFactory
+        Application --> .adapters.controllers.MouseController
+        Application --> .infrastructure.ui.renderers.Renderer
+        Application --> .infrastructure.ui.eventHandlers.CanvasEventHandler
+        Application --> .useCases.DrawEntityUseCase
     }
 
     namespace infrastructure.main {
         rectangle "main.ts" as main {
         }
         note right of main
-            const app = new Application('canvas');
-            app.start();
+            const application = new Application();
 
             // HMR
             if (import.meta.hot) {
-              import.meta.hot.dispose(() => app.stop());
+              import.meta.hot.dispose(() => {
+                application.dispose();
+              });
             }
         end note
-        main --o .infrastructure.di.Application
+        main --> .infrastructure.di.Application
     }
 }
 
-namespace "Adapters Layer" as adapters {
-    namespace adapters.repositories {
-        interface ISceneRepository {
-            +zoom: number;
-            +origin: Position;
-            +size: Size;
-            +setZoom(zoom: number): void;
-            +setOrigin(origin: Position): void;
-            +setSize(size: Size): void;
-        }
-    }
-
-    namespace adapters.services {
-        class CoordinateTransformService {
-            +{static} sceneToClient(scenePos: Position, scene: ISceneRepository): Position
-            +{static} clientToScene(clientPos: Position, scene: ISceneRepository): Position
-            +{static} sceneSizeToClient(sceneSize: Size, scene: ISceneRepository): Size
-            +{static}  clientSizeToScene(clientSize: Size, scene: ISceneRepository): Size
-        }
-
-        CoordinateTransformService --o .adapters.repositories.ISceneRepository
-    }
-
+package "Adapters Layer" as adapters <<adapters>> {
     namespace adapters.controllers {
         class MouseController {
+            -entityRepository: IEntityRepository
+            -sceneRepository: ISceneRepository
             -drawEntityUseCase: DrawEntityUseCase
-            -scene: ISceneRepository
-            +constructor(drawEntityUseCase: DrawEntityUseCase, scene: ISceneRepository)
+            -mouseDownPosition: ClientPosition
+            +constructor(entityRepository, sceneRepository, drawEntityUseCase)
             +onMouseDown(event: MouseEvent): void
             +onMouseMove(event: MouseEvent): void
-            +onMouseUp(event: MouseEvent): void
+            +onMouseUp(): void
             +onContextMenu(event: MouseEvent): void
         }
 
-        MouseController ---o .useCases.DrawEntityUseCase
-        MouseController --o .adapters.repositories.ISceneRepository
+        MouseController --> .useCases.DrawEntityUseCase
+        MouseController --> .domain.repositories.IEntityRepository
+        MouseController --> .domain.repositories.ISceneRepository
+    }
+
+    namespace adapters.factories {
+        class entityFactory <<function>> {
+            +entityFactory(type, position)
+        }
+
+        entityFactory ..|> .domain.factories.IEntityFactory
+        entityFactory ..> .domain.entities.Rectangle : creates
+        entityFactory ..> .domain.entities.Ellipse : creates
+        entityFactory ..> .domain.entities.Text : creates
     }
 
     namespace adapters.viewModels {
-        abstract class EntityViewModel {
-            +readonly id: number
+        interface IEntityViewModel {
             +readonly type: string
-            +readonly x: number // client coordinates
-            +readonly y: number // client coordinates
+            +readonly x: number
+            +readonly y: number
             +readonly width: number
             +readonly height: number
-            +readonly fillColor: string
-            +readonly strokeColor: string
-            +readonly strokeWidth: number
-            #colorToRgba(color: Color): string
-            +constructor(entity: Entity)
-        }
-        class RectangleViewModel extends EntityViewModel {
-            {static} +tryCreate(entity: Entity): RectangleViewModel | null
-            +constructor(entity: Rectangle) // Try to implement tryCreate in ctr
-        }
-        class TextViewModel extends EntityViewModel {
-            {static} +tryCreate(entity: Entity): TextViewModel | null
-            +readonly text: string
-            +readonly textFillColor: string
-            +constructor(entity: Text)  // Try to implement tryCreate in ctr
+            +readonly fillStyle: string
+            +readonly strokeStyle: string
+            +readonly lineWidth: number
         }
 
-        EntityViewModel --o .domain.entity.Entity
+        interface IRectangleViewModel {
+            +type: "rectangle"
+        }
+
+        interface IEllipseViewModel {
+            +type: "ellipse"
+        }
+
+        interface ITextViewModel {
+            +type: "text"
+            +readonly text: string
+            +readonly font: string
+        }
+
+        class EntityViewModelFunctions <<functions>> {
+            +entityToViewModel(entity, scene)
+            +isRectangleViewModel(vm): boolean
+            +isEllipseViewModel(vm): boolean
+            +isTextViewModel(vm): boolean
+        }
+
+        interface ISceneViewModel {
+            +zoom: number
+            +origin: object
+            +size: object
+        }
+
+        class SceneViewModelFunctions <<functions>> {
+            +sceneToViewModel(scene)
+        }
+
+        IRectangleViewModel --|> IEntityViewModel
+        IEllipseViewModel --|> IEntityViewModel
+        ITextViewModel --|> IEntityViewModel
+
+        EntityViewModelFunctions --> IEntityViewModel : creates
+        EntityViewModelFunctions --> .domain.entities.Entity : uses
+        EntityViewModelFunctions --> .domain.aggregates.Scene : uses
+        SceneViewModelFunctions --> ISceneViewModel : creates
+        SceneViewModelFunctions --> .domain.aggregates.Scene : uses
     }
 
     namespace adapters.dataModels {
-        abstract class EntityDataModel {
-            +readonly type: string;
-            +readonly position: Position
-            +readonly size: Size
-            +readonly style: IEntityStyle
-            +constructor(entity: Entity)
-            {static} +load(data: object): EntityDataModel
+        interface IEntityDataModel {
+            +type: string
+            +id: string
+            +position: IPositionDataModel
+            +size: ISizeDataModel
+            +style: object
         }
-        class TextDataModel extends EntityDataModel {
-            +style: ITextStyle;
-        }
-        class RectangleDataModel extends EntityDataModel {
 
+        class EntityDataModelFunctions <<functions>> {
+            +entityToDataModel(entity)
+            +dataModelToEntity(dm)
+            +isRectangleDataModel(dm): boolean
+            +isEllipseDataModel(dm): boolean
+            +isTextDataModel(dm): boolean
         }
-        EntityDataModel --o .domain.entity.Entity
+
+        interface IPositionDataModel {
+            +x: number
+            +y: number
+        }
+
+        class PositionDataModelFunctions <<functions>> {
+            +positionToDataModel(position)
+            +dataModelToPosition(dm)
+        }
+
+        interface ISizeDataModel {
+            +width: number
+            +height: number
+        }
+
+        class SizeDataModelFunctions <<functions>> {
+            +sizeToDataModel(size)
+            +dataModelToSize(dm)
+        }
+
+        interface ISceneDataModel {
+            +zoom: number
+            +origin: IPositionDataModel
+            +size: ISizeDataModel
+        }
+
+        class SceneDataModelFunctions <<functions>> {
+            +sceneToDataModel(scene)
+            +dataModelToScene(dm)
+        }
+
+        EntityDataModelFunctions --> IEntityDataModel : creates
+        EntityDataModelFunctions --> .domain.entities.Entity : uses
+        PositionDataModelFunctions --> IPositionDataModel : creates
+        PositionDataModelFunctions --> .domain.valueObjects.ScenePosition : uses
+        SizeDataModelFunctions --> ISizeDataModel : creates
+        SizeDataModelFunctions --> .domain.valueObjects.ClientSize : uses
+        SceneDataModelFunctions --> ISceneDataModel : creates
+        SceneDataModelFunctions --> .domain.aggregates.Scene : uses
     }
 }
 
-namespace "Use Cases Layer" as useCases {
+package "Use Cases Layer" as useCases <<usecases>> {
     class DrawEntityUseCase {
-        -repository: IEntityRepository
-        -factory: IEntityFactory
-        -currentEntity: Entity
-        -startPosition: Position
-        +constructor(\n  repository: IEntityRepository,\n  factory: IEntityFactory\n)
-        +start(position: Position)
-        +update(size: Size)
-        +finish()
+        -entityRepository: IEntityRepository
+        -entityFactory: IEntityFactory
+        +constructor(entityRepository, entityFactory)
+        +start(type: string, position): void
+        +update(size): void
+        +finish(): void
     }
 
-    DrawEntityUseCase --o .domain.factories.IEntityFactory
-    DrawEntityUseCase --o .domain.repositories.IEntityRepository
-    DrawEntityUseCase --o .domain.entity.Entity
-
-    class ManageEntitiesUseCase {
-        +constructor(repository: IEntityRepository)
-        +removeDrawable(id: number): void
-        +clearAll(): void
-    }
-
-    ManageEntitiesUseCase --o .domain.repositories.IEntityRepository
+    DrawEntityUseCase --> .domain.factories.IEntityFactory
+    DrawEntityUseCase --> .domain.repositories.IEntityRepository
 }
 
-namespace "Domain Layer" as domain {
-    namespace domain.entity {
-        interface IEntityStyle {}
-
-        abstract class Entity implements IEntityStyle {
-            +{static} readonly type: string
-            +getType(): string
-            +id: number
-            +position: Position // scene coordinates
-            +size: Size
-            +style: IEntityStyle
-            +constructor(position: Position)
-            +{static} is(): boolean // Rectangle.is(entity)
-            +isPointInside(point: Position)
-            +clone(): this
+package "Domain Layer" as domain <<domain>> {
+    namespace domain.aggregates {
+        class Scene {
+            +zoom: number
+            +origin: ScenePosition
+            +size: ClientSize
+            +constructor(size: ClientSize)
+            +toClientPosition(scenePosition: ScenePosition): ClientPosition
+            +toScenePosition(clientPosition: ClientPosition): ScenePosition
+            +toClientSize(sceneSize: SceneSize): ClientSize
+            +toSceneSize(clientSize: ClientSize): SceneSize
         }
 
-        class Rectangle extends Entity {
+        Scene --> .domain.valueObjects.ScenePosition
+        Scene --> .domain.valueObjects.ClientPosition
+        Scene --> .domain.valueObjects.SceneSize
+        Scene --> .domain.valueObjects.ClientSize
+    }
+
+    namespace domain.entities {
+        interface IEntityStyle {
+            +border: object
+            +fill: object
+        }
+
+        abstract class Entity {
+            +{static} readonly type: string
+            +id: string
+            +position: ScenePosition
+            +size: SceneSize
+            +style: IEntityStyle
+            +constructor(position)
+            +getType(): string
+            +{static} satisfies(entity): boolean
+            +isPointInside(point): boolean
+            +clone(): Entity
+        }
+
+        class Rectangle {
             +{static} override readonly type: "rectangle"
         }
 
-        class Ellipse extends Entity {
+        class Ellipse {
             +{static} override readonly type: "ellipse"
+            +override isPointInside(point): boolean
         }
 
-        interface ITextStyle extends IEntityStyle {}
+        interface ITextStyle {
+            +font: Font
+        }
 
-        class Text extends Entity implements ITextStyle {
+        class Text {
             +{static} override readonly type: "text"
-            +style: ITextStyle
+            +override style: ITextStyle
             +text: string
+            +constructor(position)
+            +override clone(): Text
         }
+
+        Rectangle --|> Entity
+        Ellipse --|> Entity
+        Text --|> Entity
+        Entity ..|> .domain.interfaces.IClonable
+        Entity --> IEntityStyle
+        Entity --> .domain.valueObjects.ScenePosition
+        Entity --> .domain.valueObjects.SceneSize
+        Entity --> .domain.valueObjects.Color
+        Text --> ITextStyle
+        Text --> .domain.valueObjects.Font
     }
 
     namespace domain.factories {
         interface IEntityFactory {
-            +createEntity(type: string, position: Position): Entity
+            +IEntityFactory(type: string, position: ScenePosition): Entity
         }
+        note right of IEntityFactory
+            Это функциональный тип:
+            type IEntityFactory =
+              (type: string, position: ScenePosition) => Entity
+        end note
+
+        IEntityFactory ..> .domain.entities.Entity : creates
     }
 
     namespace domain.repositories {
         interface IEntityRepository {
-            -entities: Entity[]
-            __
             .. Queries ..
-            +getAll(): Entity[];
-            +findById(id: number): Entity | null;
-            +findAtPosition(position: Position): Entity | null;
-            +getDrawingEntity(): Entity | null;
+            +readonly entities: Entity~list~
+            +readonly drawingEntity: Entity
+            +readonly tool: Tool
             .. Commands ..
-            +add(entity: Entity): void;
-            +remove(id: number): void;
-            +clear(): void;
-            +setDrawingEntity(drawingEntity: Entity | null): void;
+            +addEntity(entity): void
+            +removeEntity(id): void
+            +clearEntities(): void
+            +setEntitySize(id, size): void
+            +setDrawingEntity(entity): void
+            +setTool(tool): void
+        }
+
+        interface ISceneRepository {
+            .. Queries ..
+            +readonly scene: Scene
+            +readonly zoom: number
+            +readonly origin: ScenePosition
+            +readonly size: ClientSize
+            .. Commands ..
+            +setZoom(zoom): void
+            +setOrigin(origin): void
+            +setSize(size): void
+        }
+
+        class Tool <<type>> {
+        }
+        note right of Tool
+            type Tool = "rectangle" | "ellipse" | "text"
+        end note
+
+        IEntityRepository --> .domain.entities.Entity
+        IEntityRepository --> Tool
+        IEntityRepository --> .domain.valueObjects.SceneSize
+        ISceneRepository --> .domain.aggregates.Scene
+        ISceneRepository --> .domain.valueObjects.ScenePosition
+        ISceneRepository --> .domain.valueObjects.ClientSize
+    }
+
+    namespace domain.valueObjects {
+        abstract class Position {
+            +x: number
+            +y: number
+            +constructor(x, y)
+        }
+
+        class ClientPosition {
+        }
+
+        class ScenePosition {
+            +clone(): ScenePosition
+        }
+
+        ClientPosition --|> Position
+        ScenePosition --|> Position
+        ScenePosition ..|> .domain.interfaces.IClonable
+
+        abstract class Size {
+            +width: number
+            +height: number
+            +constructor(width, height)
+        }
+
+        class ClientSize {
+        }
+
+        class SceneSize {
+            +clone(): SceneSize
+        }
+
+        ClientSize --|> Size
+        SceneSize --|> Size
+        SceneSize ..|> .domain.interfaces.IClonable
+
+        class Color {
+            +red: number
+            +green: number
+            +blue: number
+            +alpha: number
+            +constructor(r: number, g: number, b: number, a: number)
+            +toString(): string
+            +clone(): Color
+            +{static} get Transparent(): Color
+            +{static} get Black(): Color
+            +{static} get White(): Color
+        }
+
+        class Font {
+            +size: number
+            +family: FontFamily
+            +constructor(size: number, family: FontFamily)
+            +toString(): string
+            +clone(): Font
+        }
+
+        Color ..|> .domain.interfaces.IClonable
+        Font ..|> .domain.interfaces.IClonable
+    }
+
+    namespace domain.interfaces {
+        interface IClonable {
+            +clone(): this
+        }
+    }
+
+    namespace domain.kernel {
+        class generateUUID <<function>> {
+            +generateUUID()
         }
     }
 }
+
+' ОЧЕНЬ ДЛИННЫЕ скрытые стрелки для ПРИНУДИТЕЛЬНОГО вертикального порядка (сверху вниз)
+domain -[hidden]down----------> useCases
+useCases -[hidden]down----------> adapters
+adapters -[hidden]down----------> infrastructure
+
+' Жирные цветные стрелки зависимостей между слоями (средней длины, направлены ВВЕРХ)
+infrastructure ------up[#CC0000,thickness=4]-----> adapters : <<depends>>
+infrastructure ------up[#CC0000,thickness=4]-----> useCases : <<depends>>
+infrastructure ------up[#CC0000,thickness=4]-----> domain : <<depends>>
+adapters ------up[#0066CC,thickness=4]-----> useCases : <<depends>>
+adapters ------up[#0066CC,thickness=4]-----> domain : <<depends>>
+useCases ------up[#00AA00,thickness=4]-----> domain : <<depends>>
+
+' Легенда
+legend right
+  **Clean Architecture Layers (сверху вниз):**
+
+  |<back:#FFF9E6><color:#FF9900>▉</color></back>| **Domain Layer** - Бизнес-логика (независим) |
+  |<back:#E6FFE6><color:#00AA00>▉</color></back>| **Use Cases Layer** - Прикладная логика |
+  |<back:#E6F3FF><color:#0066CC>▉</color></back>| **Adapters Layer** - Адаптеры внешнего мира |
+  |<back:#FFE6E6><color:#CC0000>▉</color></back>| **Infrastructure Layer** - Внешние зависимости |
+
+  **Правило:** Стрелки направлены ВВЕРХ ⬆ к высокоуровневым слоям
+endlegend
 
 @enduml

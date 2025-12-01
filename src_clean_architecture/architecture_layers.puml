@@ -1,0 +1,99 @@
+@startuml CleanArchitecture_Layers
+'Упрощённая диаграмма слоёв Clean Architecture
+'Показывает правильное вертикальное расположение
+
+' ВАЖНО: Вертикальное направление
+top to bottom direction
+
+' Настройки
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam DefaultFontSize 12
+skinparam ranksep 120
+skinparam nodesep 80
+
+' Цвета для слоёв
+skinparam package<<domain>> {
+    BackgroundColor #FFF9E6
+    BorderColor #FF9900
+    FontColor #000000
+    BorderThickness 3
+}
+
+skinparam package<<usecases>> {
+    BackgroundColor #E6FFE6
+    BorderColor #00AA00
+    FontColor #000000
+    BorderThickness 3
+}
+
+skinparam package<<adapters>> {
+    BackgroundColor #E6F3FF
+    BorderColor #0066CC
+    FontColor #000000
+    BorderThickness 3
+}
+
+skinparam package<<infrastructure>> {
+    BackgroundColor #FFE6E6
+    BorderColor #CC0000
+    FontColor #000000
+    BorderThickness 3
+}
+
+' DOMAIN LAYER (сверху)
+package "Domain Layer\n(Бизнес-логика)" as domain <<domain>> {
+    [Entities:\nRectangle, Ellipse, Text]
+    [Value Objects:\nPosition, Size, Color, Font]
+    [Aggregates:\nScene]
+    [Interfaces:\nIEntityRepository\nISceneRepository\nIEntityFactory]
+}
+
+' USE CASES LAYER
+package "Use Cases Layer\n(Прикладная логика)" as useCases <<usecases>> {
+    [DrawEntityUseCase]
+}
+
+' ADAPTERS LAYER  
+package "Adapters Layer\n(Адаптеры)" as adapters <<adapters>> {
+    [Controllers:\nMouseController]
+    [Factories:\nentityFactory]
+    [ViewModels:\nEntity → ViewModel]
+    [DataModels:\nEntity ↔ DataModel]
+}
+
+' INFRASTRUCTURE LAYER (снизу)
+package "Infrastructure Layer\n(Внешние зависимости)" as infrastructure <<infrastructure>> {
+    [Repositories:\nMobX / Redux]
+    [UI:\nRenderers, EventHandlers]
+    [DI:\nApplication]
+}
+
+' Длинные скрытые стрелки для вертикального порядка (сверху вниз)
+domain -up[hidden]--> useCases
+useCases -up[hidden]--> adapters
+adapters -up[hidden]--> infrastructure
+
+' Жирные ЦВЕТНЫЕ стрелки зависимостей между слоями (направлены ВВЕРХ)
+infrastructure -up[#CC0000,thickness=4]-> adapters : <<depends>>
+infrastructure -up[#CC0000,thickness=4]-> useCases : <<depends>>
+infrastructure -up[#CC0000,thickness=4]-> domain : <<depends>>
+adapters -up[#0066CC,thickness=4]-> useCases : <<depends>>
+adapters -up[#0066CC,thickness=4]-> domain : <<depends>>
+useCases -up[#00AA00,thickness=4]-> domain : <<depends>>
+
+' Легенда
+legend right
+  **Clean Architecture Layers (сверху вниз):**
+  
+  |<back:#FFF9E6><color:#FF9900>▉</color></back>| **Domain Layer** - Бизнес-логика (независим) |
+  |<back:#E6FFE6><color:#00AA00>▉</color></back>| **Use Cases Layer** - Прикладная логика |
+  |<back:#E6F3FF><color:#0066CC>▉</color></back>| **Adapters Layer** - Адаптеры внешнего мира |
+  |<back:#FFE6E6><color:#CC0000>▉</color></back>| **Infrastructure Layer** - Внешние зависимости |
+  
+  **Правило:** Стрелки направлены ВВЕРХ ⬆ к высокоуровневым слоям
+endlegend
+
+@enduml
+
