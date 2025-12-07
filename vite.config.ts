@@ -8,11 +8,10 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
 	resolve: {
 		alias: {
-			"@": path.resolve(__dirname, "src"),
-			"@domain": path.resolve(__dirname, "src_clean_architecture", "domain"),
-			"@use-cases": path.resolve(__dirname, "src_clean_architecture", "use-cases"),
-			"@adapters": path.resolve(__dirname, "src_clean_architecture", "adapters"),
-			"@infrastructure": path.resolve(__dirname, "src_clean_architecture", "infrastructure"),
+			"@domain": path.resolve(__dirname, "src", "domain"),
+			"@use-cases": path.resolve(__dirname, "src", "use-cases"),
+			"@adapters": path.resolve(__dirname, "src", "adapters"),
+			"@infrastructure": path.resolve(__dirname, "src", "infrastructure"),
 		},
 	},
 });

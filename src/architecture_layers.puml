@@ -1,11 +1,7 @@
 @startuml CleanArchitecture_Layers
-'Упрощённая диаграмма слоёв Clean Architecture
-'Показывает правильное вертикальное расположение
 
-' ВАЖНО: Вертикальное направление
 top to bottom direction
 
-' Настройки
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam linetype ortho
@@ -13,7 +9,6 @@ skinparam DefaultFontSize 12
 skinparam ranksep 120
 skinparam nodesep 80
 
-' Цвета для слоёв
 skinparam package<<domain>> {
     BackgroundColor #FFF9E6
     BorderColor #FF9900
@@ -42,7 +37,7 @@ skinparam package<<infrastructure>> {
     BorderThickness 3
 }
 
-' DOMAIN LAYER (сверху)
+' DOMAIN LAYER
 package "Domain Layer\n(Бизнес-логика)" as domain <<domain>> {
     [Entities:\nRectangle, Ellipse, Text]
     [Value Objects:\nPosition, Size, Color, Font]
@@ -63,19 +58,17 @@ package "Adapters Layer\n(Адаптеры)" as adapters <<adapters>> {
     [DataModels:\nEntity ↔ DataModel]
 }
 
-' INFRASTRUCTURE LAYER (снизу)
+' INFRASTRUCTURE LAYER
 package "Infrastructure Layer\n(Внешние зависимости)" as infrastructure <<infrastructure>> {
     [Repositories:\nMobX / Redux]
     [UI:\nRenderers, EventHandlers]
     [DI:\nApplication]
 }
 
-' Длинные скрытые стрелки для вертикального порядка (сверху вниз)
 domain -up[hidden]--> useCases
 useCases -up[hidden]--> adapters
 adapters -up[hidden]--> infrastructure
 
-' Жирные ЦВЕТНЫЕ стрелки зависимостей между слоями (направлены ВВЕРХ)
 infrastructure -up[#CC0000,thickness=4]-> adapters : <<depends>>
 infrastructure -up[#CC0000,thickness=4]-> useCases : <<depends>>
 infrastructure -up[#CC0000,thickness=4]-> domain : <<depends>>
@@ -83,16 +76,13 @@ adapters -up[#0066CC,thickness=4]-> useCases : <<depends>>
 adapters -up[#0066CC,thickness=4]-> domain : <<depends>>
 useCases -up[#00AA00,thickness=4]-> domain : <<depends>>
 
-' Легенда
 legend right
-  **Clean Architecture Layers (сверху вниз):**
+  **Clean Architecture Layers:**
   
-  |<back:#FFF9E6><color:#FF9900>▉</color></back>| **Domain Layer** - Бизнес-логика (независим) |
-  |<back:#E6FFE6><color:#00AA00>▉</color></back>| **Use Cases Layer** - Прикладная логика |
-  |<back:#E6F3FF><color:#0066CC>▉</color></back>| **Adapters Layer** - Адаптеры внешнего мира |
-  |<back:#FFE6E6><color:#CC0000>▉</color></back>| **Infrastructure Layer** - Внешние зависимости |
-  
-  **Правило:** Стрелки направлены ВВЕРХ ⬆ к высокоуровневым слоям
+  |<back:#FFF9E6><color:#FF9900>▉</color></back>| **Domain Layer** |
+  |<back:#E6FFE6><color:#00AA00>▉</color></back>| **Use Cases Layer** |
+  |<back:#E6F3FF><color:#0066CC>▉</color></back>| **Adapters Layer** |
+  |<back:#FFE6E6><color:#CC0000>▉</color></back>| **Infrastructure Layer**  |
 endlegend
 
 @enduml

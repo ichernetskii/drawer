@@ -1,11 +1,7 @@
 @startuml CleanArchitecture
-'Архитектура приложения Canvas Drawing (src_clean_architecture)
-'Следует Clean Architecture с четким разделением слоев
 
-' КРИТИЧЕСКИ ВАЖНО: Вертикальное направление
 top to bottom direction
 
-' Настройки стиля
 skinparam linetype ortho
 skinparam packageStyle rectangle
 skinparam shadowing false
@@ -14,10 +10,8 @@ skinparam Padding 10
 skinparam ranksep 200
 skinparam nodesep 120
 
-' Усиленный контроль вертикального layout
 skinparam rankdir TB
 
-' Цвета для слоёв Clean Architecture
 skinparam package<<infrastructure>> {
     BackgroundColor #FFE6E6
     BorderColor #CC0000
@@ -658,12 +652,10 @@ package "Domain Layer" as domain <<domain>> {
     }
 }
 
-' ОЧЕНЬ ДЛИННЫЕ скрытые стрелки для ПРИНУДИТЕЛЬНОГО вертикального порядка (сверху вниз)
 domain -[hidden]down----------> useCases
 useCases -[hidden]down----------> adapters
 adapters -[hidden]down----------> infrastructure
 
-' Жирные цветные стрелки зависимостей между слоями (средней длины, направлены ВВЕРХ)
 infrastructure ------up[#CC0000,thickness=4]-----> adapters : <<depends>>
 infrastructure ------up[#CC0000,thickness=4]-----> useCases : <<depends>>
 infrastructure ------up[#CC0000,thickness=4]-----> domain : <<depends>>
@@ -671,16 +663,13 @@ adapters ------up[#0066CC,thickness=4]-----> useCases : <<depends>>
 adapters ------up[#0066CC,thickness=4]-----> domain : <<depends>>
 useCases ------up[#00AA00,thickness=4]-----> domain : <<depends>>
 
-' Легенда
 legend right
-  **Clean Architecture Layers (сверху вниз):**
+  **Clean Architecture Layers:**
 
-  |<back:#FFF9E6><color:#FF9900>▉</color></back>| **Domain Layer** - Бизнес-логика (независим) |
-  |<back:#E6FFE6><color:#00AA00>▉</color></back>| **Use Cases Layer** - Прикладная логика |
-  |<back:#E6F3FF><color:#0066CC>▉</color></back>| **Adapters Layer** - Адаптеры внешнего мира |
-  |<back:#FFE6E6><color:#CC0000>▉</color></back>| **Infrastructure Layer** - Внешние зависимости |
-
-  **Правило:** Стрелки направлены ВВЕРХ ⬆ к высокоуровневым слоям
+  |<back:#FFF9E6><color:#FF9900>▉</color></back>| **Domain Layer** |
+  |<back:#E6FFE6><color:#00AA00>▉</color></back>| **Use Cases Layer** |
+  |<back:#E6F3FF><color:#0066CC>▉</color></back>| **Adapters Layer** |
+  |<back:#FFE6E6><color:#CC0000>▉</color></back>| **Infrastructure Layer** |
 endlegend
 
 @enduml

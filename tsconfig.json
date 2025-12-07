@@ -13,15 +13,14 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@domain": ["src_clean_architecture/domain/index.ts"],
-      "@domain/*": ["src_clean_architecture/domain/*"],
-      "@use-cases": ["src_clean_architecture/use-cases/index.ts"],
-      "@use-cases/*": ["src_clean_architecture/use-cases/*"],
-      "@adapters": ["src_clean_architecture/adapters/index.ts"],
-      "@adapters/*": ["src_clean_architecture/adapters/*"],
-      "@infrastructure": ["src_clean_architecture/infrastructure/index.ts"],
-      "@infrastructure/*": ["src_clean_architecture/infrastructure/*"]
+      "@domain": ["src/domain/index.ts"],
+      "@domain/*": ["src/domain/*"],
+      "@use-cases": ["src/use-cases/index.ts"],
+      "@use-cases/*": ["src/use-cases/*"],
+      "@adapters": ["src/adapters/index.ts"],
+      "@adapters/*": ["src/adapters/*"],
+      "@infrastructure": ["src/infrastructure/index.ts"],
+      "@infrastructure/*": ["src/infrastructure/*"]
     },
 
     /* Linting */
@@ -32,5 +31,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "src_clean_architecture", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"]
 }
